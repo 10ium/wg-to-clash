@@ -57,63 +57,61 @@ class ConfigProcessor:
             logger.info(f"URL با موفقیت به '{new_url}' جایگزین شد.")
         return modified_template
 
-    # --- تابع _generate_readme اصلاح شده برای راست‌چین کردن ---
+    # --- تابع _generate_readme اصلاح شده برای Markdown صحیح ---
     def _generate_readme(self, entries: List[Tuple[str, str]]) -> None:
-        """فایل README.md را با دو دسته لینک (راست‌چین) ایجاد می‌کند."""
-        logger.info("شروع ساخت فایل README.md با عناوین راست‌چین...")
-        md_content = [
-            '<div dir="rtl">', # <-- شروع تگ اصلی برای کل محتوا (اختیاری ولی بهتر)
-            "# 📂 لیست کانفیگ‌ها",
-            "### 🚦 انتخاب کنید:\n",
-            '</div>', # <-- پایان تگ
-        ]
+        """فایل README.md را با Markdown صحیح و راست‌چین ایجاد می‌کند."""
+        logger.info("شروع ساخت فایل README.md (اصلاح فرمت)...")
+        md_content = []
+
+        md_content.append('<div dir="rtl">\n') # شروع تگ اصلی
+        md_content.append("# 📂 لیست کانفیگ‌ها\n")
+        md_content.append("### 🚦 انتخاب کنید:\n")
+        md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
 
         proxies_filename = "proxies.yaml"
         proxies_path = os.path.join(self.output_dir, proxies_filename)
         if os.path.exists(proxies_path):
             proxies_url = f"{self.base_url}{urllib.parse.quote(proxies_filename)}"
-            # --- اضافه کردن div برای این عنوان ---
-            md_content.append('<div dir="rtl">')
-            md_content.append(f"### 📄 فقط لیست پراکسی‌ها (بدون قوانین)")
-            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n")
-            md_content.append('</div>')
-            # ---
+            md_content.append('<div dir="rtl">\n')
+            md_content.append(f"### 📄 فقط لیست پراکسی‌ها (بدون قوانین)\n") # عنوان + خط جدید
+            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n") # آیتم لیست + خط جدید
+            md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
         else:
             logger.warning(f"فایل {proxies_path} یافت نشد، لینک آن به README اضافه نمی‌شود.")
 
         if entries:
-            # --- اضافه کردن div برای این عنوان ---
-            md_content.append('<div dir="rtl">')
-            md_content.append(f"### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)")
-            # ---
+            md_content.append('<div dir="rtl">\n')
+            md_content.append(f"### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)\n") # عنوان + خط جدید
             emojis = ["🚀", "🔒", "⚡", "🛡️"]
             for idx, (filename, _) in enumerate(entries):
-                emoji = emojis[idx % len(emojis)]
                 file_url = f"{self.base_url}{urllib.parse.quote(filename)}"
-                # --- اضافه کردن div برای هر آیتم لیست (برای اطمینان بیشتر) ---
-                md_content.append(f"- [{emoji} {filename}]({file_url})")
-            md_content.append('</div>\n') # <-- بستن div و خط جدید
-            # ---
+                md_content.append(f"- [{emoji} {filename}]({file_url})\n") # آیتم لیست + خط جدید
+            md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
 
-        # --- اضافه کردن div برای عناوین راهنما و بقیه ---
-        md_content.extend([
-            '<div dir="rtl">',
-            "## 📖 راهنمای استفاده", "1. روی لینک مورد نظر **کلیک راست** کنید",
-            "2. گزینه **«کپی لینک»** را انتخاب کنید", "3. لینک را در کلش متا **وارد کنید**\n",
-            "## ⭐ ویژگی‌ها", "- 🚀 بهینه‌شده برای ایران", "- 🔄 فعال و غیر فعال کردن راحت قوانین",
-            "- 📆 آپدیت روزانه\n", "## 📥 دریافت کلاینت", "### ویندوز",  
-            "</div>", # <-- بستن div
-            "[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev/releases)", # لینک‌ها چپ‌چین باشند
-            '<div dir="rtl">',
-            "### اندروید",
-            "</div>", # <-- بستن div
-            "[ClashMeta for Android](https://github.com/MetaCubeX/ClashMetaForAndroid/releases)" # لینک‌ها چپ‌چین باشند
-        ])
+        md_content.append('<div dir="rtl">\n')
+        md_content.append("## 📖 راهنمای استفاده\n") # عنوان + خط جدید
+        md_content.append("1. روی لینک مورد نظر **کلیک راست** کنید\n") # آیتم لیست + خط جدید
+        md_content.append("2. گزینه **«کپی لینک»** را انتخاب کنید\n") # آیتم لیست + خط جدید
+        md_content.append("3. لینک را در کلش متا **وارد کنید**\n\n") # آیتم لیست + دو خط جدید
+        md_content.append("## ⭐ ویژگی‌ها\n")
+        md_content.append("- 🚀 بهینه‌شده برای ایران\n")
+        md_content.append("- 🔄 فعال و غیر فعال کردن راحت قوانین\n")
+        md_content.append("- 📆 آپدیت روزانه\n\n")
+        md_content.append("## 📥 دریافت کلاینت\n")
+        md_content.append("### ویندوز\n")
+        md_content.append("</div>\n") # پایان تگ + خط جدید
+        md_content.append("[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev/releases)\n\n") # لینک + دو خط جدید
+        md_content.append('<div dir="rtl">\n')
+        md_content.append("### اندروید\n")
+        md_content.append("</div>\n") # پایان تگ + خط جدید
+        md_content.append("[ClashMeta for Android](https://github.com/MetaCubeX/ClashMetaForAndroid/releases)\n") # لینک + خط جدید
 
         try:
             with open(self.readme_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(md_content))
-            logger.info("فایل README.md با ساختار جدید و راست‌چین با موفقیت ایجاد/به‌روز شد.")
+                # حالا به جای \n.join، فقط رشته‌ها را به هم می‌چسبانیم
+                # چون خودمان \n ها را اضافه کرده‌ایم
+                f.write("".join(md_content))
+            logger.info("فایل README.md با فرمت صحیح Markdown ایجاد/به‌روز شد.")
         except Exception as e:
             logger.error(f"خطا در نوشتن README.md: {e}")
     # --- پایان تابع اصلاح شده ---
@@ -122,11 +120,9 @@ class ConfigProcessor:
         # ... (بدون تغییر) ...
         logger.info("شروع پردازش برای ساخت کانفیگ‌های Mihomo...")
         entries = self._load_entries(self.url_list_file)
-        if not entries:
-            logger.warning("هیچ URLی برای پردازش یافت نشد.")
+        if not entries: logger.warning("هیچ URLی برای پردازش یافت نشد.")
         try:
-            with open(self.template_path, "r", encoding="utf-8") as f:
-                original_template = f.read()
+            with open(self.template_path, "r", encoding="utf-8") as f: original_template = f.read()
             logger.info(f"فایل قالب {self.template_path} با موفقیت خوانده شد.")
         except FileNotFoundError:
             logger.critical(f"فایل قالب {self.template_path} یافت نشد! عملیات Mihomo متوقف شد.")
@@ -140,14 +136,11 @@ class ConfigProcessor:
                     modified_template = self._replace_proxy_url(original_template, url) 
                     output_path = os.path.join(self.output_dir, filename)
                     dir_path = os.path.dirname(output_path)
-                    if dir_path and not os.path.exists(dir_path):
-                        os.makedirs(dir_path, exist_ok=True)
-                    with open(output_path, "w", encoding="utf-8") as f:
-                        f.write(modified_template)
+                    if dir_path and not os.path.exists(dir_path): os.makedirs(dir_path, exist_ok=True)
+                    with open(output_path, "w", encoding="utf-8") as f: f.write(modified_template)
                     logger.info(f"فایل {output_path} با موفقیت ایجاد شد.")
                     generated_files_for_readme.append((filename, url))
-                except Exception as e:
-                    logger.error(f"خطا در پردازش {filename}: {e}")
+                except Exception as e: logger.error(f"خطا در پردازش {filename}: {e}")
         self._generate_readme(entries) 
         logger.info("پردازش کانفیگ‌های Mihomo به پایان رسید.")
 
