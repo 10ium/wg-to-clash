@@ -57,13 +57,13 @@ class ConfigProcessor:
             logger.info(f"URL با موفقیت به '{new_url}' جایگزین شد.")
         return modified_template
 
-    # --- تابع _generate_readme با حذف div ها ---
+    # --- تابع _generate_readme با تغییر ایموجی ---
     def _generate_readme(self, entries: List[Tuple[str, str]]) -> None:
-        """فایل README.md را با Markdown استاندارد ایجاد می‌کند."""
-        logger.info("شروع ساخت فایل README.md (حذف div ها)...")
+        """فایل README.md را با Markdown استاندارد و ایموجی جایگزین ایجاد می‌کند."""
+        logger.info("شروع ساخت فایل README.md (تغییر ایموجی)...")
         md_content = [
             "# 📂 لیست کانفیگ‌ها\n",
-            "### 🚦 انتخاب کنید:\n\n", # <-- دو خط جدید برای فاصله
+            "### 🚦 انتخاب کنید:\n\n",
         ]
 
         proxies_filename = "proxies.yaml"
@@ -71,18 +71,20 @@ class ConfigProcessor:
         if os.path.exists(proxies_path):
             proxies_url = f"{self.base_url}{urllib.parse.quote(proxies_filename)}"
             md_content.append(f"### 📄 فقط لیست پراکسی‌ها (بدون قوانین)\n")
-            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n\n") # <-- دو خط جدید
+            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n\n")
         else:
             logger.warning(f"فایل {proxies_path} یافت نشد، لینک آن به README اضافه نمی‌شود.")
 
         if entries:
-            md_content.append(f"### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)\n")
+            # --- این خط تغییر کرد ---
+            md_content.append(f"### ⚙️ کانفیگ‌های کامل (با قوانین مخصوص ایران)\n") # <-- 🇮🇷 به ⚙️ تغییر یافت
+            # ---------------------
             emojis = ["🚀", "🔒", "⚡", "🛡️"]
             for idx, (filename, _) in enumerate(entries):
                 emoji = emojis[idx % len(emojis)]
                 file_url = f"{self.base_url}{urllib.parse.quote(filename)}"
                 md_content.append(f"- [{emoji} {filename}]({file_url})\n")
-            md_content.append('\n') # یک خط جدید برای فاصله
+            md_content.append('\n')
 
         md_content.extend([
             "## 📖 راهنمای استفاده\n",
@@ -103,7 +105,7 @@ class ConfigProcessor:
         try:
             with open(self.readme_path, "w", encoding="utf-8") as f:
                 f.write("".join(md_content))
-            logger.info("فایل README.md با فرمت استاندارد Markdown ایجاد/به‌روز شد.")
+            logger.info("فایل README.md با ایموجی جدید ایجاد/به‌روز شد.")
         except Exception as e:
             logger.error(f"خطا در نوشتن README.md: {e}")
     # --- پایان تابع اصلاح شده ---
