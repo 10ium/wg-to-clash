@@ -43,11 +43,429 @@ proxies:
         h2: 2
         h3: 3
         h4: 4
+  - name: wg-US-FREE-3
+    type: wireguard
+    server: 195.181.163.1
+    port: 51820
+    ip: 10.2.0.2
+    private-key: SJn2/lbvDtR5DODa701PM0JHoBsCd2gVkmDaYWyRMGM=
+    public-key: bOz7aS+OtfmIiGLlQmnHrWb+wzw5qFp6PKdWPRlVORc=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-4
+    type: wireguard
+    server: 146.70.230.130
+    port: 51820
+    ip: 10.2.0.2
+    private-key: kJiyX2dRe3sjL0DyEWs34seiE/8iDhbNbOpzvzkPHWg=
+    public-key: g0gQj1lhsEuyJcJlzVyjq7aQmtC+/ca05vqOqvCQ/zI=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-5
+    type: wireguard
+    server: 149.40.62.21
+    port: 51820
+    ip: 10.2.0.2
+    private-key: EKDCQgTsjMI9vGrc0589x3alyQeN6YL+qgIsSGtJtH0=
+    public-key: cj0n9Y6KUdtXobHrhebwp/87bFUW0OnjjF+1lg8peCQ=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-6
+    type: wireguard
+    server: 37.19.200.1
+    port: 51820
+    ip: 10.2.0.2
+    private-key: 0D/RDApI7C7mZoTpXhpWE91TnXFoMjPMBmwx9WaRb2I=
+    public-key: rGq20PYMbmMtneRHYaWMYPKd78GycNzbqN1z0AZj6lI=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-7
+    type: wireguard
+    server: 89.187.179.55
+    port: 51820
+    ip: 10.2.0.2
+    private-key: KOcc2k2qYz+5UZRaWimL1e6ar7uS6fqrsxYSOmZr1HU=
+    public-key: XsJ968M1eNOuehhnuFTAtlTpzQfyFLpYTzo3L6Xe8EA=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-8
+    type: wireguard
+    server: 156.146.54.81
+    port: 51820
+    ip: 10.2.0.2
+    private-key: 6KIbo/yyoPjbP9WTApKB0PzS0OhZaV/ZrwE3+8TCwWU=
+    public-key: FF79Ab2fcEYtsyNYxviTUtVxJLuvUcoEOpl8DYbdsgg=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-9
+    type: wireguard
+    server: 89.187.180.1
+    port: 51820
+    ip: 10.2.0.2
+    private-key: CFYhL+3eGFKVKqkLO/hQlfUZmPs2JfC4AcutR083lHA=
+    public-key: o3BjGF2/GcEQiWoP89XgDfXFVlFFm7ipBFVQaOCR00k=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-10
+    type: wireguard
+    server: 89.187.177.71
+    port: 51820
+    ip: 10.2.0.2
+    private-key: 0F5ztIYT6dvezAmDBd4TGjl5S9Nct+xZeckD9faRiVU=
+    public-key: r0e3HMuB7OYPFgbBWKZOSrsGeMFTegRAagwTneQf8V4=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-11
+    type: wireguard
+    server: 195.181.162.163
+    port: 51820
+    ip: 10.2.0.2
+    private-key: UPhsQnlNz5ROgUcGUpCNN0OnHO2qSHF91iX0BwBwVnQ=
+    public-key: FopxTTklZx2W9X1ua1rGHdn+w4F8KVwcBjVmqMFFbAI=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-12
+    type: wireguard
+    server: 149.40.62.26
+    port: 51820
+    ip: 10.2.0.2
+    private-key: QKlsJuUuU/PbTNyGQiiJqYErIDE7ICIVO7l/LS4pWWI=
+    public-key: 1Fe25chEMe3i5ODyDeHhC94UY63O4vAyMw1KDgxcAk8=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-13
+    type: wireguard
+    server: 149.40.62.31
+    port: 51820
+    ip: 10.2.0.2
+    private-key: QO01BlSVhqsDV06y/7wY6kCrspoPxcdFoYgXV7/chkY=
+    public-key: emXbYiKqKRiZ2Q8uZCBley49t1FwwF88DfJX27A/WCU=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-14
+    type: wireguard
+    server: 89.187.170.159
+    port: 51820
+    ip: 10.2.0.2
+    private-key: kGZ7SBX4wAeRG1YbI3DpLI5QofVv5AhgnC8hAVWYAlw=
+    public-key: TvxKuL2rnvUxQ4vv48bwU+xyBAabV5yHnedFsP95C2s=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-15
+    type: wireguard
+    server: 37.19.200.22
+    port: 51820
+    ip: 10.2.0.2
+    private-key: KP5nizYFrY4l4jkR9zwDJyEoq7fUn1ipD1649CgFhn8=
+    public-key: 6viKMPw7x82HUJJbPTA08M3oY9U0SRDxpktohKENJTk=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-16
+    type: wireguard
+    server: 37.19.200.17
+    port: 51820
+    ip: 10.2.0.2
+    private-key: yIql8sibjh/RjFHWwlrl39fbYQmFYFuEReHiQ9AemWM=
+    public-key: xMBFL2Ejufuk926qSqBqPCIi6a6BRs33QmX7jWcsBDg=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-17
+    type: wireguard
+    server: 37.19.199.144
+    port: 51820
+    ip: 10.2.0.2
+    private-key: iHKeWz3sViPS/Zi1TURZGjT87xekVRQNSkdhJqbjXF4=
+    public-key: 8yLN4SAi/FbYK0ZG3/7YUvjSFxNqWvZXxxSiVydGVkg=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-18
+    type: wireguard
+    server: 138.199.50.98
+    port: 51820
+    ip: 10.2.0.2
+    private-key: YC5zPmlbuaQuq/LtI59j/mr1OxozqbJJ2e9x/N1SI2s=
+    public-key: 6oVoeW2SF2qZpqanpOq+NPPLgmNXXjLNyDMpXjuNGyc=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-19
+    type: wireguard
+    server: 37.19.199.129
+    port: 51820
+    ip: 10.2.0.2
+    private-key: GCDgDCyk3XDGrXVMGeBiSZOY9AjMKR7E0WJ7IGbYvGw=
+    public-key: Cn4siWGToCqJJ0q6OXGb4+LyaUF+vES2Xd40e9sj/BI=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-20
+    type: wireguard
+    server: 37.19.199.134
+    port: 51820
+    ip: 10.2.0.2
+    private-key: WE4fyndp8LLJMJ7N8ScNcJoPz+GqwuOqnInfRe8a40k=
+    public-key: DYS0yRzlf5QlioXwjvnmhsee0loEDTcryxkOS7rUjCE=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+  - name: wg-US-FREE-35
+    type: wireguard
+    server: 149.102.254.91
+    port: 51820
+    ip: 10.2.0.2
+    private-key: QLSX7yGz5H+pOO4EPlz0pmyDI9Yqqq7xVLryJgBYi2o=
+    public-key: QVosX58sjG9xnJdleIkOGJJkzu1fu9DyYQKtlQImHEQ=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
 proxy-groups:
   - name: Proton
     type: select
     icon: https://res.cloudinary.com/dbulfrlrz/image/upload/v1703162849/static/logos/icons/vpn_f9embt.svg
-    proxies: [wg-US-FREE-1, wg-US-FREE-2]
+    proxies: [wg-US-FREE-1, wg-US-FREE-2, wg-US-FREE-3, wg-US-FREE-4, wg-US-FREE-5, wg-US-FREE-6, wg-US-FREE-7, wg-US-FREE-8, wg-US-FREE-9, wg-US-FREE-10, wg-US-FREE-11, wg-US-FREE-12, wg-US-FREE-13, wg-US-FREE-14, wg-US-FREE-15, wg-US-FREE-16, wg-US-FREE-17, wg-US-FREE-18, wg-US-FREE-19, wg-US-FREE-20, wg-US-FREE-35]
     url: http://speed.cloudflare.com/
     unified-delay: true
     interval: 300
