@@ -1,0 +1,31 @@
+proxies:
+  - name: wg-US-FREE-1
+    type: wireguard
+    server: 146.70.230.146
+    port: 51820
+    ip: 10.2.0.2
+    private-key: aPR+a46z8yeX9FuBplvu2+oQCQJwNxdZOqS5p/OJLlg=
+    public-key: gucaLaM/mgJQbHVvnZNtW+1L4Mi7E2mtTMrhS0K4miU=
+    allowed-ips: [0.0.0.0/1, 128.0.0.0/1]
+    udp: true
+    mtu: 1420
+    remote-dns-resolve: true
+    dns: [10.2.0.1]
+    amnezia-wg-option:
+        jc: 4
+        jmin: 40
+        jmax: 70
+        s1: 0
+        s2: 0
+        h1: 1
+        h2: 2
+        h3: 3
+        h4: 4
+proxy-groups:
+  - name: Proton
+    type: select
+    icon: https://res.cloudinary.com/dbulfrlrz/image/upload/v1703162849/static/logos/icons/vpn_f9embt.svg
+    proxies: [wg-US-FREE-1]
+    url: http://speed.cloudflare.com/
+    unified-delay: true
+    interval: 300
