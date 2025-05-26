@@ -1,0 +1,10 @@
+2025-05-26 02:16:54,267 - INFO - شروع پردازش برای ساخت کانفیگ‌های Mihomo...
+2025-05-26 02:16:54,267 - INFO - تعداد 1 ورودی از Simple_URL_List.txt بارگذاری شد.
+2025-05-26 02:16:54,268 - INFO - فایل قالب mihomo_template.txt با موفقیت خوانده شد.
+2025-05-26 02:16:54,268 - INFO - درحال ساخت wgtoclash.yaml با URL: https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/generated/proxies.yaml...
+2025-05-26 02:16:54,268 - WARNING - الگوی 'proxy-providers' برای جایگزینی URL 'https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/generated/proxies.yaml' در قالب یافت نشد.
+2025-05-26 02:16:54,269 - INFO - فایل generated/wgtoclash.yaml با موفقیت ایجاد شد.
+2025-05-26 02:16:54,269 - INFO - شروع ساخت فایل README.md...
+2025-05-26 02:16:54,269 - INFO - فایل README.md با موفقیت ایجاد/به‌روز شد.
+2025-05-26 02:16:54,269 - INFO - پردازش کانفیگ‌های Mihomo به پایان رسید.
+2025-05-26 02:16:54,269 - INFO - ✅ پردازش Mihomo با موفقیت کلی انجام شد!
