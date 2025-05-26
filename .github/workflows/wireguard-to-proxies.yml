@@ -1,24 +1,26 @@
-name: Convert WireGuard → Proxies YAML
+name: Generate Configs
 
 on:
   push:
     paths:
       - 'wireguard/**'
+      # اضافه کردن فایل‌های ورودی جدید به triggers
+      - 'Simple_URL_List.txt' 
+      - 'mihomo_template.txt'  # <--- این خط باعث می‌شود با تغییر این فایل، Workflow اجرا شود
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    # مجوز لازم برای کامیت کردن تغییرات در ریپازیتوری
     permissions:
       contents: write
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4 # استفاده از نسخه جدیدتر
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v5 # استفاده از نسخه جدیدتر
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
@@ -27,18 +29,33 @@ jobs:
           python -m pip install --upgrade pip
           pip install ruamel.yaml
 
-      - name: Generate proxies.yaml
+      - name: 1. Generate proxies.yaml from WireGuard
         run: |
-          mkdir -p generated
+          echo "Starting WireGuard to proxies conversion..."
+          if [ ! -d "wireguard" ]; then
+            echo "WireGuard directory not found, skipping step 1."
+            mkdir -p generated
+            exit 0
+          fi
           python scripts/convert_wireguard.py wireguard generated/proxies.yaml
+          echo "Finished WireGuard to proxies conversion."
 
-      - name: Commit updated proxies.yaml
+      - name: 2. Generate Mihomo configs and README
+        run: |
+          echo "Starting Mihomo config generation..."
+          if [ ! -f "Simple_URL_List.txt" ] || [ ! -f "mihomo_template.txt" ]; then
+            echo "Input files (Simple_URL_List.txt or mihomo_template.txt) not found, skipping step 2."
+            exit 0
+          fi
+          python scripts/generate_mihomo.py
+          echo "Finished Mihomo config generation."
+
+      - name: Commit updated files
         uses: EndBug/add-and-commit@v9
         with:
           author_name: github-actions
           author_email: actions@github.com
-          # افزودن [skip ci] برای جلوگیری از حلقه بی‌پایان
-          message: 'chore: update proxies.yaml from wireguard configs [skip ci]'
-          add: 'generated/proxies.yaml'
-          # اطمینان از اینکه تغییرات push می‌شوند
+          message: 'chore: update proxies, mihomo configs and README [skip ci]'
+          add: 'generated/ README.md'
           push: true
+          pull: '--rebase --autostash'

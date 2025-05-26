@@ -1,0 +1,1 @@
+wgtoclash.yaml|https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/generated/proxies.yaml
