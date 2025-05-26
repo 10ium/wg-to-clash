@@ -4,9 +4,8 @@ on:
   push:
     paths:
       - 'wireguard/**'
-      # اضافه کردن فایل‌های ورودی جدید به triggers
       - 'Simple_URL_List.txt' 
-      - 'mihomo_template.txt'  # <--- این خط باعث می‌شود با تغییر این فایل، Workflow اجرا شود
+      - 'mihomo_template.txt'
   workflow_dispatch:
 
 jobs:
@@ -16,7 +15,7 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout repository
+      - name:  checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -26,36 +25,64 @@ jobs:
 
       - name: Install dependencies
         run: |
+          echo ">>> Installing Python dependencies..."
           python -m pip install --upgrade pip
           pip install ruamel.yaml
+          echo ">>> Dependencies installed."
+        # استفاده از bash -e باعث می‌شود در صورت خطا، مرحله متوقف شود
+        shell: bash -e {0}
 
       - name: 1. Generate proxies.yaml from WireGuard
         run: |
-          echo "Starting WireGuard to proxies conversion..."
+          echo ">>> Starting WireGuard to proxies conversion..."
           if [ ! -d "wireguard" ]; then
-            echo "WireGuard directory not found, skipping step 1."
+            echo "--- WireGuard directory not found, skipping step 1."
             mkdir -p generated
             exit 0
           fi
           python scripts/convert_wireguard.py wireguard generated/proxies.yaml
-          echo "Finished WireGuard to proxies conversion."
+          echo ">>> Finished WireGuard to proxies conversion."
+        shell: bash -e {0}
 
       - name: 2. Generate Mihomo configs and README
         run: |
-          echo "Starting Mihomo config generation..."
+          echo ">>> Starting Mihomo config generation..."
           if [ ! -f "Simple_URL_List.txt" ] || [ ! -f "mihomo_template.txt" ]; then
-            echo "Input files (Simple_URL_List.txt or mihomo_template.txt) not found, skipping step 2."
+            echo "--- Input files (Simple_URL_List.txt or mihomo_template.txt) not found, skipping step 2."
             exit 0
           fi
           python scripts/generate_mihomo.py
-          echo "Finished Mihomo config generation."
+          echo ">>> Finished Mihomo config generation."
+        shell: bash -e {0}
 
-      - name: Commit updated files
+      - name: 3. Show generated files and Git status
+        run: |
+          echo ">>> Listing generated files:"
+          ls -R generated
+          echo ">>> Listing root directory:"
+          ls -a .
+          echo ">>> Git status before commit:"
+          git status
+        # این مرحله نباید با خطا متوقف شود اگر فایل‌ها نباشند
+        shell: bash {0} 
+
+      - name: 4. Upload Log File
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-log # نام آرتیفکت
+          path: update.log # مسیر فایل لاگ
+          # فقط در صورتی آپلود کن که مرحله قبلی شکست نخورده باشد (اگرچه اینجا نیازی نیست)
+          # و اگر فایل وجود داشته باشد
+          if-no-files-found: ignore # اگر فایل لاگ نبود، خطا نده
+
+      - name: 5. Commit updated files
         uses: EndBug/add-and-commit@v9
         with:
           author_name: github-actions
           author_email: actions@github.com
           message: 'chore: update proxies, mihomo configs and README [skip ci]'
-          add: 'generated/ README.md'
+          add: '.' 
           push: true
           pull: '--rebase --autostash'
+          # اگر کامیتی برای انجام نبود، خطا نده
+          allow_empty: true
