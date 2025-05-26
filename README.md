@@ -1,9 +1,11 @@
-# 📂 لیست کانفیگ‌های کلش متا
-### با قوانین مخصوص ایران
+# 📂 لیست کانفیگ‌ها
+### 🚦 انتخاب کنید:
 
-**فایل‌های پیکربندی آماده استفاده:**
+### 📄 فقط لیست پراکسی‌ها (بدون قوانین)
+- [🌐 **proxies.yaml**](https://raw.githubusercontent.com/10ium/wg-to-clash/main/generated/proxies.yaml)
 
-- [🌐 wgtoclash.yaml](https://raw.githubusercontent.com/10ium/MihomoSaz/main/generated/wgtoclash.yaml)
+### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)
+- [🚀 wgtoclash.yaml](https://raw.githubusercontent.com/10ium/wg-to-clash/main/generated/wgtoclash.yaml)
 
 ## 📖 راهنمای استفاده
 1. روی لینک مورد نظر **کلیک راست** کنید
