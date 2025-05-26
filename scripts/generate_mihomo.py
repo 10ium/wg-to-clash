@@ -57,59 +57,62 @@ class ConfigProcessor:
             logger.info(f"URL با موفقیت به '{new_url}' جایگزین شد.")
         return modified_template
 
-    # --- تابع _generate_readme اصلاح شده برای Markdown صحیح ---
+    # --- تابع _generate_readme با خط اصلاح شده ---
     def _generate_readme(self, entries: List[Tuple[str, str]]) -> None:
         """فایل README.md را با Markdown صحیح و راست‌چین ایجاد می‌کند."""
-        logger.info("شروع ساخت فایل README.md (اصلاح فرمت)...")
-        md_content = []
-
-        md_content.append('<div dir="rtl">\n') # شروع تگ اصلی
-        md_content.append("# 📂 لیست کانفیگ‌ها\n")
-        md_content.append("### 🚦 انتخاب کنید:\n")
-        md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
+        logger.info("شروع ساخت فایل README.md (اصلاح NameError)...")
+        md_content = [
+            '<div dir="rtl">\n', 
+            "# 📂 لیست کانفیگ‌ها\n",
+            "### 🚦 انتخاب کنید:\n",
+            '</div>\n\n', 
+        ]
 
         proxies_filename = "proxies.yaml"
         proxies_path = os.path.join(self.output_dir, proxies_filename)
         if os.path.exists(proxies_path):
             proxies_url = f"{self.base_url}{urllib.parse.quote(proxies_filename)}"
             md_content.append('<div dir="rtl">\n')
-            md_content.append(f"### 📄 فقط لیست پراکسی‌ها (بدون قوانین)\n") # عنوان + خط جدید
-            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n") # آیتم لیست + خط جدید
-            md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
+            md_content.append(f"### 📄 فقط لیست پراکسی‌ها (بدون قوانین)\n")
+            md_content.append(f"- [🌐 **{proxies_filename}**]({proxies_url})\n")
+            md_content.append('</div>\n\n')
         else:
             logger.warning(f"فایل {proxies_path} یافت نشد، لینک آن به README اضافه نمی‌شود.")
 
         if entries:
             md_content.append('<div dir="rtl">\n')
-            md_content.append(f"### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)\n") # عنوان + خط جدید
+            md_content.append(f"### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)\n")
             emojis = ["🚀", "🔒", "⚡", "🛡️"]
             for idx, (filename, _) in enumerate(entries):
+                # --- خط اصلاح شده اینجاست ---
+                emoji = emojis[idx % len(emojis)] # <-- این خط اضافه شد!
+                # ---
                 file_url = f"{self.base_url}{urllib.parse.quote(filename)}"
-                md_content.append(f"- [{emoji} {filename}]({file_url})\n") # آیتم لیست + خط جدید
-            md_content.append('</div>\n\n') # پایان تگ و دو خط جدید
+                md_content.append(f"- [{emoji} {filename}]({file_url})\n") 
+            md_content.append('</div>\n\n')
 
-        md_content.append('<div dir="rtl">\n')
-        md_content.append("## 📖 راهنمای استفاده\n") # عنوان + خط جدید
-        md_content.append("1. روی لینک مورد نظر **کلیک راست** کنید\n") # آیتم لیست + خط جدید
-        md_content.append("2. گزینه **«کپی لینک»** را انتخاب کنید\n") # آیتم لیست + خط جدید
-        md_content.append("3. لینک را در کلش متا **وارد کنید**\n\n") # آیتم لیست + دو خط جدید
-        md_content.append("## ⭐ ویژگی‌ها\n")
-        md_content.append("- 🚀 بهینه‌شده برای ایران\n")
-        md_content.append("- 🔄 فعال و غیر فعال کردن راحت قوانین\n")
-        md_content.append("- 📆 آپدیت روزانه\n\n")
-        md_content.append("## 📥 دریافت کلاینت\n")
-        md_content.append("### ویندوز\n")
-        md_content.append("</div>\n") # پایان تگ + خط جدید
-        md_content.append("[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev/releases)\n\n") # لینک + دو خط جدید
-        md_content.append('<div dir="rtl">\n')
-        md_content.append("### اندروید\n")
-        md_content.append("</div>\n") # پایان تگ + خط جدید
-        md_content.append("[ClashMeta for Android](https://github.com/MetaCubeX/ClashMetaForAndroid/releases)\n") # لینک + خط جدید
+        md_content.extend([
+            '<div dir="rtl">\n',
+            "## 📖 راهنمای استفاده\n",
+            "1. روی لینک مورد نظر **کلیک راست** کنید\n",
+            "2. گزینه **«کپی لینک»** را انتخاب کنید\n",
+            "3. لینک را در کلش متا **وارد کنید**\n\n",
+            "## ⭐ ویژگی‌ها\n",
+            "- 🚀 بهینه‌شده برای ایران\n",
+            "- 🔄 فعال و غیر فعال کردن راحت قوانین\n",
+            "- 📆 آپدیت روزانه\n\n",
+            "## 📥 دریافت کلاینت\n",
+            "### ویندوز\n",
+            "</div>\n",
+            "[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev/releases)\n\n",
+            '<div dir="rtl">\n',
+            "### اندروید\n",
+            "</div>\n",
+            "[ClashMeta for Android](https://github.com/MetaCubeX/ClashMetaForAndroid/releases)\n"
+        ])
 
         try:
             with open(self.readme_path, "w", encoding="utf-8") as f:
-                # حالا به جای \n.join، فقط رشته‌ها را به هم می‌چسبانیم
-                # چون خودمان \n ها را اضافه کرده‌ایم
                 f.write("".join(md_content))
             logger.info("فایل README.md با فرمت صحیح Markdown ایجاد/به‌روز شد.")
         except Exception as e:
