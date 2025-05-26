@@ -1,0 +1,44 @@
+name: Convert WireGuard → Proxies YAML
+
+on:
+  push:
+    paths:
+      - 'wireguard/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # مجوز لازم برای کامیت کردن تغییرات در ریپازیتوری
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4 # استفاده از نسخه جدیدتر
+
+      - name: Set up Python
+        uses: actions/setup-python@v5 # استفاده از نسخه جدیدتر
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruamel.yaml
+
+      - name: Generate proxies.yaml
+        run: |
+          mkdir -p generated
+          python scripts/convert_wireguard.py wireguard generated/proxies.yaml
+
+      - name: Commit updated proxies.yaml
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: actions@github.com
+          # افزودن [skip ci] برای جلوگیری از حلقه بی‌پایان
+          message: 'chore: update proxies.yaml from wireguard configs [skip ci]'
+          add: 'generated/proxies.yaml'
+          # اطمینان از اینکه تغییرات push می‌شوند
+          push: true
