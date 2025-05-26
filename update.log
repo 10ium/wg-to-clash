@@ -48,3 +48,13 @@
 2025-05-26 02:43:19,139 - INFO - فایل README.md با فرمت استاندارد Markdown ایجاد/به‌روز شد.
 2025-05-26 02:43:19,139 - INFO - پردازش کانفیگ‌های Mihomo به پایان رسید.
 2025-05-26 02:43:19,139 - INFO - ✅ پردازش Mihomo با موفقیت کلی انجام شد!
+2025-05-26 02:49:20,628 - INFO - شروع پردازش برای ساخت کانفیگ‌های Mihomo...
+2025-05-26 02:49:20,628 - INFO - تعداد 1 ورودی از Simple_URL_List.txt بارگذاری شد.
+2025-05-26 02:49:20,628 - INFO - فایل قالب mihomo_template.txt با موفقیت خوانده شد.
+2025-05-26 02:49:20,628 - INFO - درحال ساخت wgtoclash.yaml با URL: https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/generated/proxies.yaml...
+2025-05-26 02:49:20,629 - INFO - URL با موفقیت به 'https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/generated/proxies.yaml' جایگزین شد.
+2025-05-26 02:49:20,630 - INFO - فایل generated/wgtoclash.yaml با موفقیت ایجاد شد.
+2025-05-26 02:49:20,630 - INFO - شروع ساخت فایل README.md (تغییر ایموجی)...
+2025-05-26 02:49:20,630 - INFO - فایل README.md با ایموجی جدید ایجاد/به‌روز شد.
+2025-05-26 02:49:20,630 - INFO - پردازش کانفیگ‌های Mihomo به پایان رسید.
+2025-05-26 02:49:20,630 - INFO - ✅ پردازش Mihomo با موفقیت کلی انجام شد!

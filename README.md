@@ -4,7 +4,7 @@
 ### 📄 فقط لیست پراکسی‌ها (بدون قوانین)
 - [🌐 **proxies.yaml**](https://raw.githubusercontent.com/10ium/wg-to-clash/main/generated/proxies.yaml)
 
-### 🇮🇷 کانفیگ‌های کامل (با قوانین مخصوص ایران)
+### ⚙️ کانفیگ‌های کامل (با قوانین مخصوص ایران)
 - [🚀 wgtoclash.yaml](https://raw.githubusercontent.com/10ium/wg-to-clash/main/generated/wgtoclash.yaml)
 
 ## 📖 راهنمای استفاده
