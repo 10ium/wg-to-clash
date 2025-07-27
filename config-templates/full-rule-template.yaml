@@ -44,7 +44,7 @@ dns:
     - 'time.*.com'
     - 'ntp.*.com'
     - '*.ir'
-  
+ 
   default-nameserver: 
     - 8.8.8.8 
     - 8.8.4.4 
@@ -62,21 +62,21 @@ dns:
     - 'tls://1-7cpqagd7alx73px777p5766z3x77h6p7jjvaasa.max.rethinkdns.com'
   direct-nameserver:
     - '78.157.42.100'
-    - '78.157.42.101'
+    - '78.157.42.101' 
   proxy-server-nameserver: 
-    - '2606:4700:4700::1111'
-    - '2606:4700:4700::1001'
-    - '2001:4860:4860::8888'
-    - '2001:4860:4860::8844'
-    - '1.1.1.1'
-    - '8.8.8.8'
-    - '8.8.4.4'
-    - '9.9.9.9'
-    - '223.5.5.5'
-    - '77.88.8.8'
-    - '2400:3200::1'
-    - '2a02:6b8::feed:0ff'
-    - '2620:fe::fe'
+    - '2606:4700:4700::1111' 
+    - '2606:4700:4700::1001' 
+    - '2001:4860:4860::8888' 
+    - '2001:4860:4860::8844' 
+    - '1.1.1.1' 
+    - '8.8.8.8' 
+    - '8.8.4.4' 
+    - '9.9.9.9' 
+    - '223.5.5.5' 
+    - '77.88.8.8' 
+    - '2400:3200::1' 
+    - '2a02:6b8::feed:0ff' 
+    - '2620:fe::fe' 
 
 sniffer:
   enable: true
@@ -96,20 +96,20 @@ tun:
   auto-detect-interface: true
   auto-redir: true
   dns-hijack:
-    - 'any:53'
-    - 'tcp://any:53'
+    - "any:53"
+    - "tcp://any:53"
 
 rule-providers:
   category_public_tracker:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/category-public-tracker.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/category-public-tracker.yaml
     interval: 86400
     path: ./ruleset/category_public_tracker.yaml
   iran_ads:
     type: http
     behavior: domain
-    url: 'https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/clash_rules_ads.yaml'
+    url: https://github.com/bootmortis/iran-hosted-domains/releases/latest/download/clash_rules_ads.yaml
     interval: 86400
     path: ./ruleset/iran_ads.yaml
   PersianBlocker:
@@ -121,67 +121,67 @@ rule-providers:
   youtube:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/youtube.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/youtube.yaml
     interval: 86400
     path: ./ruleset/youtube.yaml
   telegram:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/telegram.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/telegram.yaml
     interval: 86400
     path: ./ruleset/telegram.yaml
   twitch:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/twitch.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/twitch.yaml
     interval: 86400
     path: ./ruleset/twitch.yaml
   censor:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/clash_rules/main/censor.yaml'
+    url: https://raw.githubusercontent.com/10ium/clash_rules/main/censor.yaml
     interval: 86400
     path: ./ruleset/censor.yaml
   local_ips:
     type: http
     behavior: ipcidr
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/local-ips.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/local-ips.yaml
     interval: 86400
     path: ./ruleset/local_ips.yaml
   private:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/private.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/private.yaml
     interval: 86400
     path: ./ruleset/private.yaml
   category_ir:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/category-ir.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/category-ir.yaml
     interval: 86400
     path: ./ruleset/category_ir.yaml
   iran:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/clash_rules/main/iran.yaml'
+    url: https://raw.githubusercontent.com/10ium/clash_rules/main/iran.yaml
     interval: 86400
     path: ./ruleset/iran.yaml
   steam:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/clash_rules/main/steam.yaml'
+    url: https://raw.githubusercontent.com/10ium/clash_rules/main/steam.yaml
     interval: 86400
     path: ./ruleset/steam.yaml
   game:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/clash_rules/refs/heads/main/game.yaml'
+    url: https://raw.githubusercontent.com/10ium/clash_rules/refs/heads/main/game.yaml
     interval: 86400
     path: ./ruleset/game.yaml
   category-games:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/category-games.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/category-games.yaml
     interval: 86400
     path: ./ruleset/category-games.yaml
   ir:
@@ -271,97 +271,97 @@ rule-providers:
   DownloadManagers:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/clash_rules/refs/heads/main/DownloadManagers.yaml'
+    url: https://raw.githubusercontent.com/10ium/clash_rules/refs/heads/main/DownloadManagers.yaml
     interval: 86400
     path: ./ruleset/DownloadManagers.yaml
   BanProgramAD:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanProgramAD.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanProgramAD.yaml
     interval: 86400
     path: ./ruleset/BanProgramAD.yaml
   BanAD:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanAD.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanAD.yaml
     interval: 86400
     path: ./ruleset/BanAD.yaml
   PrivateTracker:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/PrivateTracker.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/PrivateTracker.yaml
     interval: 86400
     path: ./ruleset/PrivateTracker.yaml
   BanEasyList:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanEasyList.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/BanEasyList.yaml
     interval: 86400
     path: ./ruleset/BanEasyList.yaml
   Download:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/Download.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/Download.yaml
     interval: 86400
     path: ./ruleset/Download.yaml
   GameDownload:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/GameDownload.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/GameDownload.yaml
     interval: 86400
     path: ./ruleset/GameDownload.yaml
   SteamRegionCheck:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/SteamRegionCheck.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/SteamRegionCheck.yaml
     interval: 86400
     path: ./ruleset/SteamRegionCheck.yaml
   Xbox:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/Xbox.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/Xbox.yaml
     interval: 86400
     path: ./ruleset/Xbox.yaml
   YouTubeMusic:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/YouTubeMusic.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/YouTubeMusic.yaml
     interval: 86400
     path: ./ruleset/YouTubeMusic.yaml
   YouTube:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/YouTube.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/list/YouTube.yaml
     interval: 86400
     path: ./ruleset/YouTube.yaml
   Ponzi:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/Ponzi.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/Ponzi.yaml
     interval: 86400
     path: ./ruleset/Ponzi.yaml
   warninglist:
     type: http
     behavior: classical
-    url: 'https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/warning-list.yaml'
+    url: https://raw.githubusercontent.com/10ium/mihomo_rule/refs/heads/main/warning-list.yaml
     interval: 86400
     path: ./ruleset/warninglist.yaml
   google:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/google.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/google.yaml
     interval: 86400
     path: ./ruleset/google.yaml
   google-play:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/google-play.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/google-play.yaml
     interval: 86400
     path: ./ruleset/google-play.yaml
   xiaomi-ads:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/xiaomi-ads.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/xiaomi-ads.yaml
     interval: 86400
     path: ./ruleset/xiaomi-ads.yaml
   xiaomi_block_list:
@@ -380,19 +380,19 @@ rule-providers:
   cloudflare:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/cloudflare.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/cloudflare.yaml
     interval: 86400
     path: ./ruleset/cloudflare.yaml
   github:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/github.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/github.yaml
     interval: 86400
     path: ./ruleset/xgithub.yaml
   whatsapp:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/whatsapp.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/generated/whatsapp.yaml
     interval: 86400
     path: ./ruleset/whatsapp.yaml
   LiteAds:
@@ -410,13 +410,13 @@ rule-providers:
   instagram:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/instagram.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/instagram.yaml
     interval: 86400
     path: ./ruleset/instagram.yaml
   category-ai:
     type: http
     behavior: domain
-    url: 'https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/category-ai-!cn.yaml'
+    url: https://raw.githubusercontent.com/10ium/V2rayDomains2Clash/refs/heads/generated/category-ai-!cn.yaml
     interval: 86400
     path: ./ruleset/category-ai.yaml
   stremio:
@@ -433,7 +433,7 @@ rule-providers:
     interval: 86400
 
 proxies:
-  # DYNAMIC_PROXIES_SECTION_PLACEHOLDER # Placeholder for dynamically generated proxies
+  # PROXIES_PLACEHOLDER # This will be replaced by the actual Mihomo proxy configs
 
 proxy-groups:
   - name: "نوع انتخاب پروکسی 🔀"
@@ -448,7 +448,7 @@ proxy-groups:
     type: select
     icon: https://www.svgrepo.com/show/372331/cursor-hand-click.svg
     proxies:
-      # PROXIES_LIST_PLACEHOLDER # Placeholder for dynamically generated proxy list
+      # MANUAL_PROXIES_LIST_PLACEHOLDER # Will be replaced by proxy names
   - name: "خودکار (بهترین پینگ) 🤖"
     type: url-test
     icon: https://www.svgrepo.com/show/7876/speedometer.svg
@@ -459,7 +459,7 @@ proxy-groups:
     max-failed-times: 3
     lazy: true
     proxies:
-      # PROXIES_LIST_PLACEHOLDER # Placeholder for dynamically generated proxy list
+      # AUTO_PROXIES_LIST_PLACEHOLDER # Will be replaced by proxy names
   - name: دانلود منیجر 📥
     type: select
     icon: https://www.sadeemrdp.com/fonts/apps/IDM-Logo.svg
@@ -732,6 +732,7 @@ rules:
   - RULE-SET,local_ips,بدون فیلترشکن 🛡️
   - RULE-SET,private,بدون فیلترشکن 🛡️
   - MATCH,نوع انتخاب پروکسی 🔀
+
 ntp:
   enable: true
   server: "time.apple.com"
