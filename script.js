@@ -289,95 +289,6 @@ function parseWireGuardConfigBlockOrUri(input) {
 }
 
 /**
- * Parses Mihomo/Hiddify-like YAML/JSON config.
- * @param {string} yamlOrJsonText - The config text in YAML or JSON format.
- * @returns {Array<object>|null} Array of parsed WireGuard config objects, or null if parsing fails.
- */
-function parseMihomoConfig(yamlOrJsonText) {
-    try {
-        const config = jsyaml.load(yamlOrJsonText); // js-yaml can parse JSON too
-        let configList = [];
-
-        if (config && config.proxies && Array.isArray(config.proxies)) {
-            configList = config.proxies;
-        } else if (config && config.outbounds && Array.isArray(config.outbounds)) { // For Hiddify-like JSON
-            configList = config.outbounds;
-        } else {
-            // It might be valid YAML but not a Mihomo config with proxies/outbounds
-            return null; 
-        }
-
-        const parsedConfigs = [];
-        configList.forEach(proxy => {
-            if (proxy.type === 'wireguard') {
-                let ipv4 = '';
-                let ipv6 = '';
-                if (Array.isArray(proxy.local_address)) {
-                    proxy.local_address.forEach(addr => {
-                        if (addr.includes(':')) {
-                            ipv6 = addr.split('/')[0];
-                        } else if (addr.includes('.')) {
-                            ipv4 = addr.split('/')[0];
-                        }
-                    });
-                } else if (typeof proxy.local_address === 'string') {
-                    const addrs = proxy.local_address.split(',').map(a => a.trim());
-                    addrs.forEach(addr => {
-                        if (addr.includes(':')) {
-                            ipv6 = addr.split('/')[0];
-                        } else if (addr.includes('.')) {
-                            ipv4 = addr.split('/')[0];
-                        }
-                    });
-                }
-
-                const wgConfig = {
-                    name: proxy.name || proxy.tag || "WG Proxy", // Hiddify uses 'tag'
-                    privateKey: proxy['private_key'] || proxy['private-key'], // Hiddify uses 'private_key'
-                    address: ipv4,
-                    ipv6: ipv6,
-                    dns: proxy.dns || [],
-                    publicKey: proxy['peer_public_key'] || proxy['public-key'], // Hiddify uses 'peer_public_key'
-                    server: proxy.server,
-                    port: proxy['server_port'] || proxy.port, // Hiddify uses 'server_port'
-                    allowedIps: proxy['allowed_ips'] || proxy['allowed-ips'] || ['0.0.0.0/0', '::/0'],
-                    mtu: proxy.mtu || 1420,
-                    reserved: proxy.reserved || [],
-                    persistentKeepalive: proxy['persistent_keepalive'] || proxy['persistent-keepalive'] || 0,
-                };
-
-                if (proxy['amnezia-wg-option']) {
-                    wgConfig.amneziaOptions = {
-                        jc: proxy['amnezia-wg-option'].jc,
-                        jmin: proxy['amnezia-wg-option'].jmin,
-                        jmax: proxy['amnezia-wg-option'].jmax,
-                        s1: proxy['amnezia-wg-option'].s1,
-                        s2: proxy['amnezia-wg-option'].s2,
-                        h1: proxy['amnezia-wg-option'].h1,
-                        h2: proxy['amnezia-wg-option'].h2,
-                        h3: proxy['amnezia-wg-option'].h3,
-                        h4: proxy['amnezia-wg-option'].h4,
-                    };
-                } else {
-                    wgConfig.amneziaOptions = null;
-                }
-
-                if (wgConfig.privateKey && (wgConfig.address || wgConfig.ipv6) && wgConfig.publicKey && wgConfig.server && wgConfig.port) {
-                    parsedConfigs.push(wgConfig);
-                } else {
-                    console.warn('Incomplete WireGuard proxy (Mihomo/Hiddify-like) found:', proxy);
-                }
-            }
-        });
-        return parsedConfigs;
-    } catch (e) {
-        console.error('Error parsing Mihomo/Hiddify-like YAML/JSON:', e);
-        return null; // Indicates parsing failure
-    }
-}
-
-
-/**
  * Converts a parsed WireGuard config to Mihomo proxy format.
  * @param {object} wgConfig - Parsed WireGuard config object.
  * @param {number} jcUI - Jitter Control value from UI.
@@ -451,48 +362,75 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 }
 
 /**
- * Post-processes the generated YAML string to ensure problematic strings are quoted.
- * This is a workaround for js-yaml's default dump behavior.
- * @param {string} yamlString - The raw YAML string.
- * @returns {string} The fixed YAML string with necessary quotes.
+ * Processes the template text by replacing placeholders with generated content
+ * and ensures problematic strings are quoted.
+ * @param {string} templateText - The raw template text.
+ * @param {Array<object>} mihomoProxies - Array of generated Mihomo proxy objects.
+ * @param {Array<string>} proxyNames - Array of generated proxy names.
+ * @returns {string} The final YAML string.
  */
-function fixYamlQuoting(yamlString) {
-    let fixedYaml = yamlString;
+function processTemplateText(templateText, mihomoProxies, proxyNames) {
+    let finalYaml = templateText;
 
-    // Existing quoting fixes
-    fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(time\.\*\.com|ntp\.\*\.com)(\2)(\s*)/g, (match, indent, quote, domain, endQuote, trailingSpace) => {
+    // Convert mihomoProxies array to YAML string with correct indentation
+    // We need to dump each proxy separately and then join them with proper indentation
+    const proxyListYaml = mihomoProxies.map(proxy => {
+        let dumpedProxy = jsyaml.dump(proxy, { indent: 2, lineWidth: -1 });
+        // Add 2 spaces indentation for each line of the proxy object to align under "proxies:"
+        return dumpedProxy.split('\n').map(line => `  ${line}`).join('\n');
+    }).join('\n').trimStart(); // trimStart to remove leading empty line if any
+
+    // Ensure proxy names in proxy groups are quoted if they contain spaces or emojis
+    const quotedProxyNames = proxyNames.map(name => {
+        // Regex to check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
+        const needsQuotes = name.includes(' ') || 
+                            /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
+                            /[\u0600-\u06FF]/.test(name) || // Persian characters
+                            ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase());
+        return needsQuotes ? `"${name}"` : name;
+    });
+    const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n');
+
+    // Replace PROXIES placeholder
+    finalYaml = finalYaml.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyListYaml);
+
+    // Replace PROXY_NAMES_LIST placeholder
+    finalYaml = finalYaml.replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNamesListYaml);
+
+
+    // Apply general quoting fixes to the entire generated YAML (important for dns, url, etc.)
+    finalYaml = finalYaml.replace(/(\s*-\s*)(['"]?)(time\.\*\.com|ntp\.\*\.com)(\2)(\s*)/g, (match, indent, quote, domain, endQuote, trailingSpace) => {
         return `${indent}'${domain}'${trailingSpace}`;
     });
-    fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(any:53|tcp:\/\/any:53)(\2)(\s*)/g, (match, indent, quote, value, endQuote, trailingSpace) => {
+    finalYaml = finalYaml.replace(/(\s*-\s*)(['"]?)(any:53|tcp:\/\/any:53)(\2)(\s*)/g, (match, indent, quote, value, endQuote, trailingSpace) => {
         return `${indent}'${value}'${trailingSpace}`;
     });
-    fixedYaml = fixedYaml.replace(/(\s*-\s*)(?!['"])((?:\d{1,3}\.){3}\d{1,3}|\[?[\da-fA-F:]+\]?)(?=\s*$|\s*#)/gm, (match, indent, ip) => {
+    // This regex ensures IPs are quoted, but be careful not to double quote already quoted strings.
+    finalYaml = finalYaml.replace(/(\s*-\s*)(?!['"])((\d{1,3}\.){3}\d{1,3}|\[?[\da-fA-F:]+\]?)(?=\s*$|\s*#)/gm, (match, indent, ip) => {
         return `${indent}'${ip}'`;
     });
-    fixedYaml = fixedYaml.replace(/((?:\s*-\s*)|(?:url:\s*))(['"]?)(https?:\/\/[^\s]+|tls:\/\/[^\s]+)(\2)(\s*)/g, (match, prefix, quote, url, endQuote, trailingSpace) => {
+    finalYaml = finalYaml.replace(/((?:\s*-\s*)|(?:url:\s*))(['"]?)(https?:\/\/[^\s]+|tls:\/\/[^\s]+)(\2)(\s*)/g, (match, prefix, quote, url, endQuote, trailingSpace) => {
         return `${prefix}'${url}'${trailingSpace}`;
     });
-    
+
     // Ensure group names with emojis or special characters are quoted, if not already.
-    // This uses a regex with unicode property escapes (`\p{...}` and `u` flag) for emojis and Persian characters.
-    fixedYaml = fixedYaml.replace(/name: ([\p{L}\p{N}\p{S}\p{P}\s]+)/gu, (match, name) => {
-        // Only quote if it's not already quoted and contains special chars or is a known problematic string
-        if (!name.startsWith("'") && !name.startsWith('"')) {
-            // Check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off'
-            // \p{Emoji} and \p{Extended_Pictographic} can also be used for better emoji matching
+    // This targets only the "name:" key directly, to avoid accidental quoting of other values.
+    finalYaml = finalYaml.replace(/(name: )([\p{L}\p{N}\p{S}\p{P}\s]+)/gu, (match, prefix, name) => {
+        if (!name.startsWith('"')) { // Only add quotes if not already quoted
+            // Check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
             const hasSpecialChars = name.includes(' ') || 
                                     /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
                                     /[\u0600-\u06FF]/.test(name) || // Persian characters
                                     ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase()); // Problematic keywords
             if (hasSpecialChars) {
-                return `name: "${name.trim()}"`;
+                return `${prefix}"${name.trim()}"`;
             }
         }
         return match; // Return original if already quoted or no special characters
     });
 
 
-    return fixedYaml;
+    return finalYaml;
 }
 
 
@@ -513,15 +451,15 @@ async function handleGenerate() {
 
     const selectedTemplateKey = templateSelect.value;
     
-    // Dynamically fetch the selected template content
-    const templatePath = `./config-templates/${selectedTemplateKey}.yaml`;
+    // Dynamically fetch the selected template content as raw text
+    const templatePath = `./config-templates/${selectedTemplateKey}.yaml`; // Still .yaml extension for file type, but we treat it as text
     let baseTemplateContent;
     try {
         const response = await fetch(templatePath);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        baseTemplateContent = await response.text();
+        baseTemplateContent = await response.text(); // Read as plain text
     } catch (error) {
         console.error('Error fetching template:', error);
         showMessage(`خطا در بارگذاری تمپلت: ${error.message}`, 'error');
@@ -542,36 +480,24 @@ async function handleGenerate() {
     const textAreaContent = wgConfigInput.value.trim();
     const uploadedFiles = uploadedFilesContent;
 
-    // --- Input Detection and Parsing ---
-    let parsedFromMihomo = false;
+    // Process all input (textarea and uploaded files) as raw WireGuard configs/URIs
+    const processRawBlocks = (content) => {
+        if (!content.trim()) return;
 
-    // First, try parsing combined content (textarea + uploaded files) as a single Mihomo/Hiddify config
-    // This covers cases where a user uploads or pastes a full Mihomo config
-    const combinedInputForMihomoParse = textAreaContent + '\n' + uploadedFiles.join('\n');
-    const mihomoParsedFromCombined = parseMihomoConfig(combinedInputForMihomoParse);
+        const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
+        blocks.forEach(block => {
+            const parsed = parseWireGuardConfigBlockOrUri(block.trim());
+            if (parsed) {
+                allWgConfigs.push(parsed);
+            }
+        });
+    };
 
-    if (mihomoParsedFromCombined && mihomoParsedFromCombined.length > 0) {
-        allWgConfigs = mihomoParsedFromCombined;
-        parsedFromMihomo = true;
-    } else {
-        // If combined content didn't yield Mihomo configs, try parsing individual blocks
-        // This handles cases where user pastes multiple raw WG configs or URIs, or uploads separate WG files.
-        const processRawBlocks = (content) => {
-            const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
-            blocks.forEach(block => {
-                const parsed = parseWireGuardConfigBlockOrUri(block.trim());
-                if (parsed) {
-                    allWgConfigs.push(parsed);
-                }
-            });
-        };
-
-        if (textAreaContent) {
-            processRawBlocks(textAreaContent);
-        }
-        for (const fileContent of uploadedFiles) {
-            processRawBlocks(fileContent);
-        }
+    if (textAreaContent) {
+        processRawBlocks(textAreaContent);
+    }
+    for (const fileContent of uploadedFiles) {
+        processRawBlocks(fileContent);
     }
 
     if (allWgConfigs.length === 0) {
@@ -583,13 +509,11 @@ async function handleGenerate() {
     const usedNames = new Set();
     allWgConfigs.forEach((config, index) => {
         let baseName = config.name.trim();
-        // Check if the name is empty, or contains generic terms like "WG Proxy" or "Wireguard"
         if (!baseName || baseName.toLowerCase().includes('wg proxy') || baseName.toLowerCase().includes('wireguard')) {
-            // Try to use server IP as a base for more specific naming if available
             if (config.server) {
-                baseName = `WG-${config.server.replace(/\./g, '-')}`; // e.g., WG-188-114-99-59
+                baseName = `WG-${config.server.replace(/\./g, '-')}`;
             } else {
-                baseName = "WG Proxy"; // Fallback if no server IP
+                baseName = "WG Proxy";
             }
         }
 
@@ -603,7 +527,6 @@ async function handleGenerate() {
         usedNames.add(currentName);
     });
 
-
     const mihomoProxies = [];
     const proxyNames = [];
 
@@ -613,29 +536,11 @@ async function handleGenerate() {
         proxyNames.push(mihomoProxy.name);
     });
 
-    // Parse the selected base template
-    let mihomoConfig = jsyaml.load(baseTemplateContent);
-
-    // Insert generated proxies into the template's 'proxies' section
-    mihomoConfig.proxies = mihomoProxies;
-
-    // Update 'proxy-groups' with the list of generated proxy names
-    if (mihomoConfig['proxy-groups'] && Array.isArray(mihomoConfig['proxy-groups'])) {
-        mihomoConfig['proxy-groups'].forEach(group => {
-            if (group.name === "دستی 🤏🏻" || group.name === "خودکار (بهترین پینگ) 🤖") {
-                group.proxies = proxyNames; // Directly assign the array of proxy names
-            }
-        });
-    }
-
     try {
-        // Convert JS object to YAML string
-        let yamlString = jsyaml.dump(mihomoConfig, { indent: 2, lineWidth: -1 }); // lineWidth: -1 for no line wrapping
-        
-        // Apply post-processing to fix quoting issues
-        yamlString = fixYamlQuoting(yamlString);
+        // Process the template text by replacing placeholders
+        const finalYamlContent = processTemplateText(baseTemplateContent, mihomoProxies, proxyNames);
 
-        downloadFile(outputFileName, yamlString);
+        downloadFile(outputFileName, finalYamlContent);
         showMessage('فایل کانفیگ با موفقیت تولید و دانلود شد!', 'success');
     } catch (error) {
         console.error('Error generating YAML:', error);
