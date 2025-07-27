@@ -13,26 +13,95 @@
     <!-- js-yaml for YAML conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
-        /* CSS styles for the application */
+        /* CSS Variables for theming */
+        :root {
+            /* Light Theme Body Background */
+            --body-bg-image-light: url('background.jpg'); /* Futuristic City */
+            --body-bg-gradient-light: linear-gradient(to right top, #a7f3d0, #fde68a); /* Light mint to yellow overlay */
+
+            /* Dark Theme Body Background */
+            --body-bg-image-dark: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWIyczFtazZmcW9sb2t0NHJzdW5mMzVmYWY1d21venJrdWNhMDE4NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LoNF8cgrrwYju5DxQL/giphy.gif'); /* Starry Night GIF */
+            --body-bg-gradient-dark: linear-gradient(to right top, #1a202c, #2d3748);   /* Dark charcoal to dark gray overlay */
+
+            /* Container Background (Futuristic City with Blue Overlay) */
+            --container-bg-image: url('background.jpg'); /* Futuristic City */
+            --container-bg-gradient: linear-gradient(to right, #3b82f6, #60a5fa); /* Blue gradient overlay */
+
+            /* Text and Input Colors (adjusted for better contrast on images) */
+            --text-color: #f8fafc; /* Light text */
+            --label-color: #e2e8f0; /* Slightly darker light text */
+            --input-bg: rgba(255, 255, 255, 0.25);
+            --input-text: #ffffff;
+            --input-placeholder: #a3b1c2;
+            --input-focus-bg: rgba(255, 255, 255, 0.35);
+            --file-button-bg: #1e40af;
+            --file-button-hover-bg: #2563eb;
+            --main-button-start: #2563eb;
+            --main-button-end: #3b82f6;
+            --message-success-bg: rgba(134, 239, 172, 0.2);
+            --message-success-text: #d1fae5;
+            --message-error-bg: rgba(252, 165, 165, 0.2);
+            --message-error-text: #fee2e2;
+            --select-option-bg: #1a202c; /* Dark neutral for options */
+            --select-option-text: #ffffff;
+        }
+
+        /* Dark Theme overrides for text and input colors */
+        body[data-theme='dark'] {
+            --text-color: #e2e8f0; /* Lighter text */
+            --label-color: #cbd5e1; /* Even lighter light text */
+            --input-bg: rgba(0, 0, 0, 0.3);
+            --input-text: #e2e8f0;
+            --input-placeholder: #a0aec0;
+            --input-focus-bg: rgba(0, 0, 0, 0.4);
+            --file-button-bg: #4a5568; /* Darker gray */
+            --file-button-hover-bg: #2d3748;
+            --main-button-start: #4a5568;
+            --main-button-end: #2d3748;
+            --select-option-bg: #2d3748; /* Even darker neutral for options */
+            --select-option-text: #e2e8f0;
+        }
+
+        /* General styles using CSS variables */
         body {
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* Keep background fixed when scrolling */
             font-family: 'Vazirmatn', sans-serif;
-            background: linear-gradient(to right top, #3b82f6, #1d4ed8); /* More vibrant blue gradient background */
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            color: #f8fafc; /* Light text color */
+            color: var(--text-color);
+            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out, color 0.5s ease-in-out;
         }
+        body[data-theme='light'] {
+            background-image: var(--body-bg-image-light);
+            background-color: var(--body-bg-gradient-light);
+            background-blend-mode: multiply; /* Blend image with gradient */
+        }
+        body[data-theme='dark'] {
+            background-image: var(--body-bg-image-dark);
+            background-color: var(--body-bg-gradient-dark);
+            background-blend-mode: multiply; /* Blend image with gradient */
+        }
+
         .container {
-            background-color: rgba(255, 255, 255, 0.15); /* Semi-transparent white */
-            backdrop-filter: blur(10px); /* Frosted glass effect */
+            background-image: var(--container-bg-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: var(--container-bg-gradient); /* As an overlay to give it the blue tint */
+            background-blend-mode: multiply; /* Blend the blue gradient with the image */
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 800px;
             border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out;
         }
         h1 {
             font-size: 2.5rem;
@@ -46,8 +115,8 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #e2e8f0; /* Slightly darker for better readability */
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for labels */
+            color: var(--label-color);
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         textarea, input[type="text"], input[type="number"], select {
             width: 100%;
@@ -55,27 +124,39 @@
             margin-bottom: 20px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            background-color: rgba(255, 255, 255, 0.25); /* Slightly less transparent for better contrast */
-            color: #f0f9ff; /* Brighter text color for input values */
+            background-color: var(--input-bg);
+            color: var(--input-text);
             outline: none;
             transition: all 0.3s ease;
-            appearance: none; /* Remove default select arrow */
+            appearance: none;
             -webkit-appearance: none;
             -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); /* Custom arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: left 1rem center;
             background-size: 1.5em;
-            padding-left: 3rem; /* Adjust padding for arrow */
+            padding-left: 3rem;
         }
         textarea::placeholder, input::placeholder {
-            color: #a3b1c2; /* Darker placeholder for better visibility */
+            color: var(--input-placeholder);
         }
-        textarea:focus, input:focus, select:focus {
-            border-color: #3b82f6; /* More vibrant blue focus border */
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* More vibrant blue focus shadow */
-            background-color: rgba(255, 255, 255, 0.35); /* Even less transparent on focus */
+        textarea:focus, input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
+            background-color: var(--input-focus-bg);
         }
+        select {
+            color: var(--input-text);
+        }
+        select option {
+            background-color: var(--select-option-bg);
+            color: var(--select-option-text);
+            padding: 10px 15px;
+        }
+        select:focus {
+            color: var(--input-text);
+        }
+
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
@@ -97,7 +178,7 @@
             width: 100%;
             padding: 12px 15px;
             border-radius: 10px;
-            background-color: #1e40af; /* Darker, more vibrant blue */
+            background-color: var(--file-button-bg);
             color: white;
             text-align: center;
             cursor: pointer;
@@ -105,14 +186,14 @@
             box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
         }
         .file-input-wrapper .button:hover {
-            background-color: #2563eb; /* More vibrant blue on hover */
+            background-color: var(--file-button-hover-bg);
         }
         .button-primary {
             width: 100%;
             padding: 15px 20px;
             border-radius: 12px;
-            background: linear-gradient(to right, #2563eb, #3b82f6); /* More vibrant blue gradient */
-            color: white; /* Keep white for strong contrast */
+            background: linear-gradient(to right, var(--main-button-start), var(--main-button-end));
+            color: white;
             font-size: 1.125rem;
             font-weight: 700;
             border: none;
@@ -132,12 +213,12 @@
             font-weight: 500;
         }
         .message.success {
-            background-color: rgba(134, 239, 172, 0.2); /* Green tint */
-            color: #d1fae5;
+            background-color: var(--message-success-bg);
+            color: var(--message-success-text);
         }
         .message.error {
-            background-color: rgba(252, 165, 165, 0.2); /* Red tint */
-            color: #fee2e2;
+            background-color: var(--message-error-bg);
+            color: var(--message-error-text);
         }
         .grid-cols-3 {
             display: grid;
@@ -150,10 +231,66 @@
         .mt-6 {
             margin-top: 1.5rem;
         }
+
+        /* Theme Toggle Switch */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* Align to the left in RTL for visual consistency */
+            margin-bottom: 20px;
+            gap: 10px;
+            color: var(--label-color);
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 48px;
+        }
+        .theme-switch input {
+            display: none;
+        }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 2px;
+            content: "";
+            height: 20px;
+            left: 2px;
+            position: absolute;
+            width: 20px;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196f3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="theme-switch-wrapper">
+            <span>حالت شب</span>
+            <label class="theme-switch" for="themeToggle">
+                <input type="checkbox" id="themeToggle">
+                <div class="slider"></div>
+            </label>
+            <span>حالت روز</span>
+        </div>
+
         <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
         <div class="mb-4">

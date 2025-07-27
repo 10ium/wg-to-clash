@@ -3,7 +3,7 @@
 // Mapping for country codes to emojis
 const countryEmojiMap = {
     "US": "🇺🇸", "DE": "🇩🇪", "NL": "🇳🇱", "CA": "🇨🇦", "GB": "🇬🇧", "FR": "🇫🇷",
-    "AU": "🇦🇺", "JP": "🇯🇵", "SG": "🇸🇬", "SE": "🇸🇪", "CH": "🇨🇭", "FI": "🇫🇮",
+    "AU": "🇦🇺", "JP": "🇯🇵", "SG": "🇸🇬", "SE": "🇸🇸", "CH": "🇨🇭", "FI": "🇫🇮",
     "NO": "🇳🇴", "DK": "🇩🇰", "BE": "🇧🇪", "AT": "🇦🇹", "ES": "🇪🇸", "IT": "🇮🇹",
     "PL": "🇵🇱", "CZ": "🇨🇿", "IE": "🇮🇪", "NZ": "🇳🇿", "KR": "🇰🇷", "HK": "🇭🇰",
     "TW": "🇹🇼", "IN": "🇮🇳", "BR": "🇧🇷", "MX": "🇲🇽", "ZA": "🇿🇦", "AE": "🇦🇪",
@@ -22,8 +22,62 @@ const templateSelect = document.getElementById('templateSelect');
 const outputFileNameInput = document.getElementById('outputFileName');
 const generateBtn = document.getElementById('generateBtn');
 const messageDiv = document.getElementById('message');
+const themeToggle = document.getElementById('themeToggle'); // New theme toggle element
 
 let uploadedFilesContent = [];
+
+// --- Theme Management ---
+/**
+ * Sets the theme (light or dark) on the body element.
+ * @param {string} theme - 'light' or 'dark'.
+ */
+function setTheme(theme) {
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme); // Save preference
+    themeToggle.checked = (theme === 'dark'); // Update toggle state
+}
+
+/**
+ * Detects the current time in Tehran and sets the theme accordingly.
+ * Day: 6 AM to 6 PM (18:00). Night: otherwise.
+ */
+function autoSetThemeByTehranTime() {
+    const now = new Date();
+    // Get current hour in Tehran timezone
+    const tehranTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric',
+        hourCycle: 'h23',
+        timeZone: 'Asia/Tehran'
+    }).format(now);
+    const hour = parseInt(tehranTime, 10);
+
+    if (hour >= 6 && hour < 18) { // 6 AM to 5:59 PM is day
+        setTheme('light');
+    } else { // 6 PM to 5:59 AM is night
+        setTheme('dark');
+    }
+}
+
+// Initialize theme on load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        setTheme(savedTheme); // Use saved theme
+    } else {
+        autoSetThemeByTehranTime(); // Auto-detect if no saved theme
+    }
+});
+
+// Event listener for theme toggle
+themeToggle.addEventListener('change', () => {
+    if (themeToggle.checked) {
+        setTheme('dark');
+    } else {
+        setTheme('light');
+    }
+});
+
+// --- Existing Logic ---
 
 // Event listener for file input
 wgConfigFile.addEventListener('change', (event) => {
@@ -152,7 +206,7 @@ function parseWireGuardConfigBlockOrUri(input) {
         }
 
         const [server, port] = wgConfig.Endpoint.split(':');
-        const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIPs.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
+        const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIps.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
         const dns = wgConfig.DNS ? wgConfig.DNS.split(',').map(d => d.trim()) : [];
         const addresses = wgConfig.Address.split(',').map(a => a.trim());
         let ipv4 = '';
@@ -396,6 +450,63 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 }
 
 /**
+ * Post-processes the generated YAML string to ensure problematic strings are quoted and aliases are correctly formatted.
+ * This is a workaround for js-yaml's default dump behavior.
+ * @param {string} yamlString - The raw YAML string.
+ * @returns {string} The fixed YAML string with necessary quotes and aliases.
+ */
+function fixYamlQuotingAndAliases(yamlString) {
+    let fixedYaml = yamlString;
+
+    // Regex to add quotes to specific unquoted strings in fake-ip-filter
+    fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(time\.\*\.com|ntp\.\*\.com)(\2)(\s*)/g, (match, indent, quote, domain, endQuote, trailingSpace) => {
+        return `${indent}'${domain}'${trailingSpace}`;
+    });
+
+    // Regex to add quotes to dns-hijack entries if they are unquoted
+    fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(any:53|tcp:\/\/any:53)(\2)(\s*)/g, (match, indent, quote, value, endQuote, trailingSpace) => {
+        return `${indent}'${value}'${trailingSpace}`;
+    });
+
+    // Regex to add quotes to IP addresses in nameserver lists if they are unquoted
+    fixedYaml = fixedYaml.replace(/(\s*-\s*)(?!['"])((?:\d{1,3}\.){3}\d{1,3}|\[?[\da-fA-F:]+\]?)(?=\s*$|\s*#)/gm, (match, indent, ip) => {
+        return `${indent}'${ip}'`;
+    });
+
+    // Regex to add quotes to URLs in nameserver lists and rule-providers.url if they are unquoted
+    fixedYaml = fixedYaml.replace(/((?:\s*-\s*)|(?:url:\s*))(['"]?)(https?:\/\/[^\s]+|tls:\/\/[^\s]+)(\2)(\s*)/g, (match, prefix, quote, url, endQuote, trailingSpace) => {
+        return `${prefix}'${url}'${trailingSpace}`;
+    });
+
+    // --- Alias Fixing ---
+    // Step 1: Find the 'دستی 🤏🏻' group's proxies list and add the anchor.
+    // This regex looks for the line `  proxies:` within the `دستی 🤏🏻` group.
+    // It captures the content *before* the proxies list to preserve indentation.
+    // We assume the proxies list is already correctly formatted by jsyaml.dump.
+    // Ensure it matches the exact structure of the 'proxies:' line for the 'دستی 🤏🏻' group
+    const manualGroupRegex = /(\s*-\s*name:\s*"دستی 🤏🏻"\s*\n(?:(?!\s+proxies:)\s+.*\n)*)(\s+proxies:)\s*(\n(?:\s+-.*\n)+)/;
+    fixedYaml = fixedYaml.replace(manualGroupRegex, (match, groupHeader, proxiesKey, proxiesList) => {
+        // Add the anchor to the proxies list.
+        // We need to ensure the list content is properly indented after the anchor.
+        const indentedProxiesList = proxiesList.split('\n').map((line, index) => {
+            if (index === 0) return line; // First line already has correct indent from regex capture
+            return line.replace(/^\s+/, '      '); // Re-indent if necessary, assuming 6 spaces for list items
+        }).join('\n');
+        
+        return `${groupHeader}${proxiesKey} &ref_0${proxiesList}`;
+    });
+
+    // Step 2: Find the 'خودکار (بهترین پینگ) 🤖' group and replace its proxies with the alias.
+    // This regex looks for the 'خودکار (بهترین پینگ) 🤖' group and its 'proxies:' key,
+    // and then matches the entire list that follows (either inline or block style).
+    const autoGroupRegex = /(\s*-\s*name:\s*"خودکار \(بهترین پینگ\) 🤖"\s*\n(?:(?!\s+proxies:)\s+.*\n)*\s+proxies:)\s*(?:\[[^\]]*\]|\n(?:\s+-.*\n)+)/;
+    fixedYaml = fixedYaml.replace(autoGroupRegex, `$1 *ref_0`);
+
+    return fixedYaml;
+}
+
+
+/**
  * Main function to handle generation and download.
  */
 async function handleGenerate() {
@@ -403,7 +514,7 @@ async function handleGenerate() {
     const jmin = parseInt(jminInput.value, 10);
     const jmax = parseInt(jmaxInput.value, 10);
     const amneziaOption = amneziaOptionSelect.value;
-    let outputFileName = outputFileNameInput.value.trim(); // Get filename without extension
+    let outputFileName = outputFileNameInput.value.trim();
 
     // Automatically add .yaml extension if not present
     if (!outputFileName.endsWith('.yaml') && !outputFileName.endsWith('.yml')) {
@@ -525,18 +636,26 @@ async function handleGenerate() {
     mihomoConfig.proxies = mihomoProxies;
 
     // Update 'proxy-groups' with the list of generated proxy names
+    // This part is now handled by fixYamlQuotingAndAliases for alias syntax.
+    // We still need to ensure the proxyNames are correctly set in the JS object
+    // before dumping, even if the alias syntax is added later via regex.
     if (mihomoConfig['proxy-groups'] && Array.isArray(mihomoConfig['proxy-groups'])) {
         mihomoConfig['proxy-groups'].forEach(group => {
-            // Find groups that should contain the dynamic proxy list
             if (group.name === "دستی 🤏🏻" || group.name === "خودکار (بهترین پینگ) 🤖") {
-                group.proxies = proxyNames;
+                // Ensure these groups actually contain the proxy names.
+                // The alias will be applied as a string replacement later.
+                group.proxies = proxyNames; 
             }
         });
     }
 
     try {
         // Convert JS object to YAML string
-        const yamlString = jsyaml.dump(mihomoConfig, { indent: 2, lineWidth: -1 }); // lineWidth: -1 for no line wrapping
+        let yamlString = jsyaml.dump(mihomoConfig, { indent: 2, lineWidth: -1 }); // lineWidth: -1 for no line wrapping
+        
+        // Apply post-processing to fix quoting issues and alias formatting
+        yamlString = fixYamlQuotingAndAliases(yamlString);
+
         downloadFile(outputFileName, yamlString);
         showMessage('فایل کانفیگ با موفقیت تولید و دانلود شد!', 'success');
     } catch (error) {
@@ -559,11 +678,11 @@ function downloadFile(filename, content) {
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
     } else {
         // Fallback for older browsers
         window.open('data:text/yaml;charset=utf-8,' + encodeURIComponent(content));
     }
+    link.click(); // Trigger the download
+    document.body.removeChild(link); // Clean up the element
+    URL.revokeObjectURL(url); // Release the object URL
 }
