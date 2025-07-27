@@ -7,7 +7,7 @@ const countryEmojiMap = {
     "NO": "🇳🇴", "DK": "🇩🇰", "BE": "🇧🇪", "AT": "🇦🇹", "ES": "🇪🇸", "IT": "🇮🇹",
     "PL": "🇵🇱", "CZ": "🇨🇿", "IE": "🇮🇪", "NZ": "🇳🇿", "KR": "🇰🇷", "HK": "🇭🇰",
     "TW": "🇹🇼", "IN": "🇮🇳", "BR": "🇧🇷", "MX": "🇲🇽", "ZA": "🇿🇦", "AE": "🇦🇪",
-    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴",
+    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴", // Existing and Romania
     "AF": "🇦🇫", "AL": "🇦🇱", "DZ": "🇩🇿", "AS": "🇦🇸", "AD": "🇦🇩", "AO": "🇦🇴",
     "AI": "🇦🇮", "AQ": "🇦🇶", "AG": "🇦🇬", "AR": "🇦🇷", "AM": "🇦🇲", "AW": "🇦🇼",
     "AZ": "🇦🇿", "BS": "🇧🇸", "BH": "🇧🇭", "BD": "🇧🇩", "BB": "🇧🇧", "BY": "🇧🇾",
@@ -333,8 +333,21 @@ function parseWireGuardConfigBlockOrUri(input) {
  * @returns {object} Mihomo proxy object.
  */
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    let proxyName = wgConfig.name; // Get the generated name
+
+    // Explicitly quote the proxy name if it contains problematic characters
+    // This ensures jsyaml.dump receives an already quoted string for the name field
+    const needsQuotes = proxyName.includes(' ') ||
+                        /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(proxyName) || // Basic emoji ranges
+                        /[\u0600-\u06FF]/.test(proxyName) || // Persian characters
+                        ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(proxyName.toLowerCase().trim());
+
+    if (needsQuotes && !proxyName.startsWith('"') && !proxyName.endsWith('"')) {
+        proxyName = `"${proxyName}"`;
+    }
+
     const mihomoProxy = {
-        name: wgConfig.name,
+        name: proxyName, // Use the potentially quoted name
         type: 'wireguard',
         server: wgConfig.server,
         port: wgConfig.port,
