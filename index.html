@@ -15,25 +15,33 @@
     <style>
         /* CSS Variables for theming */
         :root {
-            /* Light Theme Body Background */
-            --body-bg-image-light: url('background.jpg'); /* Futuristic City */
-            --body-bg-gradient-light: linear-gradient(to right top, #a7f3d0, #fde68a); /* Light mint to yellow overlay */
+            /* Light Theme Body Background (color-based) */
+            --body-bg-start: #e0f2fe; /* Very light blue */
+            --body-bg-end: #ffffff;   /* White */
 
-            /* Dark Theme Body Background */
-            --body-bg-image-dark: url('https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWIyczFtazZmcW9sb2t0NHJzdW5mMzVmYWY1d21venJrdWNhMDE4NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/LoNF8cgrrwYju5DxQL/giphy.gif'); /* Starry Night GIF */
-            --body-bg-gradient-dark: linear-gradient(to right top, #1a202c, #2d3748);   /* Dark charcoal to dark gray overlay */
+            /* Dark Theme Body Background (color-based) */
+            --body-bg-dark-start: #1a202c; /* Dark charcoal */
+            --body-bg-dark-end: #2d3748;   /* Dark gray */
 
-            /* Container Background (Futuristic City with Blue Overlay) */
+            /* Container Background Image */
             --container-bg-image: url('background.jpg'); /* Futuristic City */
-            --container-bg-gradient: linear-gradient(to right, #3b82f6, #60a5fa); /* Blue gradient overlay */
+            
+            /* Container Overlay Colors (Light Theme) */
+            --container-overlay-start-light: rgba(59, 130, 246, 0.7); /* Blue with transparency */
+            --container-overlay-end-light: rgba(96, 165, 250, 0.7);   /* Lighter blue with transparency */
+            
+            /* Container Overlay Colors (Dark Theme) */
+            --container-overlay-start-dark: rgba(30, 64, 175, 0.8); /* Darker blue with more transparency */
+            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);   /* Blue with more transparency */
 
-            /* Text and Input Colors (adjusted for better contrast on images) */
+
+            /* Text and Input Colors (Default: Light Theme, adjusted for better contrast on container background) */
             --text-color: #f8fafc; /* Light text */
             --label-color: #e2e8f0; /* Slightly darker light text */
-            --input-bg: rgba(255, 255, 255, 0.25);
-            --input-text: #ffffff;
-            --input-placeholder: #a3b1c2;
-            --input-focus-bg: rgba(255, 255, 255, 0.35);
+            --input-bg: rgba(255, 255, 255, 0.3); /* More opaque white for inputs */
+            --input-text: #ffffff; /* Pure white for input values */
+            --input-placeholder: #a3b1c2; /* Darker placeholder */
+            --input-focus-bg: rgba(255, 255, 255, 0.4); /* Even more opaque on focus */
             --file-button-bg: #1e40af;
             --file-button-hover-bg: #2563eb;
             --main-button-start: #2563eb;
@@ -43,31 +51,32 @@
             --message-error-bg: rgba(252, 165, 165, 0.2);
             --message-error-text: #fee2e2;
             --select-option-bg: #1a202c; /* Dark neutral for options */
-            --select-option-text: #ffffff;
+            --select-option-text: #ffffff; /* Pure white for option text */
         }
 
         /* Dark Theme overrides for text and input colors */
         body[data-theme='dark'] {
             --text-color: #e2e8f0; /* Lighter text */
             --label-color: #cbd5e1; /* Even lighter light text */
-            --input-bg: rgba(0, 0, 0, 0.3);
-            --input-text: #e2e8f0;
-            --input-placeholder: #a0aec0;
-            --input-focus-bg: rgba(0, 0, 0, 0.4);
+            --input-bg: rgba(0, 0, 0, 0.4); /* More opaque black for inputs */
+            --input-text: #e2e8f0; /* Light gray for input values */
+            --input-placeholder: #a0aec0; /* Lighter placeholder */
+            --input-focus-bg: rgba(0, 0, 0, 0.5); /* Even more opaque on focus */
             --file-button-bg: #4a5568; /* Darker gray */
             --file-button-hover-bg: #2d3748;
             --main-button-start: #4a5568;
             --main-button-end: #2d3748;
             --select-option-bg: #2d3748; /* Even darker neutral for options */
-            --select-option-text: #e2e8f0;
+            --select-option-text: #e2e8f0; /* Light gray for option text */
         }
 
         /* General styles using CSS variables */
         body {
+            background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end));
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed; /* Keep background fixed when scrolling */
+            background-attachment: fixed;
             font-family: 'Vazirmatn', sans-serif;
             min-height: 100vh;
             display: flex;
@@ -75,34 +84,46 @@
             align-items: center;
             padding: 20px;
             color: var(--text-color);
-            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out, color 0.5s ease-in-out;
+            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
         }
-        body[data-theme='light'] {
-            background-image: var(--body-bg-image-light);
-            background-color: var(--body-bg-gradient-light);
-            background-blend-mode: multiply; /* Blend image with gradient */
-        }
+        
+        /* Dark theme body background */
         body[data-theme='dark'] {
-            background-image: var(--body-bg-image-dark);
-            background-color: var(--body-bg-gradient-dark);
-            background-blend-mode: multiply; /* Blend image with gradient */
+            background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end));
         }
 
         .container {
-            background-image: var(--container-bg-image);
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-color: var(--container-bg-gradient); /* As an overlay to give it the blue tint */
-            background-blend-mode: multiply; /* Blend the blue gradient with the image */
             border-radius: 20px;
             padding: 30px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 800px;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: background-image 0.5s ease-in-out, background-color 0.5s ease-in-out;
+            transition: background 0.5s ease-in-out;
         }
+        /* Container background with dynamic overlay based on theme */
+        body[data-theme='light'] .container {
+            background: 
+                linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), 
+                var(--container-bg-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-blend-mode: multiply; /* Blend the blue gradient with the image */
+        }
+        body[data-theme='dark'] .container {
+            background: 
+                linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), 
+                var(--container-bg-image);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-blend-mode: multiply; /* Blend the blue gradient with the image */
+        }
+
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
