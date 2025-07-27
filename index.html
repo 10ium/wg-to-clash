@@ -46,7 +46,8 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: #e2e8f0;
+            color: #e2e8f0; /* Slightly darker for better readability */
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow for labels */
         }
         textarea, input[type="text"], input[type="number"], select {
             width: 100%;
@@ -54,8 +55,8 @@
             margin-bottom: 20px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            background-color: rgba(255, 255, 255, 0.2);
-            color: #fff;
+            background-color: rgba(255, 255, 255, 0.25); /* Slightly less transparent for better contrast */
+            color: #f0f9ff; /* Brighter text color for input values */
             outline: none;
             transition: all 0.3s ease;
             appearance: none; /* Remove default select arrow */
@@ -68,12 +69,12 @@
             padding-left: 3rem; /* Adjust padding for arrow */
         }
         textarea::placeholder, input::placeholder {
-            color: #cbd5e1;
+            color: #a3b1c2; /* Darker placeholder for better visibility */
         }
         textarea:focus, input:focus, select:focus {
             border-color: #3b82f6; /* More vibrant blue focus border */
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* More vibrant blue focus shadow */
-            background-color: rgba(255, 255, 255, 0.3);
+            background-color: rgba(255, 255, 255, 0.35); /* Even less transparent on focus */
         }
         .file-input-wrapper {
             position: relative;
@@ -111,7 +112,7 @@
             padding: 15px 20px;
             border-radius: 12px;
             background: linear-gradient(to right, #2563eb, #3b82f6); /* More vibrant blue gradient */
-            color: white;
+            color: white; /* Keep white for strong contrast */
             font-size: 1.125rem;
             font-weight: 700;
             border: none;
