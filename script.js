@@ -373,23 +373,31 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
     let finalYaml = templateText;
 
     // Convert mihomoProxies array to YAML string with correct indentation
-    // We need to dump each proxy separately and then join them with proper indentation
     const proxyListYaml = mihomoProxies.map(proxy => {
-        let dumpedProxy = jsyaml.dump(proxy, { indent: 2, lineWidth: -1 });
-        // Add 2 spaces indentation for each line of the proxy object to align under "proxies:"
-        return dumpedProxy.split('\n').map(line => `  ${line}`).join('\n');
-    }).join('\n').trimStart(); // trimStart to remove leading empty line if any
+        // Dump each proxy object. We want it to be a block that starts with '- '
+        // jsyaml.dump adds a leading newline if not careful, so trim it.
+        let dumpedProxy = jsyaml.dump(proxy, { indent: 2, lineWidth: -1 }).trim();
+        // Add 2 spaces indentation for each line of the proxy object,
+        // then prepend '- ' to the first line and 4 spaces to subsequent lines
+        // to align under "proxies:"
+        return dumpedProxy.split('\n').map((line, index) => {
+            if (index === 0) {
+                return `  - ${line}`; // Add '- ' for the first line of each proxy
+            }
+            return `    ${line}`; // Add 4 spaces for subsequent lines
+        }).join('\n');
+    }).join('\n'); // Join individual proxy YAML blocks with a newline
 
     // Ensure proxy names in proxy groups are quoted if they contain spaces or emojis
     const quotedProxyNames = proxyNames.map(name => {
         // Regex to check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
-        const needsQuotes = name.includes(' ') || 
+        const needsQuotes = name.includes(' ') ||
                             /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
                             /[\u0600-\u06FF]/.test(name) || // Persian characters
                             ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase());
         return needsQuotes ? `"${name}"` : name;
     });
-    const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n');
+    const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n'); // 6 spaces for indentation
 
     // Replace PROXIES placeholder
     finalYaml = finalYaml.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyListYaml);
@@ -416,12 +424,12 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
     // Ensure group names with emojis or special characters are quoted, if not already.
     // This targets only the "name:" key directly, to avoid accidental quoting of other values.
     finalYaml = finalYaml.replace(/(name: )([\p{L}\p{N}\p{S}\p{P}\s]+)/gu, (match, prefix, name) => {
-        if (!name.startsWith('"')) { // Only add quotes if not already quoted
+        if (!name.startsWith('"') && !name.endsWith('"')) { // Only add quotes if not already quoted (both start and end)
             // Check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
-            const hasSpecialChars = name.includes(' ') || 
+            const hasSpecialChars = name.includes(' ') ||
                                     /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
                                     /[\u0600-\u06FF]/.test(name) || // Persian characters
-                                    ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase()); // Problematic keywords
+                                    ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase().trim()); // Problematic keywords, trim name before check
             if (hasSpecialChars) {
                 return `${prefix}"${name.trim()}"`;
             }
