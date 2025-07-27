@@ -303,7 +303,8 @@ function parseMihomoConfig(yamlOrJsonText) {
         } else if (config && config.outbounds && Array.isArray(config.outbounds)) { // For Hiddify-like JSON
             configList = config.outbounds;
         } else {
-            return null; // Not a valid Mihomo/Hiddify config or no relevant lists
+            // It might be valid YAML but not a Mihomo config with proxies/outbounds
+            return null; 
         }
 
         const parsedConfigs = [];
@@ -473,13 +474,17 @@ function fixYamlQuoting(yamlString) {
     });
     
     // Ensure group names with emojis or special characters are quoted, if not already.
-    // This is a common issue with js-yaml when dumping strings that might be interpreted as booleans or numbers.
-    // Also, ensures consistency.
+    // This uses a regex with unicode property escapes (`\p{...}` and `u` flag) for emojis and Persian characters.
     fixedYaml = fixedYaml.replace(/name: ([\p{L}\p{N}\p{S}\p{P}\s]+)/gu, (match, name) => {
         // Only quote if it's not already quoted and contains special chars or is a known problematic string
         if (!name.startsWith("'") && !name.startsWith('"')) {
             // Check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off'
-            if (name.includes(' ') || name.match(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u) || ['true', 'false', 'on', 'off', 'yes', 'no'].includes(name.toLowerCase())) {
+            // \p{Emoji} and \p{Extended_Pictographic} can also be used for better emoji matching
+            const hasSpecialChars = name.includes(' ') || 
+                                    /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
+                                    /[\u0600-\u06FF]/.test(name) || // Persian characters
+                                    ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase()); // Problematic keywords
+            if (hasSpecialChars) {
                 return `name: "${name.trim()}"`;
             }
         }
@@ -540,37 +545,34 @@ async function handleGenerate() {
     // --- Input Detection and Parsing ---
     let parsedFromMihomo = false;
 
-    // Try parsing as Mihomo/Hiddify YAML/JSON first
-    const combinedContent = textAreaContent + '\n' + uploadedFiles.join('\n');
-    const mihomoParsed = parseMihomoConfig(combinedContent);
-    if (mihomoParsed !== null && mihomoParsed.length > 0) {
-        allWgConfigs = mihomoParsed;
+    // First, try parsing combined content (textarea + uploaded files) as a single Mihomo/Hiddify config
+    // This covers cases where a user uploads or pastes a full Mihomo config
+    const combinedInputForMihomoParse = textAreaContent + '\n' + uploadedFiles.join('\n');
+    const mihomoParsedFromCombined = parseMihomoConfig(combinedInputForMihomoParse);
+
+    if (mihomoParsedFromCombined && mihomoParsedFromCombined.length > 0) {
+        allWgConfigs = mihomoParsedFromCombined;
         parsedFromMihomo = true;
-    }
-
-    // If not parsed from Mihomo/Hiddify, or no configs found there, try parsing as raw WG configs/URIs
-    if (!parsedFromMihomo) {
-        // Process text area input as raw WG configs/URIs
-        const blocks = textAreaContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
-        blocks.forEach(block => {
-            const parsed = parseWireGuardConfigBlockOrUri(block.trim());
-            if (parsed) {
-                allWgConfigs.push(parsed);
-            }
-        });
-
-        // Process uploaded files content as raw WG configs/URIs
-        for (const fileContent of uploadedFiles) {
-            const blocks = fileContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
+    } else {
+        // If combined content didn't yield Mihomo configs, try parsing individual blocks
+        // This handles cases where user pastes multiple raw WG configs or URIs, or uploads separate WG files.
+        const processRawBlocks = (content) => {
+            const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
             blocks.forEach(block => {
                 const parsed = parseWireGuardConfigBlockOrUri(block.trim());
                 if (parsed) {
                     allWgConfigs.push(parsed);
                 }
             });
+        };
+
+        if (textAreaContent) {
+            processRawBlocks(textAreaContent);
+        }
+        for (const fileContent of uploadedFiles) {
+            processRawBlocks(fileContent);
         }
     }
-
 
     if (allWgConfigs.length === 0) {
         showMessage('هیچ کانفیگ WireGuard معتبری یافت نشد. لطفاً ورودی را بررسی کنید.', 'error');
