@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مبدل کانفیگ WireGuard به Mihomo</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vazirmatn Font from Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- js-yaml for YAML conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <style>
+        /* CSS styles for the application */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background: linear-gradient(to right top, #3b82f6, #1d4ed8); /* More vibrant blue gradient background */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #f8fafc; /* Light text color */
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.15); /* Semi-transparent white */
+            backdrop-filter: blur(10px); /* Frosted glass effect */
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #e2e8f0;
+        }
+        textarea, input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            outline: none;
+            transition: all 0.3s ease;
+            appearance: none; /* Remove default select arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: left 1rem center;
+            background-size: 1.5em;
+            padding-left: 3rem; /* Adjust padding for arrow */
+        }
+        textarea::placeholder, input::placeholder {
+            color: #cbd5e1;
+        }
+        textarea:focus, input:focus, select:focus {
+            border-color: #3b82f6; /* More vibrant blue focus border */
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* More vibrant blue focus shadow */
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+        .file-input-wrapper .button {
+            display: block;
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            background-color: #1e40af; /* Darker, more vibrant blue */
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
+        }
+        .file-input-wrapper .button:hover {
+            background-color: #2563eb; /* More vibrant blue on hover */
+        }
+        .button-primary {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 12px;
+            background: linear-gradient(to right, #2563eb, #3b82f6); /* More vibrant blue gradient */
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+        .button-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
+        }
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .message.success {
+            background-color: rgba(134, 239, 172, 0.2); /* Green tint */
+            color: #d1fae5;
+        }
+        .message.error {
+            background-color: rgba(252, 165, 165, 0.2); /* Red tint */
+            color: #fee2e2;
+        }
+        .grid-cols-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .mb-4 {
+            margin-bottom: 1rem;
+        }
+        .mt-6 {
+            margin-top: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
+
+        <div class="mb-4">
+            <label for="wgConfigInput">کانفیگ WireGuard (متنی)</label>
+            <textarea id="wgConfigInput" rows="10" placeholder="کانفیگ‌های WireGuard (متنی، URI، یا Mihomo/Hiddify YAML/JSON) را اینجا وارد کنید..."></textarea>
+        </div>
+
+        <div class="mb-4">
+            <label for="wgConfigFile">یا فایل‌های کانفیگ WireGuard را آپلود کنید</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
+                <div class="button">انتخاب فایل‌ها</div>
+            </div>
+            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
+        </div>
+
+        <div class="grid-cols-3 mb-4">
+            <div>
+                <label for="jcInput">jc</label>
+                <input type="number" id="jcInput" value="4" min="0">
+            </div>
+            <div>
+                <label for="jminInput">jmin</label>
+                <input type="number" id="jminInput" value="40" min="0">
+            </div>
+            <div>
+                <label for="jmaxInput">jmax</label>
+                <input type="number" id="jmaxInput" value="250" min="0">
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
+            <select id="amneziaOptionSelect">
+                <option value="use-ui-values">استفاده از مقادیر وارد شده (پیش‌فرض)</option>
+                <option value="use-config-values">استفاده از مقادیر کانفیگ</option>
+                <option value="no-amnezia">استفاده نکردن</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="templateSelect">انتخاب تمپلت قوانین</label>
+            <select id="templateSelect">
+                <option value="full-rule-template">قوانین کامل</option>
+                <option value="iran-template">قوانین ایران</option>
+                <option value="no-rule-template">بدون قوانین</option>
+            </select>
+        </div>
+
+        <div class="mb-6">
+            <label for="outputFileName">نام فایل خروجی</label>
+            <input type="text" id="outputFileName" value="mihomo_config">
+        </div>
+
+        <button id="generateBtn" class="button-primary">تبدیل و دانلود</button>
+
+        <div id="message" class="message hidden"></div>
+    </div>
+
+    <!-- Link to the external JavaScript file -->
+    <script type="module" src="script.js"></script>
+</body>
+</html>
