@@ -206,7 +206,7 @@ function parseWireGuardConfigBlockOrUri(input) {
         }
 
         const [server, port] = wgConfig.Endpoint.split(':');
-        const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIps.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
+        const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIPs.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
         const dns = wgConfig.DNS ? wgConfig.DNS.split(',').map(d => d.trim()) : [];
         const addresses = wgConfig.Address.split(',').map(a => a.trim());
         let ipv4 = '';
@@ -458,51 +458,87 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 function fixYamlQuotingAndAliases(yamlString) {
     let fixedYaml = yamlString;
 
-    // Regex to add quotes to specific unquoted strings in fake-ip-filter
+    // Existing quoting fixes
     fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(time\.\*\.com|ntp\.\*\.com)(\2)(\s*)/g, (match, indent, quote, domain, endQuote, trailingSpace) => {
         return `${indent}'${domain}'${trailingSpace}`;
     });
-
-    // Regex to add quotes to dns-hijack entries if they are unquoted
     fixedYaml = fixedYaml.replace(/(\s*-\s*)(['"]?)(any:53|tcp:\/\/any:53)(\2)(\s*)/g, (match, indent, quote, value, endQuote, trailingSpace) => {
         return `${indent}'${value}'${trailingSpace}`;
     });
-
-    // Regex to add quotes to IP addresses in nameserver lists if they are unquoted
     fixedYaml = fixedYaml.replace(/(\s*-\s*)(?!['"])((?:\d{1,3}\.){3}\d{1,3}|\[?[\da-fA-F:]+\]?)(?=\s*$|\s*#)/gm, (match, indent, ip) => {
         return `${indent}'${ip}'`;
     });
-
-    // Regex to add quotes to URLs in nameserver lists and rule-providers.url if they are unquoted
     fixedYaml = fixedYaml.replace(/((?:\s*-\s*)|(?:url:\s*))(['"]?)(https?:\/\/[^\s]+|tls:\/\/[^\s]+)(\2)(\s*)/g, (match, prefix, quote, url, endQuote, trailingSpace) => {
         return `${prefix}'${url}'${trailingSpace}`;
     });
 
-    // --- Alias Fixing ---
-    // Step 1: Find the 'دستی 🤏🏻' group's proxies list and add the anchor.
-    // This regex looks for the line `  proxies:` within the `دستی 🤏🏻` group.
-    // It captures the content *before* the proxies list to preserve indentation.
-    // We assume the proxies list is already correctly formatted by jsyaml.dump.
-    // Ensure it matches the exact structure of the 'proxies:' line for the 'دستی 🤏🏻' group
-    const manualGroupRegex = /(\s*-\s*name:\s*"دستی 🤏🏻"\s*\n(?:(?!\s+proxies:)\s+.*\n)*)(\s+proxies:)\s*(\n(?:\s+-.*\n)+)/;
-    fixedYaml = fixedYaml.replace(manualGroupRegex, (match, groupHeader, proxiesKey, proxiesList) => {
-        // Add the anchor to the proxies list.
-        // We need to ensure the list content is properly indented after the anchor.
-        const indentedProxiesList = proxiesList.split('\n').map((line, index) => {
-            if (index === 0) return line; // First line already has correct indent from regex capture
-            return line.replace(/^\s+/, '      '); // Re-indent if necessary, assuming 6 spaces for list items
-        }).join('\n');
+    // --- Alias Injection using line-by-line processing ---
+    let lines = fixedYaml.split('\n');
+    let manualGroupProxiesLine = -1;
+    let autoGroupProxiesLine = -1;
+
+    // Find the 'proxies:' line for "دستی 🤏🏻" and "خودکار (بهترین پینگ) 🤖"
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.includes('name: "دستی 🤏🏻"')) {
+            // Found manual group, now look for its proxies
+            for (let j = i + 1; j < lines.length; j++) {
+                if (lines[j].includes('proxies:')) {
+                    manualGroupProxiesLine = j;
+                    break;
+                }
+                // Stop if we hit another group or top-level key (less indentation)
+                const currentIndent = lines[j].match(/^\s*/)[0].length;
+                const groupIndent = line.match(/^\s*/)[0].length;
+                if (currentIndent <= groupIndent && lines[j].trim() !== '') break;
+            }
+        } else if (line.includes('name: "خودکار (بهترین پینگ) 🤖"')) {
+            // Found auto group, now look for its proxies
+            for (let j = i + 1; j < lines.length; j++) {
+                if (lines[j].includes('proxies:')) {
+                    autoGroupProxiesLine = j;
+                    break;
+                }
+                // Stop if we hit another group or top-level key (less indentation)
+                const currentIndent = lines[j].match(/^\s*/)[0].length;
+                const groupIndent = line.match(/^\s*/)[0].length;
+                if (currentIndent <= groupIndent && lines[j].trim() !== '') break;
+            }
+        }
+    }
+
+    if (manualGroupProxiesLine !== -1 && autoGroupProxiesLine !== -1) {
+        // 1. Add anchor to 'دستی 🤏🏻' proxies line
+        lines[manualGroupProxiesLine] = lines[manualGroupProxiesLine].replace(/(\s*proxies:)(\s*)/, `$1 &ref_0$2`);
+
+        // 2. Replace 'خودکار (بهترین پینگ) 🤖' proxies content with alias
+        // Find the start and end of the 'خودکار' proxies list
+        const autoProxiesStartLineContent = lines[autoGroupProxiesLine];
+        const autoProxiesIndent = autoProxiesStartLineContent.match(/^\s*/)[0].length;
         
-        return `${groupHeader}${proxiesKey} &ref_0${proxiesList}`;
-    });
+        let autoProxiesListEndIndex = autoGroupProxiesLine;
+        for (let i = autoGroupProxiesLine + 1; i < lines.length; i++) {
+            const currentLine = lines[i];
+            const currentIndent = currentLine.match(/^\s*/)[0].length;
+            if (currentIndent > autoProxiesIndent || currentLine.trim() === '') {
+                autoProxiesListEndIndex = i;
+            } else {
+                break;
+            }
+        }
+        
+        // Remove the old proxies list lines for 'خودکار' (from the line after 'proxies:' to the end of its list)
+        // Only splice if there are lines to remove
+        if (autoProxiesListEndIndex > autoGroupProxiesLine) {
+            lines.splice(autoGroupProxiesLine + 1, autoProxiesListEndIndex - autoGroupProxiesLine);
+        }
+        
+        // Replace the auto proxies line with the alias
+        lines[autoGroupProxiesLine] = autoProxiesStartLineContent.replace(/(\s*proxies:)(\s*)(.*)/, `$1 *ref_0`);
+    }
 
-    // Step 2: Find the 'خودکار (بهترین پینگ) 🤖' group and replace its proxies with the alias.
-    // This regex looks for the 'خودکار (بهترین پینگ) 🤖' group and its 'proxies:' key,
-    // and then matches the entire list that follows (either inline or block style).
-    const autoGroupRegex = /(\s*-\s*name:\s*"خودکار \(بهترین پینگ\) 🤖"\s*\n(?:(?!\s+proxies:)\s+.*\n)*\s+proxies:)\s*(?:\[[^\]]*\]|\n(?:\s+-.*\n)+)/;
-    fixedYaml = fixedYaml.replace(autoGroupRegex, `$1 *ref_0`);
-
-    return fixedYaml;
+    return lines.join('\n');
 }
 
 
@@ -678,11 +714,11 @@ function downloadFile(filename, content) {
         link.setAttribute('download', filename);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     } else {
         // Fallback for older browsers
         window.open('data:text/yaml;charset=utf-8,' + encodeURIComponent(content));
     }
-    link.click(); // Trigger the download
-    document.body.removeChild(link); // Clean up the element
-    URL.revokeObjectURL(url); // Release the object URL
 }
