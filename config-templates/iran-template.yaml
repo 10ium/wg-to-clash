@@ -176,7 +176,7 @@ rule-providers:
     interval: 86400
 
 proxies:
-  # PROXIES_PLACEHOLDER # This will be replaced by the actual Mihomo proxy configs
+##_PROXIES_PLACEHOLDER_##
 
 proxy-groups:
   - name: "نوع انتخاب پروکسی 🔀"
@@ -191,7 +191,7 @@ proxy-groups:
     type: select
     icon: https://www.svgrepo.com/show/372331/cursor-hand-click.svg
     proxies:
-      # MANUAL_PROXIES_LIST_PLACEHOLDER # Will be replaced by proxy names
+##_PROXY_NAMES_LIST_PLACEHOLDER_##
   - name: "خودکار (بهترین پینگ) 🤖"
     type: url-test
     icon: https://www.svgrepo.com/show/7876/speedometer.svg
@@ -202,7 +202,7 @@ proxy-groups:
     max-failed-times: 3
     lazy: true
     proxies:
-      # AUTO_PROXIES_LIST_PLACEHOLDER # Will be replaced by proxy names
+##_PROXY_NAMES_LIST_PLACEHOLDER_##
   - name: سایتای ایرانی 🇮🇷
     type: select
     icon: https://upload.wikimedia.org/wikipedia/commons/3/36/Flag_of_Iran_%28civil%29.svg

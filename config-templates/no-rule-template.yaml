@@ -86,7 +86,7 @@ tun:
     - 'any:53'
     - 'tcp://any:53'
 proxies:
-##_PROXIES_PLACEHOLDER_## # این خط توسط اسکریپت با لیست کامل پروکسی‌های تولید شده پر خواهد شد.
+##_PROXIES_PLACEHOLDER_##
 
 proxy-groups:
   - name: "نوع انتخاب پروکسی 🔀"
@@ -101,7 +101,7 @@ proxy-groups:
     type: select
     icon: https://www.svgrepo.com/show/372331/cursor-hand-click.svg
     proxies:
-##_PROXY_NAMES_LIST_PLACEHOLDER_## # این خط توسط اسکریپت با نام پروکسی‌ها پر خواهد شد.
+##_PROXY_NAMES_LIST_PLACEHOLDER_##
   - name: "خودکار (بهترین پینگ) 🤖"
     type: url-test
     icon: https://www.svgrepo.com/show/7876/speedometer.svg
@@ -112,7 +112,7 @@ proxy-groups:
     max-failed-times: 3
     lazy: true
     proxies:
-##_PROXY_NAMES_LIST_PLACEHOLDER_## # این خط توسط اسکریپت با نام پروکسی‌ها پر خواهد شد.
+##_PROXY_NAMES_LIST_PLACEHOLDER_##
   - name: "بدون فیلترشکن 🛡️"
     type: select
     icon: https://www.svgrepo.com/show/6318/connection.svg
