@@ -409,26 +409,23 @@ async function handleGenerate() {
         showMessage('خطا در تولید YAML: ' + e.message, 'error');
     }
 }
-/**
- * Downloads a file with the given content.
- * @param {string} filename - The name of the file to download.
- * @param {string} content - The content of the file.
- */
+// -----------------------------------------------
+// Download helper
+// -----------------------------------------------
 function downloadFile(filename, content) {
-    const blob = new Blob([content], { type: 'application/yaml;charset=utf-8;' }); // تغییر نوع MIME
+    const blob = new Blob([content], { type: 'application/yaml;charset=utf-8;' });
     const link = document.createElement('a');
-    if (link.download !== undefined) { // Feature detection
+    if (typeof link.download === 'string') {
         const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', filename);
+        link.href = url;
+        link.download = filename;
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     } else {
-        // Fallback for older browsers
-        // استفاده از data URI scheme و encodeURIComponent
+        // fallback برای مرورگرهای قدیمی
         window.open('data:application/yaml;charset=utf-8,' + encodeURIComponent(content));
     }
 }
