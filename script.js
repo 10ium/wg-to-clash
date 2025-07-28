@@ -1,4 +1,3 @@
-```javascript
 // script.js
 // Mapping for country codes to emojis
 const countryEmojiMap = {
@@ -632,7 +631,7 @@ async function handleGenerate() {
  * @param {string} content - The content of the file.
  */
 function downloadFile(filename, content) {
-    const blob = new Blob([content], { type: 'text/yaml;charset=utf-8;' });
+    const blob = new Blob([content], { type: 'application/yaml;charset=utf-8;' }); // تغییر نوع MIME
     const link = document.createElement('a');
     if (link.download !== undefined) { // Feature detection
         const url = URL.createObjectURL(blob);
@@ -645,8 +644,7 @@ function downloadFile(filename, content) {
         URL.revokeObjectURL(url);
     } else {
         // Fallback for older browsers
-        window.open('data:text/yaml;charset=utf-8,' + encodeURIComponent(content));
+        // استفاده از data URI scheme و encodeURIComponent
+        window.open('data:application/yaml;charset=utf-8,' + encodeURIComponent(content));
     }
 }
-
-```
