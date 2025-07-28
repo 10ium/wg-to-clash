@@ -7,7 +7,7 @@ const countryEmojiMap = {
     "NO": "🇳🇴", "DK": "🇩🇰", "BE": "🇧🇪", "AT": "🇦🇹", "ES": "🇪🇸", "IT": "🇮🇹",
     "PL": "🇵🇱", "CZ": "🇨🇿", "IE": "🇮🇪", "NZ": "🇳🇿", "KR": "🇰🇷", "HK": "🇭🇰",
     "TW": "🇹🇼", "IN": "🇮🇳", "BR": "🇧🇷", "MX": "🇲🇽", "ZA": "🇿🇦", "AE": "🇦🇪",
-    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴", // Existing and Romania
+    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴",
     "AF": "🇦🇫", "AL": "🇦🇱", "DZ": "🇩🇿", "AS": "🇦🇸", "AD": "🇦🇩", "AO": "🇦🇴",
     "AI": "🇦🇮", "AQ": "🇦🇶", "AG": "🇦🇬", "AR": "🇦🇷", "AM": "🇦🇲", "AW": "🇦🇼",
     "AZ": "🇦🇿", "BS": "🇧🇸", "BH": "🇧🇭", "BD": "🇧🇩", "BB": "🇧🇧", "BY": "🇧🇾",
@@ -333,21 +333,12 @@ function parseWireGuardConfigBlockOrUri(input) {
  * @returns {object} Mihomo proxy object.
  */
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
-    let proxyName = wgConfig.name; // Get the generated name
-
-    // Explicitly quote the proxy name if it contains problematic characters
-    // This ensures jsyaml.dump receives an already quoted string for the name field
-    const needsQuotes = proxyName.includes(' ') ||
-                        /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(proxyName) || // Basic emoji ranges
-                        /[\u0600-\u06FF]/.test(proxyName) || // Persian characters
-                        ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(proxyName.toLowerCase().trim());
-
-    if (needsQuotes && !proxyName.startsWith('"') && !proxyName.endsWith('"')) {
-        proxyName = `"${proxyName}"`;
-    }
-
+    // IMPORTANT: Do NOT manually quote proxyName here.
+    // jsyaml.dump will handle quoting for the 'proxies' section.
+    // The 'proxyNames' array (used for proxy-groups) will be quoted separately
+    // in processTemplateText if needed.
     const mihomoProxy = {
-        name: proxyName, // Use the potentially quoted name
+        name: wgConfig.name, // Use the raw, unquoted name from wgConfig
         type: 'wireguard',
         server: wgConfig.server,
         port: wgConfig.port,
@@ -422,8 +413,7 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
 
     // Convert mihomoProxies array to YAML string with correct indentation
     const proxyListYaml = mihomoProxies.map(proxy => {
-        // Dump each proxy object. We want it to be a block that starts with '- '
-        // jsyaml.dump adds a leading newline if not careful, so trim it.
+        // Dump each proxy object. jsyaml.dump will handle quoting for the 'name' field.
         let dumpedProxy = jsyaml.dump(proxy, { indent: 2, lineWidth: -1 }).trim();
         // Add 2 spaces indentation for each line of the proxy object,
         // then prepend '- ' to the first line and 4 spaces to subsequent lines
@@ -437,12 +427,14 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
     }).join('\n'); // Join individual proxy YAML blocks with a newline
 
     // Ensure proxy names in proxy groups are quoted if they contain spaces or emojis
+    // This logic is specifically for the proxy-groups section where names are directly listed.
     const quotedProxyNames = proxyNames.map(name => {
         // Regex to check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
+        // Ensure it doesn't double quote if already quoted (though proxyNames should be unquoted here now)
         const needsQuotes = name.includes(' ') ||
                             /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
                             /[\u0600-\u06FF]/.test(name) || // Persian characters
-                            ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase());
+                            ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase().trim()); // Problematic keywords, trim name before check
         return needsQuotes ? `"${name}"` : name;
     });
     const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n'); // 6 spaces for indentation
@@ -589,7 +581,7 @@ async function handleGenerate() {
     allWgConfigs.forEach(wgConfig => {
         const mihomoProxy = convertWgToMihomo(wgConfig, jc, jmin, jmax, amneziaOption);
         mihomoProxies.push(mihomoProxy);
-        proxyNames.push(mihomoProxy.name);
+        proxyNames.push(mihomoProxy.name); // Push the raw, unquoted name here
     });
 
     try {
