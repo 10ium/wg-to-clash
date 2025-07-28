@@ -1,5 +1,5 @@
+```javascript
 // script.js
-
 // Mapping for country codes to emojis
 const countryEmojiMap = {
     "US": "🇺🇸", "DE": "🇩🇪", "NL": "🇳🇱", "CA": "🇨🇦", "GB": "🇬🇧", "FR": "🇫🇷",
@@ -44,7 +44,6 @@ const countryEmojiMap = {
     "VG": "🇻🇬", "VI": "🇻🇮", "WF": "🇼🇫", "EH": "🇪🇭", "YE": "🇾🇪", "ZM": "🇿🇲",
     "ZW": "🇿🇼"
 };
-
 // Get elements from the DOM
 const wgConfigInput = document.getElementById('wgConfigInput');
 const wgConfigFile = document.getElementById('wgConfigFile');
@@ -58,9 +57,7 @@ const outputFileNameInput = document.getElementById('outputFileName');
 const generateBtn = document.getElementById('generateBtn');
 const messageDiv = document.getElementById('message');
 const themeToggle = document.getElementById('themeToggle'); // New theme toggle element
-
 let uploadedFilesContent = [];
-
 // --- Theme Management ---
 /**
  * Sets the theme (light or dark) on the body element.
@@ -71,7 +68,6 @@ function setTheme(theme) {
     localStorage.setItem('theme', theme); // Save preference
     themeToggle.checked = (theme === 'dark'); // Update toggle state
 }
-
 /**
  * Detects the current time in Tehran and sets the theme accordingly.
  * Day: 6 AM to 6 PM (18:00). Night: otherwise.
@@ -85,14 +81,12 @@ function autoSetThemeByTehranTime() {
         timeZone: 'Asia/Tehran'
     }).format(now);
     const hour = parseInt(tehranTime, 10);
-
     if (hour >= 6 && hour < 18) { // 6 AM to 5:59 PM is day
         setTheme('light');
     } else { // 6 PM to 5:59 AM is night
         setTheme('dark');
     }
 }
-
 // Initialize theme on load
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
@@ -102,7 +96,6 @@ document.addEventListener('DOMContentLoaded', () => {
         autoSetThemeByTehranTime(); // Auto-detect if no saved theme
     }
 });
-
 // Event listener for theme toggle
 themeToggle.addEventListener('change', () => {
     if (themeToggle.checked) {
@@ -111,9 +104,7 @@ themeToggle.addEventListener('change', () => {
         setTheme('light');
     }
 });
-
 // --- Existing Logic ---
-
 // Event listener for file input
 wgConfigFile.addEventListener('change', (event) => {
     uploadedFilesContent = [];
@@ -136,10 +127,8 @@ wgConfigFile.addEventListener('change', (event) => {
         fileListDiv.textContent = 'هیچ فایلی انتخاب نشده است.';
     }
 });
-
 // Event listener for generate button
 generateBtn.addEventListener('click', handleGenerate);
-
 /**
  * Displays a message to the user.
  * @param {string} msg - The message to display.
@@ -153,7 +142,6 @@ function showMessage(msg, type) {
         messageDiv.classList.add('hidden');
     }, 5000); // Hide after 5 seconds
 }
-
 /**
  * Parses a single WireGuard configuration string or URI.
  * @param {string} input - The WireGuard config text or URI.
@@ -168,14 +156,12 @@ function parseWireGuardConfigBlockOrUri(input) {
             const server = url.hostname;
             const port = parseInt(url.port, 10);
             const name = decodeURIComponent(url.hash.substring(1)) || "WG Proxy URI"; // Remove '#'
-
             const params = new URLSearchParams(url.search);
             const address = params.get('address') ? decodeURIComponent(params.get('address')) : '';
             const publickey = params.get('publickey') ? decodeURIComponent(params.get('publickey')) : '';
             const reserved = params.get('reserved') ? decodeURIComponent(params.get('reserved')).split(',').map(Number).filter(n => !isNaN(n)) : [];
             const mtu = params.get('mtu') ? parseInt(params.get('mtu'), 10) : 1420;
             const keepalive = params.get('keepalive') ? parseInt(params.get('keepalive'), 10) : 0; // PersistentKeepalive
-
             // Split address into IPv4 and IPv6
             const addresses = address.split(',').map(a => a.trim());
             let ipv4 = '';
@@ -187,7 +173,6 @@ function parseWireGuardConfigBlockOrUri(input) {
                     ipv4 = addr;
                 }
             });
-
             return {
                 name: name,
                 privateKey: privateKey,
@@ -203,7 +188,6 @@ function parseWireGuardConfigBlockOrUri(input) {
                 persistentKeepalive: keepalive,
                 amneziaOptions: null // No Amnezia options from URI by default
             };
-
         } catch (e) {
             console.warn('Invalid WireGuard URI:', input, e);
             return null;
@@ -214,7 +198,6 @@ function parseWireGuardConfigBlockOrUri(input) {
         const wgConfig = {};
         let currentSection = '';
         let peerName = '';
-
         for (const line of lines) {
             if (line.startsWith('[Interface]')) {
                 currentSection = 'Interface';
@@ -234,12 +217,10 @@ function parseWireGuardConfigBlockOrUri(input) {
                 }
             }
         }
-
         if (!wgConfig.PrivateKey || !wgConfig.Address || !wgConfig.PublicKey || !wgConfig.Endpoint) {
             console.warn('Invalid WireGuard config block:', input);
             return null;
         }
-
         const [server, port] = wgConfig.Endpoint.split(':');
         const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIPs.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
         const dns = wgConfig.DNS ? wgConfig.DNS.split(',').map(d => d.trim()) : [];
@@ -253,7 +234,6 @@ function parseWireGuardConfigBlockOrUri(input) {
                 ipv4 = addr;
             }
         });
-
         // Extract reserved from config block if present
         let reserved = [];
         if (wgConfig.Reserved) {
@@ -264,7 +244,6 @@ function parseWireGuardConfigBlockOrUri(input) {
                 console.warn('Could not parse reserved field:', wgConfig.Reserved, e);
             }
         }
-
         // Extract AmneziaWG specific options from [Interface]
         const amneziaOptions = {
             jc: wgConfig.Jc ? parseInt(wgConfig.Jc, 10) : undefined,
@@ -279,19 +258,15 @@ function parseWireGuardConfigBlockOrUri(input) {
         };
         // Check if any Amnezia option was actually found
         const hasAmneziaOptions = Object.values(amneziaOptions).some(val => val !== undefined);
-
-
         // Generate a user-friendly name
         let name = "WG Proxy"; // Default name
         if (peerName) {
             let countryCode = '';
             let identifier = ''; // This will be the number or specific part after country
-
             // Try to match common patterns: "COUNTRY#INDEX", "COUNTRY-INDEX", "COUNTRY-FREE"
             const hashMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?#(.+)$/i); // e.g., US#16, DE-FREE#20
             const hyphenMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?-(.+)$/i); // e.g., US-16, DE-FREE-20
             const simpleCountryMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?$/i); // e.g., US, DE-FREE
-
             if (hashMatch) {
                 countryCode = hashMatch[1].toUpperCase();
                 identifier = hashMatch[2].trim();
@@ -326,7 +301,6 @@ function parseWireGuardConfigBlockOrUri(input) {
                     amneziaOptions: hasAmneziaOptions ? amneziaOptions : null
                 };
             }
-
             const emoji = countryEmojiMap[countryCode] || '';
             if (identifier) {
                 // Format as "EMOJI CC-IDENTIFIER"
@@ -337,7 +311,6 @@ function parseWireGuardConfigBlockOrUri(input) {
             }
         }
         name = name.trim(); // Final trim to remove any leading/trailing spaces
-
         return {
             name: name,
             privateKey: wgConfig.PrivateKey,
@@ -355,7 +328,6 @@ function parseWireGuardConfigBlockOrUri(input) {
         };
     }
 }
-
 /**
  * Converts a parsed WireGuard config to Mihomo proxy format.
  * @param {object} wgConfig - Parsed WireGuard config object.
@@ -383,7 +355,6 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
         mtu: wgConfig.mtu,
         'remote-dns-resolve': true,
     };
-
     if (wgConfig.ipv6) {
         mihomoProxy.ipv6 = wgConfig.ipv6;
     }
@@ -396,7 +367,6 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     if (wgConfig.persistentKeepalive) {
         mihomoProxy['persistent-keepalive'] = wgConfig.persistentKeepalive;
     }
-
     if (amneziaOption === 'use-ui-values') {
         mihomoProxy['amnezia-wg-option'] = {
             jc: jcUI,
@@ -429,10 +399,8 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
         }
     }
     // If 'no-amnezia' is selected, or 'use-config-values' but no valid config values, amnezia-wg-option is not added.
-
     return mihomoProxy;
 }
-
 /**
  * Processes the template text by replacing placeholders with generated content
  * and ensures problematic strings are quoted.
@@ -443,48 +411,93 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
  */
 function processTemplateText(templateText, mihomoProxies, proxyNames) {
     let finalYaml = templateText;
+    // --- Updated Logic for Consistent Proxy Names and Flow Style Arrays ---
+    const proxyListYamlArray = [];
+    const proxyNamesForGroups = []; // This will hold the EXACT name strings used in the proxies section
 
-    // Convert mihomoProxies array to YAML string with correct indentation
-    const proxyListYaml = mihomoProxies.map(proxy => {
-        // Dump each proxy object. jsyaml.dump will handle quoting for the 'name' field.
-        let dumpedProxy = jsyaml.dump(proxy, { indent: 2, lineWidth: -1 }).trim();
-        // Add 2 spaces indentation for each line of the proxy object,
-        // then prepend '- ' to the first line and 4 spaces to subsequent lines
-        // to align under "proxies:"
-        return dumpedProxy.split('\n').map((line, index) => {
+    mihomoProxies.forEach(proxy => {
+        // 1. Dump the proxy object to YAML with flow style for arrays
+        let dumpedProxyYaml = jsyaml.dump(proxy, {
+            indent: 2,
+            lineWidth: -1,
+            styles: {
+                '!!seq': 'flow' // Makes arrays like ['item1', 'item2']
+            },
+            noCompatMode: true // Helps prevent unnecessary quoting of simple values
+        }).trim();
+
+        // 2. Post-process to fix specific formatting if needed
+        // Ensure private-key and public-key always have '=' at the end if missing (common for base64)
+        dumpedProxyYaml = dumpedProxyYaml.replace(/^(\s*private-key:\s*)([^\s].*)$/gm, (match, keyPart, value) => {
+            // Check if value is quoted, remove quotes for processing
+            let isQuoted = (value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"));
+            let processedValue = value;
+            if (isQuoted) {
+                processedValue = value.substring(1, value.length - 1);
+            }
+            // Add '=' if missing and it looks like base64
+            if (processedValue && !processedValue.endsWith('=') && /^[A-Za-z0-9+/]*={0,2}$/.test(processedValue)) {
+                processedValue += '=';
+            }
+            // Re-apply quotes if it was originally quoted or if it now needs quoting (e.g., contains special chars)
+            if (isQuoted || /[^\w\-./]/.test(processedValue)) {
+                // Use single quotes for base64 to avoid issues with backslashes in double quotes
+                return `${keyPart}'${processedValue}'`;
+            } else {
+                 return `${keyPart}${processedValue}`;
+            }
+        });
+
+        dumpedProxyYaml = dumpedProxyYaml.replace(/^(\s*public-key:\s*)([^\s].*)$/gm, (match, keyPart, value) => {
+             // Similar logic for public-key
+            let isQuoted = (value.startsWith('"') && value.endsWith('"')) || (value.startsWith("'") && value.endsWith("'"));
+            let processedValue = value;
+            if (isQuoted) {
+                processedValue = value.substring(1, value.length - 1);
+            }
+            // Public keys might also need '=' padding, though less common
+            if (processedValue && !processedValue.endsWith('=') && /^[A-Za-z0-9+/]*={0,2}$/.test(processedValue)) {
+                processedValue += '=';
+            }
+            if (isQuoted || /[^\w\-./]/.test(processedValue)) {
+                return `${keyPart}'${processedValue}'`;
+            } else {
+                 return `${keyPart}${processedValue}`;
+            }
+        });
+
+        // 3. Extract the EXACT name line as it appears in the dumped YAML
+        // This ensures we get the name with the same quoting (or lack thereof) that js-yaml applied.
+        const nameLineMatch = dumpedProxyYaml.match(/^name:\s*(.*)$/m);
+        let extractedNameString = `"${proxy.name}"`; // Fallback, should ideally be overwritten
+        if (nameLineMatch && nameLineMatch[1]) {
+            extractedNameString = nameLineMatch[1]; // This includes potential quotes from js-yaml
+        }
+
+        // 4. Store the extracted name string for use in proxy-groups
+        proxyNamesForGroups.push(extractedNameString);
+
+        // 5. Format the full proxy block with correct indentation
+        const formattedProxyBlock = dumpedProxyYaml.split('\n').map((line, index) => {
             if (index === 0) {
                 return `  - ${line}`; // Add '- ' for the first line of each proxy
             }
             return `    ${line}`; // Add 4 spaces for subsequent lines
         }).join('\n');
-    }).join('\n'); // Join individual proxy YAML blocks with a newline
 
-    // Ensure proxy names in proxy groups are quoted if they contain spaces or problematic keywords.
-    // Emojis alone will NOT force quoting here, to match the desired output format.
-    const quotedProxyNames = proxyNames.map(name => {
-        // Check if the name contains spaces or problematic keywords (e.g., 'true', 'false')
-        const hasProblematicChars = name.includes(' ') ||
-                                    ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase().trim());
-
-        // Check if the name contains Persian characters (these usually need quoting)
-        const hasPersianChars = /[\u0600-\u06FF]/.test(name);
-
-        // Quote if it has problematic characters or Persian characters.
-        // Emojis alone will not trigger quoting here, based on user's desired output.
-        if (hasProblematicChars || hasPersianChars) {
-            return `"${name}"`;
-        }
-        return name; // Return as is if no quotes needed
+        proxyListYamlArray.push(formattedProxyBlock);
     });
-    const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n'); // 6 spaces for indentation
+
+    const proxyListYaml = proxyListYamlArray.join('\n');
+
+    // Now use the extracted, consistently formatted names for the proxy group list
+    // No additional quoting logic is needed here, as they are already correctly formatted by js-yaml dump.
+    const proxyNamesListYaml = proxyNamesForGroups.map(name => `      - ${name}`).join('\n'); // 6 spaces for indentation
 
     // Replace PROXIES placeholder
     finalYaml = finalYaml.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyListYaml);
-
     // Replace PROXY_NAMES_LIST placeholder
     finalYaml = finalYaml.replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNamesListYaml);
-
-
     // Apply general quoting fixes to the entire generated YAML (important for dns, url, etc.)
     finalYaml = finalYaml.replace(/(\s*-\s*)(['"]?)(time\.\*\.com|ntp\.\*\.com)(\2)(\s*)/g, (match, indent, quote, domain, endQuote, trailingSpace) => {
         return `${indent}'${domain}'${trailingSpace}`;
@@ -499,7 +512,6 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
     finalYaml = finalYaml.replace(/((?:\s*-\s*)|(?:url:\s*))(['"]?)(https?:\/\/[^\s]+|tls:\/\/[^\s]+)(\2)(\s*)/g, (match, prefix, quote, url, endQuote, trailingSpace) => {
         return `${prefix}'${url}'${trailingSpace}`;
     });
-
     // Ensure group names with emojis or special characters are quoted, if not already.
     // This targets only the "name:" key directly, to avoid accidental quoting of other values.
     finalYaml = finalYaml.replace(/(name: )([\p{L}\p{N}\p{S}\p{P}\s]+)/gu, (match, prefix, name) => {
@@ -515,12 +527,8 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
         }
         return match; // Return original if already quoted or no special characters
     });
-
-
     return finalYaml;
 }
-
-
 /**
  * Main function to handle generation and download.
  */
@@ -530,14 +538,11 @@ async function handleGenerate() {
     const jmax = parseInt(jmaxInput.value, 10);
     const amneziaOption = amneziaOptionSelect.value;
     let outputFileName = outputFileNameInput.value.trim();
-
     // Automatically add .yaml extension if not present
     if (!outputFileName.endsWith('.yaml') && !outputFileName.endsWith('.yml')) {
         outputFileName += '.yaml';
     }
-
     const selectedTemplateKey = templateSelect.value;
-    
     // Dynamically fetch the selected template content as raw text
     const templatePath = `./config-templates/${selectedTemplateKey}.yaml`; // Still .yaml extension for file type, but we treat it as text
     let baseTemplateContent;
@@ -552,25 +557,20 @@ async function handleGenerate() {
         showMessage(`خطا در بارگذاری تمپلت: ${error.message}`, 'error');
         return;
     }
-
     if (!baseTemplateContent) {
         showMessage('تمپلت قوانین انتخاب شده یافت نشد.', 'error');
         return;
     }
-
     if (amneziaOption === 'use-ui-values' && (isNaN(jc) || isNaN(jmin) || isNaN(jmax))) {
         showMessage('لطفاً مقادیر jc، jmin و jmax را به درستی وارد کنید، زیرا گزینه "استفاده از مقادیر وارد شده" انتخاب شده است.', 'error');
         return;
     }
-
     let allWgConfigs = [];
     const textAreaContent = wgConfigInput.value.trim();
     const uploadedFiles = uploadedFilesContent;
-
     // Process all input (textarea and uploaded files) as raw WireGuard configs/URIs
     const processRawBlocks = (content) => {
         if (!content.trim()) return;
-
         const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(block => block.trim() !== '');
         blocks.forEach(block => {
             const parsed = parseWireGuardConfigBlockOrUri(block.trim());
@@ -579,19 +579,16 @@ async function handleGenerate() {
             }
         });
     };
-
     if (textAreaContent) {
         processRawBlocks(textAreaContent);
     }
     for (const fileContent of uploadedFiles) {
         processRawBlocks(fileContent);
     }
-
     if (allWgConfigs.length === 0) {
         showMessage('هیچ کانفیگ WireGuard معتبری یافت نشد. لطفاً ورودی را بررسی کنید.', 'error');
         return;
     }
-
     // Ensure unique names for proxies
     const usedNames = new Set();
     allWgConfigs.forEach((config, index) => {
@@ -603,7 +600,6 @@ async function handleGenerate() {
                 baseName = "WG Proxy";
             }
         }
-
         let currentName = baseName;
         let counter = 1;
         while (usedNames.has(currentName)) {
@@ -613,20 +609,16 @@ async function handleGenerate() {
         config.name = currentName;
         usedNames.add(currentName);
     });
-
     const mihomoProxies = [];
     const proxyNames = [];
-
     allWgConfigs.forEach(wgConfig => {
         const mihomoProxy = convertWgToMihomo(wgConfig, jc, jmin, jmax, amneziaOption);
         mihomoProxies.push(mihomoProxy);
         proxyNames.push(mihomoProxy.name); // Push the raw, unquoted name here
     });
-
     try {
         // Process the template text by replacing placeholders
         const finalYamlContent = processTemplateText(baseTemplateContent, mihomoProxies, proxyNames);
-
         downloadFile(outputFileName, finalYamlContent);
         showMessage('فایل کانفیگ با موفقیت تولید و دانلود شد!', 'success');
     } catch (error) {
@@ -634,7 +626,6 @@ async function handleGenerate() {
         showMessage('خطا در تولید فایل YAML: ' + error.message, 'error');
     }
 }
-
 /**
  * Downloads a file with the given content.
  * @param {string} filename - The name of the file to download.
@@ -657,3 +648,5 @@ function downloadFile(filename, content) {
         window.open('data:text/yaml;charset=utf-8,' + encodeURIComponent(content));
     }
 }
+
+```
