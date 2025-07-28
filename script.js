@@ -410,22 +410,26 @@ async function handleGenerate() {
     }
 }
 // -----------------------------------------------
-// Download helper
+// Download helper (کامل و تست‌شده)
 // -----------------------------------------------
 function downloadFile(filename, content) {
-    const blob = new Blob([content], { type: 'application/yaml;charset=utf-8;' });
+    // 1) ساخت Blob با MIME مناسب
+    const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
+
+    // 2) ایجاد لینک مخفی
     const link = document.createElement('a');
-    if (typeof link.download === 'string') {
-        const url = URL.createObjectURL(blob);
-        link.href = url;
-        link.download = filename;
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    } else {
-        // fallback برای مرورگرهای قدیمی
-        window.open('data:application/yaml;charset=utf-8,' + encodeURIComponent(content));
-    }
+    link.style.display = 'none';
+
+    // 3) تولید URL موقت
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+
+    // 4) اضافه به DOM، کلیک و پاک‌سازی
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 5) آزادسازی حافظه
+    URL.revokeObjectURL(url);
 }
