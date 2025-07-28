@@ -7,7 +7,7 @@ const countryEmojiMap = {
     "NO": "🇳🇴", "DK": "🇩🇰", "BE": "🇧🇪", "AT": "🇦🇹", "ES": "🇪🇸", "IT": "🇮🇹",
     "PL": "🇵🇱", "CZ": "🇨🇿", "IE": "🇮🇪", "NZ": "🇳🇿", "KR": "🇰🇷", "HK": "🇭🇰",
     "TW": "🇹🇼", "IN": "🇮🇳", "BR": "🇧🇷", "MX": "🇲🇽", "ZA": "🇿🇦", "AE": "🇦🇪",
-    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴",
+    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴", // Existing and Romania
     "AF": "🇦🇫", "AL": "🇦🇱", "DZ": "🇩🇿", "AS": "🇦🇸", "AD": "🇦🇩", "AO": "🇦🇴",
     "AI": "🇦🇮", "AQ": "🇦🇶", "AG": "🇦🇬", "AR": "🇦🇷", "AM": "🇦🇲", "AW": "🇦🇼",
     "AZ": "🇦🇿", "BS": "🇧🇸", "BH": "🇧🇭", "BD": "🇧🇩", "BB": "🇧🇧", "BY": "🇧🇾",
@@ -284,26 +284,59 @@ function parseWireGuardConfigBlockOrUri(input) {
         // Generate a user-friendly name
         let name = "WG Proxy"; // Default name
         if (peerName) {
-            const parts = peerName.split('#');
             let countryCode = '';
-            let index = '';
+            let identifier = ''; // This will be the number or specific part after country
 
-            if (parts.length > 1) {
-                countryCode = parts[0].replace(/-FREE$/, '').toUpperCase();
-                index = parts[parts.length - 1];
+            // Try to match common patterns: "COUNTRY#INDEX", "COUNTRY-INDEX", "COUNTRY-FREE"
+            const hashMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?#(.+)$/i); // e.g., US#16, DE-FREE#20
+            const hyphenMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?-(.+)$/i); // e.g., US-16, DE-FREE-20
+            const simpleCountryMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?$/i); // e.g., US, DE-FREE
+
+            if (hashMatch) {
+                countryCode = hashMatch[1].toUpperCase();
+                identifier = hashMatch[2].trim();
+            } else if (hyphenMatch) {
+                countryCode = hyphenMatch[1].toUpperCase();
+                identifier = hyphenMatch[2].trim();
+            } else if (simpleCountryMatch) {
+                countryCode = simpleCountryMatch[1].toUpperCase();
+                identifier = ''; // No specific identifier
             } else {
-                countryCode = peerName.replace(/-FREE$/, '').toUpperCase();
+                // Fallback for unrecognized formats, just use the peerName and replace spaces with hyphens
+                name = peerName.trim().replace(/\s+/g, '-');
+                const emoji = countryEmojiMap[countryCode] || ''; // Try to get emoji if countryCode was found by previous patterns
+                if (emoji) {
+                    name = `${emoji} ${name}`;
+                }
+                // For this custom name, we will let jsyaml.dump handle quoting.
+                // And for proxy-groups, it will be quoted if it contains spaces or emojis.
+                return {
+                    name: name,
+                    privateKey: wgConfig.PrivateKey,
+                    address: ipv4.split('/')[0],
+                    ipv6: ipv6.split('/')[0],
+                    dns: dns,
+                    publicKey: wgConfig.PublicKey,
+                    server: server,
+                    port: parseInt(port, 10),
+                    allowedIps: allowedIps,
+                    mtu: wgConfig.MTU ? parseInt(wgConfig.MTU, 10) : 1420,
+                    reserved: reserved,
+                    persistentKeepalive: wgConfig.PersistentKeepalive ? parseInt(wgConfig.PersistentKeepalive, 10) : 0,
+                    amneziaOptions: hasAmneziaOptions ? amneziaOptions : null
+                };
             }
 
             const emoji = countryEmojiMap[countryCode] || '';
-            if (peerName.includes('-FREE')) {
-                name = `${emoji ? emoji + ' ' : ''}${countryCode} ${index}`;
-            } else if (peerName.includes('#')) {
-                name = `${emoji ? emoji + ' ' : ''}${parts[0]} ${parts[1]}`;
+            if (identifier) {
+                // Format as "EMOJI CC-IDENTIFIER"
+                name = `${emoji ? emoji + ' ' : ''}${countryCode}-${identifier}`;
             } else {
-                name = `${emoji ? emoji + ' ' : ''}${peerName}`;
+                // Format as "EMOJI CC"
+                name = `${emoji ? emoji + ' ' : ''}${countryCode}`;
             }
         }
+        name = name.trim(); // Final trim to remove any leading/trailing spaces
 
         return {
             name: name,
@@ -426,16 +459,22 @@ function processTemplateText(templateText, mihomoProxies, proxyNames) {
         }).join('\n');
     }).join('\n'); // Join individual proxy YAML blocks with a newline
 
-    // Ensure proxy names in proxy groups are quoted if they contain spaces or emojis
-    // This logic is specifically for the proxy-groups section where names are directly listed.
+    // Ensure proxy names in proxy groups are quoted if they contain spaces or problematic keywords.
+    // Emojis alone will NOT force quoting here, to match the desired output format.
     const quotedProxyNames = proxyNames.map(name => {
-        // Regex to check for spaces, emojis, or specific problematic keywords like 'true', 'false', 'on', 'off', 'null'
-        // Ensure it doesn't double quote if already quoted (though proxyNames should be unquoted here now)
-        const needsQuotes = name.includes(' ') ||
-                            /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}]/u.test(name) || // Basic emoji ranges
-                            /[\u0600-\u06FF]/.test(name) || // Persian characters
-                            ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase().trim()); // Problematic keywords, trim name before check
-        return needsQuotes ? `"${name}"` : name;
+        // Check if the name contains spaces or problematic keywords (e.g., 'true', 'false')
+        const hasProblematicChars = name.includes(' ') ||
+                                    ['true', 'false', 'on', 'off', 'yes', 'no', 'null'].includes(name.toLowerCase().trim());
+
+        // Check if the name contains Persian characters (these usually need quoting)
+        const hasPersianChars = /[\u0600-\u06FF]/.test(name);
+
+        // Quote if it has problematic characters or Persian characters.
+        // Emojis alone will not trigger quoting here, based on user's desired output.
+        if (hasProblematicChars || hasPersianChars) {
+            return `"${name}"`;
+        }
+        return name; // Return as is if no quotes needed
     });
     const proxyNamesListYaml = quotedProxyNames.map(name => `      - ${name}`).join('\n'); // 6 spaces for indentation
 
