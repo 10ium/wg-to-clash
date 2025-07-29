@@ -63,12 +63,16 @@ const generateBtn = document.getElementById('generateBtn');
 const messageDiv = document.getElementById('message');
 const themeToggle = document.getElementById('themeToggle');
 
+// Debugging: Log the generateBtn element to see if it's found
+console.log('[Debug] All DOM elements retrieved. generateBtn:', generateBtn);
+
 let uploadedFilesContent = [];
 
 // -----------------------------------------------
 // Theme management (unchanged)
 // -----------------------------------------------
 function setTheme(theme) {
+    console.log(`[Theme] Setting theme to: ${theme}`);
     document.body.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
     themeToggle.checked = (theme === 'dark');
@@ -79,15 +83,23 @@ function autoSetThemeByTehranTime() {
         hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Tehran'
     }).format(now);
     const hour = parseInt(tehranTime, 10);
+    console.log(`[Theme] Current Tehran hour: ${hour}. Auto-setting theme.`);
     if (hour >= 6 && hour < 18) setTheme('light');
     else setTheme('dark');
 }
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('[DOM] DOMContentLoaded event fired. Initializing theme.');
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) setTheme(savedTheme);
-    else autoSetThemeByTehranTime();
+    if (savedTheme) {
+        console.log(`[Theme] Found saved theme: ${savedTheme}. Applying.`);
+        setTheme(savedTheme);
+    } else {
+        console.log('[Theme] No saved theme found. Auto-setting theme by Tehran time.');
+        autoSetThemeByTehranTime();
+    }
 });
 themeToggle.addEventListener('change', () => {
+    console.log(`[Theme] Theme toggle changed. New state: ${themeToggle.checked ? 'dark' : 'light'}`);
     setTheme(themeToggle.checked ? 'dark' : 'light');
 });
 
@@ -95,22 +107,30 @@ themeToggle.addEventListener('change', () => {
 // File input handling (unchanged)
 // -----------------------------------------------
 wgConfigFile.addEventListener('change', (event) => {
+    console.log('[File Input] File input change event detected.');
     uploadedFilesContent = [];
     const files = event.target.files;
     fileListDiv.innerHTML = '';
     if (files.length > 0) {
+        console.log(`[File Input] ${files.length} file(s) selected.`);
         Array.from(files).forEach(file => {
             const reader = new FileReader();
             reader.onload = (e) => {
+                console.log(`[File Input] File "${file.name}" loaded successfully.`);
                 uploadedFilesContent.push(e.target.result);
                 const fileNameSpan = document.createElement('span');
                 fileNameSpan.textContent = file.name;
                 fileNameSpan.className = 'block text-gray-300';
                 fileListDiv.appendChild(fileNameSpan);
             };
+            reader.onerror = (e) => {
+                console.error(`[File Input] Error loading file "${file.name}":`, e);
+                showMessage(`خطا در بارگذاری فایل "${file.name}".`, 'error');
+            };
             reader.readAsText(file);
         });
     } else {
+        console.log('[File Input] No files selected.');
         fileListDiv.textContent = 'هیچ فایلی انتخاب نشده است.';
     }
 });
@@ -119,18 +139,24 @@ wgConfigFile.addEventListener('change', (event) => {
 // Utility functions (unchanged)
 // -----------------------------------------------
 function showMessage(msg, type) {
+    console.log(`[Message] Displaying message: Type=${type}, Message="${msg}"`);
     messageDiv.textContent = msg;
     messageDiv.className = `message ${type}`;
     messageDiv.classList.remove('hidden');
-    setTimeout(() => messageDiv.classList.add('hidden'), 5000);
+    setTimeout(() => {
+        messageDiv.classList.add('hidden');
+        console.log('[Message] Message hidden after 5 seconds.');
+    }, 5000);
 }
 
 // -----------------------------------------------
 // WireGuard config parsing (unchanged)
 // -----------------------------------------------
 function parseWireGuardConfigBlockOrUri(input) {
+    console.log('[Parser] Attempting to parse input:', input.substring(0, 100) + '...'); // Log first 100 chars
     if (input.startsWith('wireguard://')) {
         try {
+            console.log('[Parser] Input identified as WireGuard URI.');
             const url = new URL(input);
             const privateKey = decodeURIComponent(url.username);
             const server = url.hostname;
@@ -152,7 +178,7 @@ function parseWireGuardConfigBlockOrUri(input) {
                 else if (addr.includes('.')) ipv4 = addr;
             });
 
-            return {
+            const parsedConfig = {
                 name,
                 privateKey,
                 address: ipv4.split('/')[0],
@@ -167,11 +193,14 @@ function parseWireGuardConfigBlockOrUri(input) {
                 persistentKeepalive: keepalive,
                 amneziaOptions: null
             };
+            console.log('[Parser] Successfully parsed WireGuard URI:', parsedConfig);
+            return parsedConfig;
         } catch (e) {
-            console.warn('Invalid WireGuard URI:', input, e);
+            console.error('[Parser] Error parsing WireGuard URI:', e, 'Input:', input);
             return null;
         }
     } else {
+        console.log('[Parser] Input identified as WireGuard config block.');
         const lines = input.split('\n').map(l => l.trim()).filter(l => l);
         const wgConfig = {};
         let currentSection = '', peerName = '';
@@ -187,7 +216,7 @@ function parseWireGuardConfigBlockOrUri(input) {
             }
         }
         if (!wgConfig.PrivateKey || !wgConfig.Address || !wgConfig.PublicKey || !wgConfig.Endpoint) {
-            console.warn('Invalid WireGuard config block:', input);
+            console.warn('[Parser] Invalid WireGuard config block: Missing essential fields (PrivateKey, Address, PublicKey, Endpoint). Input:', input);
             return null;
         }
         const [server, port] = wgConfig.Endpoint.split(':');
@@ -207,7 +236,7 @@ function parseWireGuardConfigBlockOrUri(input) {
                     .map(Number)
                     .filter(n => !isNaN(n));
             } catch (e) {
-                console.warn('Could not parse reserved field:', wgConfig.Reserved, e);
+                console.warn('[Parser] Could not parse reserved field:', wgConfig.Reserved, e);
             }
         }
         const amneziaOptions = {
@@ -237,7 +266,7 @@ function parseWireGuardConfigBlockOrUri(input) {
             else name = `${emoji ? emoji + ' ' : ''}${countryCode}`;
         }
         name = name.trim();
-        return {
+        const parsedConfig = {
             name,
             privateKey: wgConfig.PrivateKey,
             address: ipv4.split('/')[0],
@@ -252,6 +281,8 @@ function parseWireGuardConfigBlockOrUri(input) {
             persistentKeepalive: wgConfig.PersistentKeepalive ? parseInt(wgConfig.PersistentKeepalive, 10) : 0,
             amneziaOptions: hasAmneziaOptions ? amneziaOptions : null
         };
+        console.log('[Parser] Successfully parsed WireGuard config block:', parsedConfig);
+        return parsedConfig;
     }
 }
 
@@ -259,6 +290,9 @@ function parseWireGuardConfigBlockOrUri(input) {
 // Conversion to Mihomo proxy object (unchanged)
 // -----------------------------------------------
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    console.log('[Converter] Converting WG config to Mihomo proxy. Input WG Config:', wgConfig);
+    console.log(`[Converter] UI Amnezia values: jc=${jcUI}, jmin=${jminUI}, jmax=${jmaxUI}, Amnezia Option: ${amneziaOption}`);
+
     const mihomoProxy = {
         name: wgConfig.name,
         type: 'wireguard',
@@ -278,11 +312,13 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     if (wgConfig.persistentKeepalive) mihomoProxy['persistent-keepalive'] = wgConfig.persistentKeepalive;
 
     if (amneziaOption === 'use-ui-values') {
+        console.log('[Converter] Applying UI Amnezia values.');
         mihomoProxy['amnezia-wg-option'] = {
             jc: jcUI, jmin: jminUI, jmax: jmaxUI,
             s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4
         };
     } else if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptions) {
+        console.log('[Converter] Applying config-provided Amnezia values.');
         const c = wgConfig.amneziaOptions;
         if (c.jc !== undefined && c.jmin !== undefined && c.jmax !== undefined) {
             mihomoProxy['amnezia-wg-option'] = {
@@ -290,8 +326,13 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
                 s1: c.s1 ?? 0, s2: c.s2 ?? 0,
                 h1: c.h1 ?? 1, h2: c.h2 ?? 2, h3: c.h3 ?? 3, h4: c.h4 ?? 4
             };
+        } else {
+            console.warn('[Converter] Config-provided Amnezia options incomplete, skipping:', c);
         }
+    } else {
+        console.log('[Converter] No Amnezia options applied based on selection or config.');
     }
+    console.log('[Converter] Converted Mihomo proxy:', mihomoProxy);
     return mihomoProxy;
 }
 
@@ -299,10 +340,14 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 // اصلاح اصلی: یکنواخت‌سازی نام پروکسی‌ها
 // =========================================================
 function processTemplateText(templateText, mihomoProxies) {
-    const proxyBlocks = [];
-    const proxyNames   = [];
+    console.log('[Template Processor] Starting template processing.');
+    console.log('[Template Processor] Number of Mihomo proxies:', mihomoProxies.length);
 
-    mihomoProxies.forEach(proxy => {
+    const proxyBlocks = [];
+    const proxyNames = [];
+
+    mihomoProxies.forEach((proxy, index) => {
+        console.log(`[Template Processor] Processing proxy ${index + 1}: ${proxy.name}`);
         let yamlFrag = jsyaml.dump(proxy, {
             indent: 2,
             lineWidth: -1,
@@ -310,11 +355,16 @@ function processTemplateText(templateText, mihomoProxies) {
             noCompatMode: true
         }).trim();
 
+        // Ensure base64 keys are properly quoted and padded if needed
         yamlFrag = yamlFrag
             .replace(/^(private-key|public-key):\s*(['"]?)([A-Za-z0-9+/=]+)(['"]?)$/gm,
                 (m, key, q1, val, q2) => {
-                    if (!val.endsWith('=') && /^[A-Za-z0-9+/]*={0,2}$/.test(val)) val += '=';
-                    return `${key}: '${val}'`;
+                    // Add padding if missing and it looks like a base64 string
+                    if (!val.endsWith('=') && /^[A-Za-z0-9+/]*={0,2}$/.test(val)) {
+                        const paddingNeeded = (4 - (val.length % 4)) % 4;
+                        val += '='.repeat(paddingNeeded);
+                    }
+                    return `${key}: '${val}'`; // Always quote for safety
                 });
 
         const block = yamlFrag.split('\n')
@@ -322,71 +372,114 @@ function processTemplateText(templateText, mihomoProxies) {
             .join('\n');
 
         proxyBlocks.push(block);
+        console.log(`[Template Processor] Generated YAML fragment for proxy ${index + 1}:\n${block}`);
 
         const nameMatch = yamlFrag.match(/^name:\s*(.*)$/m);
-        proxyNames.push(nameMatch ? nameMatch[1] : `"${proxy.name}"`);
+        const extractedName = nameMatch ? nameMatch[1] : `"${proxy.name}"`;
+        proxyNames.push(extractedName);
+        console.log(`[Template Processor] Extracted proxy name: ${extractedName}`);
     });
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
+    console.log('[Template Processor] Generated proxy names list YAML:\n', proxyNameListYaml);
 
     let finalYaml = templateText
-        .replace(/##_PROXIES_PLACEHOLDER_##/g,   proxyBlocks.join('\n'))
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 
-    // پاک‌سازی iconهای <url …>
+    // Clean up icon URLs if they are still in <url> tags
     finalYaml = finalYaml.replace(/icon:\s*<url[^>]*>([^<]*)<\/url>/g, 'icon: $1');
+    console.log('[Template Processor] Final YAML generated (first 500 chars):\n', finalYaml.substring(0, 500) + '...');
     return finalYaml;
 }
 
 // -----------------------------------------------
 // Main generator handler (unchanged)
 // -----------------------------------------------
+// Debugging: Log before attaching event listener
+console.log('[Debug] Attaching event listener to generateBtn.');
+generateBtn.addEventListener('click', handleGenerate); // Ensure event listener is attached
+
 async function handleGenerate() {
+    console.log('[Handler] "Convert and Download" button clicked. Starting generation process.');
+
     const jc = parseInt(jcInput.value, 10);
     const jmin = parseInt(jminInput.value, 10);
     const jmax = parseInt(jmaxInput.value, 10);
     const amneziaOption = amneziaOptionSelect.value;
     let outputFileName = outputFileNameInput.value.trim();
-    if (!outputFileName.endsWith('.yaml') && !outputFileName.endsWith('.yml')) outputFileName += '.yaml';
+    if (!outputFileName.endsWith('.yaml') && !outputFileName.endsWith('.yml')) {
+        outputFileName += '.yaml';
+    }
+    console.log(`[Handler] Input values: jc=${jc}, jmin=${jmin}, jmax=${jmax}, amneziaOption=${amneziaOption}, outputFileName=${outputFileName}`);
 
     const selectedTemplateKey = templateSelect.value;
     const templatePath = `./config-templates/${selectedTemplateKey}.yaml`;
+    console.log(`[Handler] Selected template: ${selectedTemplateKey}, path: ${templatePath}`);
+
     let baseTemplateContent;
     try {
+        console.log('[Handler] Fetching template content...');
         const response = await fetch(templatePath);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        }
         baseTemplateContent = await response.text();
+        console.log('[Handler] Template content fetched successfully.');
     } catch (error) {
-        console.error('Error fetching template:', error);
+        console.error('[Handler] Error fetching template:', error);
         showMessage(`خطا در بارگذاری تمپلت: ${error.message}`, 'error');
         return;
     }
-    if (!baseTemplateContent) { showMessage('تمپلت قوانین انتخاب شده یافت نشد.', 'error'); return; }
+    if (!baseTemplateContent) {
+        showMessage('تمپلت قوانین انتخاب شده یافت نشد.', 'error');
+        console.error('[Handler] Base template content is empty.');
+        return;
+    }
 
     if (amneziaOption === 'use-ui-values' && (isNaN(jc) || isNaN(jmin) || isNaN(jmax))) {
         showMessage('لطفاً مقادیر jc، jmin و jmax را به درستی وارد کنید…', 'error');
+        console.warn('[Handler] Amnezia UI values are invalid.');
         return;
     }
 
     let allWgConfigs = [];
     const textAreaContent = wgConfigInput.value.trim();
-    const processRawBlocks = (content) => {
-        if (!content.trim()) return;
+    console.log(`[Handler] Textarea content length: ${textAreaContent.length}`);
+    console.log(`[Handler] Number of uploaded files: ${uploadedFilesContent.length}`);
+
+    const processRawBlocks = (content, source) => {
+        if (!content.trim()) {
+            console.log(`[Handler] No content to process from ${source}.`);
+            return;
+        }
+        console.log(`[Handler] Processing raw blocks from ${source}.`);
         const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
-        blocks.forEach(b => {
+        console.log(`[Handler] Found ${blocks.length} potential blocks from ${source}.`);
+        blocks.forEach((b, index) => {
+            console.log(`[Handler] Parsing block ${index + 1} from ${source}...`);
             const parsed = parseWireGuardConfigBlockOrUri(b.trim());
-            if (parsed) allWgConfigs.push(parsed);
+            if (parsed) {
+                allWgConfigs.push(parsed);
+                console.log(`[Handler] Successfully parsed block ${index + 1} from ${source}. Total parsed: ${allWgConfigs.length}`);
+            } else {
+                console.warn(`[Handler] Failed to parse block ${index + 1} from ${source}.`);
+            }
         });
     };
-    if (textAreaContent) processRawBlocks(textAreaContent);
-    uploadedFilesContent.forEach(fc => processRawBlocks(fc));
+
+    if (textAreaContent) processRawBlocks(textAreaContent, 'textarea');
+    uploadedFilesContent.forEach(fc => processRawBlocks(fc, 'uploaded file'));
 
     if (allWgConfigs.length === 0) {
         showMessage('هیچ کانفیگ WireGuard معتبری یافت نشد.', 'error');
+        console.warn('[Handler] No valid WireGuard configurations found after parsing all inputs.');
         return;
     }
+    console.log(`[Handler] Total valid WireGuard configs found: ${allWgConfigs.length}`);
 
     // unique names
+    console.log('[Handler] Ensuring unique names for proxies.');
     const usedNames = new Set();
     allWgConfigs.forEach(cfg => {
         let base = cfg.name.trim();
@@ -397,15 +490,22 @@ async function handleGenerate() {
         while (usedNames.has(cur)) cur = `${base}-${cnt++}`;
         cfg.name = cur;
         usedNames.add(cur);
+        console.log(`[Handler] Assigned unique name: ${cfg.name}`);
     });
 
+    console.log('[Handler] Converting WireGuard configs to Mihomo proxy objects.');
     const mihomoProxies = allWgConfigs.map(c => convertWgToMihomo(c, jc, jmin, jmax, amneziaOption));
+    console.log(`[Handler] Converted ${mihomoProxies.length} Mihomo proxies.`);
+
     try {
+        console.log('[Handler] Processing template with generated Mihomo proxies.');
         const finalYaml = processTemplateText(baseTemplateContent, mihomoProxies);
+        console.log('[Handler] Final YAML generated. Initiating download.');
         downloadFile(outputFileName, finalYaml);
         showMessage('فایل کانفیگ با موفقیت تولید و دانلود شد!', 'success');
+        console.log('[Handler] Process completed successfully.');
     } catch (e) {
-        console.error(e);
+        console.error('[Handler] Error during YAML generation or download:', e);
         showMessage('خطا در تولید YAML: ' + e.message, 'error');
     }
 }
@@ -413,23 +513,30 @@ async function handleGenerate() {
 // Download helper (کامل و تست‌شده)
 // -----------------------------------------------
 function downloadFile(filename, content) {
+    console.log(`[Download] Preparing to download file: "${filename}"`);
     // 1) ساخت Blob با MIME مناسب
     const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
+    console.log('[Download] Blob created.');
 
     // 2) ایجاد لینک مخفی
     const link = document.createElement('a');
     link.style.display = 'none';
+    console.log('[Download] Hidden link element created.');
 
     // 3) تولید URL موقت
     const url = URL.createObjectURL(blob);
     link.href = url;
     link.download = filename;
+    console.log(`[Download] Temporary URL created: ${url}. Download filename set to: ${filename}`);
 
     // 4) اضافه به DOM، کلیک و پاک‌سازی
     document.body.appendChild(link);
+    console.log('[Download] Link appended to DOM. Simulating click...');
     link.click();
     document.body.removeChild(link);
+    console.log('[Download] Link removed from DOM.');
 
     // 5) آزادسازی حافظه
     URL.revokeObjectURL(url);
+    console.log('[Download] Temporary URL revoked (memory freed).');
 }
