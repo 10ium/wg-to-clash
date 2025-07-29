@@ -1,377 +1,537 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مبدل کانفیگ WireGuard به Mihomo</title>
-    <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vazirmatn Font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <!-- js-yaml for YAML conversion -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-    <style>
-        /* CSS Variables for theming */
-        :root {
-            /* Light Theme Body Background (color-based) */
-            --body-bg-start: #ADD8E6; /* Light Blue (Sky Blue) */
-            --body-bg-end: #E0F2FE;   /* Very light blue */
+// ===================================================================
+// script.js
+// ===================================================================
 
-            /* Dark Theme Body Background (color-based) */
-            --body-bg-dark-start: #1a202c; /* Dark charcoal */
-            --body-bg-dark-end: #2d3748;   /* Dark gray */
+// Mapping for country codes to emojis
+const countryEmojiMap = {
+    "US": "🇺🇸", "DE": "🇩🇪", "NL": "🇳🇱", "CA": "🇨🇦", "GB": "🇬🇧", "FR": "🇫🇷",
+    "AU": "🇦🇺", "JP": "🇯🇵", "SG": "🇸🇬", "SE": "🇸🇪", "CH": "🇨🇭", "FI": "🇫🇮",
+    "NO": "🇳🇴", "DK": "🇩🇰", "BE": "🇧🇪", "AT": "🇦🇹", "ES": "🇪🇸", "IT": "🇮🇹",
+    "PL": "🇵🇱", "CZ": "🇨🇿", "IE": "🇮🇪", "NZ": "🇳🇿", "KR": "🇰🇷", "HK": "🇭🇰",
+    "TW": "🇹🇼", "IN": "🇮🇳", "BR": "🇧🇷", "MX": "🇲🇽", "ZA": "🇿🇦", "AE": "🇦🇪",
+    "TR": "🇹🇷", "RU": "🇷🇺", "CN": "🇨🇳", "IR": "🇮🇷", "RO": "🇷🇴",
+    "AF": "🇦🇫", "AL": "🇦🇱", "DZ": "🇩🇿", "AS": "🇦🇸", "AD": "🇦🇩", "AO": "🇦🇴",
+    "AI": "🇦🇮", "AQ": "🇦🇶", "AG": "🇦🇬", "AR": "🇦🇷", "AM": "🇦🇲", "AW": "🇦🇼",
+    "AZ": "🇦🇿", "BS": "🇧🇸", "BH": "🇧🇭", "BD": "🇧🇩", "BB": "🇧🇧", "BY": "🇧🇾",
+    "BZ": "🇧🇿", "BJ": "🇧🇯", "BM": "🇧🇲", "BT": "🇧🇹", "BO": "🇧🇴", "BA": "🇧🇦",
+    "BW": "🇧🇼", "BV": "🇧🇻", "IO": "🇮🇴", "BN": "🇧🇳", "BG": "🇧🇬", "BF": "🇧🇫",
+    "BI": "🇧🇮", "KH": "🇰🇭", "CM": "🇨🇲", "CV": "🇨🇻", "KY": "🇰🇾", "CF": "🇨🇫",
+    "TD": "🇹🇩", "CL": "🇨🇱", "CX": "🇨🇽", "CC": "🇨🇨", "CO": "🇨🇴", "KM": "🇰🇲",
+    "CG": "🇨🇬", "CD": "🇨🇩", "CK": "🇨🇰", "CR": "🇨🇷", "CI": "🇨🇮", "HR": "🇭🇷",
+    "CU": "🇨🇺", "CY": "🇨🇾", "DJ": "🇩🇯", "DM": "🇩🇲", "DO": "🇩🇴", "EC": "🇪🇨",
+    "EG": "🇪🇬", "SV": "🇸🇻", "GQ": "🇬🇶", "ER": "🇪🇷", "EE": "🇪🇪", "ET": "🇪🇹",
+    "FK": "🇫🇰", "FO": "🇫🇴", "FJ": "🇫🇯", "GF": "🇬🇫", "PF": "🇵🇫", "TF": "🇹🇫",
+    "GA": "🇬🇦", "GM": "🇬🇲", "GE": "🇬🇪", "GH": "🇬🇭", "GI": "🇬🇮", "GR": "🇬🇷",
+    "GL": "🇬🇱", "GD": "🇬🇩", "GP": "🇬🇵", "GU": "🇬🇺", "GT": "🇬🇹", "GN": "🇬🇳",
+    "GW": "🇬🇼", "GY": "🇬🇾", "HT": "🇭🇹", "HM": "🇭🇲", "HN": "🇭🇳", "HU": "🇭🇺",
+    "IS": "🇮🇸", "ID": "🇮🇩", "IQ": "🇮🇶", "IE": "🇮🇪", "IL": "🇮🇱", "JM": "🇯🇲",
+    "JO": "🇯🇴", "KZ": "🇰🇿", "KE": "🇰🇪", "KI": "🇰🇮", "KP": "🇰🇵", "KR": "🇰🇷",
+    "KW": "🇰🇼", "KG": "🇰🇬", "LA": "🇱🇦", "LV": "🇱🇻", "LB": "🇱🇧", "LS": "🇱🇸",
+    "LR": "🇱🇷", "LY": "🇱🇾", "LI": "🇱🇮", "LT": "🇱🇹", "LU": "🇱🇺", "MO": "🇲🇴",
+    "MK": "🇲🇰", "MG": "🇲🇬", "MW": "🇲🇼", "MY": "🇲🇾", "MV": "🇲🇻", "ML": "🇲🇱",
+    "MT": "🇲🇹", "MH": "🇲🇭", "MQ": "🇲🇶", "MR": "🇲🇷", "MU": "🇲🇺", "YT": "🇾🇹",
+    "FM": "🇫🇲", "MD": "🇲🇩", "MC": "🇲🇨", "MN": "🇲🇳", "MS": "🇲🇸", "MA": "🇲🇦",
+    "MZ": "🇲🇿", "MM": "🇲🇲", "NA": "🇳🇦", "NR": "🇳🇷", "NP": "🇳🇵", "NC": "🇳🇨",
+    "NI": "🇳🇮", "NE": "🇳🇪", "NG": "🇳🇬", "NU": "🇳🇺", "NF": "🇳🇫", "MP": "🇲🇵",
+    "OM": "🇴🇲", "PK": "🇵🇰", "PW": "🇵🇼", "PS": "🇵🇸", "PA": "🇵🇦", "PG": "🇵🇬",
+    "PY": "🇵🇾", "PE": "🇵🇪", "PH": "🇵🇭", "PN": "🇵🇳", "PT": "🇵🇹", "PR": "🇵🇷",
+    "QA": "🇶🇦", "RE": "🇷🇪", "RW": "🇷🇼", "SH": "🇸🇭", "KN": "🇰🇳", "LC": "🇱🇨",
+    "PM": "🇵🇲", "VC": "🇻🇨", "WS": "🇼🇸", "SM": "🇸🇲", "ST": "🇸🇹", "SA": "🇸🇦",
+    "SN": "🇸🇳", "RS": "🇷🇸", "SC": "🇸🇨", "SL": "🇸🇱", "SK": "🇸🇰", "SI": "🇸🇮",
+    "SB": "🇸🇧", "SO": "🇸🇴", "GS": "🇬🇸", "SS": "🇸🇸", "LK": "🇱🇰", "SD": "🇸🇩",
+    "SR": "🇸🇷", "SJ": "🇸🇯", "SZ": "🇸🇿", "SY": "🇸🇾", "TJ": "🇹🇯", "TZ": "🇹🇿",
+    "TH": "🇹🇭", "TL": "🇹🇱", "TG": "🇹🇬", "TK": "🇹🇰", "TO": "🇹🇴", "TT": "🇹🇹",
+    "TN": "🇹🇳", "TM": "🇹🇲", "TC": "🇹🇨", "TV": "🇹🇻", "UG": "🇺🇬", "UA": "🇺🇦",
+    "UM": "🇺🇲", "UY": "🇺🇾", "UZ": "🇺🇿", "VU": "🇻🇺", "VE": "🇻🇪", "VN": "🇻🇳",
+    "VG": "🇻🇬", "VI": "🇻🇮", "WF": "🇼🇫", "EH": "🇪🇭", "YE": "🇾🇪", "ZM": "🇿🇲",
+    "ZW": "🇿🇼"
+};
 
-            /* Container Background Image */
-            --container-bg-image: url('background.jpg'); /* Futuristic City */
-            
-            /* Container Overlay Colors (Light Theme) */
-            --container-overlay-start-light: rgba(59, 130, 246, 0.7); /* Blue with transparency */
-            --container-overlay-end-light: rgba(96, 165, 250, 0.7);   /* Lighter blue with transparency */
-            
-            /* Container Overlay Colors (Dark Theme) */
-            --container-overlay-start-dark: rgba(30, 64, 175, 0.8); /* Darker blue with more transparency */
-            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);   /* Blue with more transparency */
+// -----------------------------------------------
+// DOM elements
+// -----------------------------------------------
+const wgConfigInput = document.getElementById('wgConfigInput');
+const wgConfigFile = document.getElementById('wgConfigFile');
+const fileListDiv = document.getElementById('fileList');
+const jcInput = document.getElementById('jcInput');
+const jminInput = document.getElementById('jminInput');
+const jmaxInput = document.getElementById('jmaxInput');
+const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
+const templateSelect = document.getElementById('templateSelect');
+const outputFileNameInput = document.getElementById('outputFileName');
+const generateBtn = document.getElementById('generateBtn');
+const messageDiv = document.getElementById('message');
+const themeToggle = document.getElementById('themeToggle');
 
+let uploadedFilesContent = [];
 
-            /* Text and Input Colors (Default: Light Theme, adjusted for better contrast on container background) */
-            --text-color: #f8fafc; /* Light text */
-            --label-color: #e2e8f0; /* Slightly darker light text */
-            --input-bg: rgba(255, 255, 255, 0.3); /* More opaque white for inputs */
-            --input-text: #ffffff; /* Pure white for input values */
-            --input-placeholder: #a3b1c2; /* Darker placeholder */
-            --input-focus-bg: rgba(255, 255, 255, 0.4); /* Even more opaque on focus */
-            --file-button-bg: #1e40af;
-            --file-button-hover-bg: #2563eb;
-            --main-button-start: #2563eb;
-            --main-button-end: #3b82f6;
-            --message-success-bg: rgba(134, 239, 172, 0.2);
-            --message-success-text: #d1fae5;
-            --message-error-bg: rgba(252, 165, 165, 0.2);
-            --message-error-text: #fee2e2;
-            --select-option-bg: #1a202c; /* Dark neutral for options */
-            --select-option-text: #ffffff; /* Pure white for option text */
-        }
+// -----------------------------------------------
+// Theme management (unchanged)
+// -----------------------------------------------
+function setTheme(theme) {
+    console.log(`[Theme] Setting theme to: ${theme}`);
+    document.body.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+    themeToggle.checked = (theme === 'dark');
+}
+function autoSetThemeByTehranTime() {
+    const now = new Date();
+    const tehranTime = new Intl.DateTimeFormat('en-US', {
+        hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Tehran'
+    }).format(now);
+    const hour = parseInt(tehranTime, 10);
+    console.log(`[Theme] Current Tehran hour: ${hour}. Auto-setting theme.`);
+    if (hour >= 6 && hour < 18) setTheme('light');
+    else setTheme('dark');
+}
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('[DOM] DOMContentLoaded event fired. Initializing theme.');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        console.log(`[Theme] Found saved theme: ${savedTheme}. Applying.`);
+        setTheme(savedTheme);
+    } else {
+        console.log('[Theme] No saved theme found. Auto-setting theme by Tehran time.');
+        autoSetThemeByTehranTime();
+    }
+});
+themeToggle.addEventListener('change', () => {
+    console.log(`[Theme] Theme toggle changed. New state: ${themeToggle.checked ? 'dark' : 'light'}`);
+    setTheme(themeToggle.checked ? 'dark' : 'light');
+});
 
-        /* Dark Theme overrides for text and input colors */
-        body[data-theme='dark'] {
-            --text-color: #e2e8f0; /* Lighter text */
-            --label-color: #cbd5e1; /* Even lighter light text */
-            --input-bg: rgba(0, 0, 0, 0.4); /* More opaque black for inputs */
-            --input-text: #e2e8f0; /* Light gray for input values */
-            --input-placeholder: #a0aec0; /* Lighter placeholder */
-            --input-focus-bg: rgba(0, 0, 0, 0.5); /* Even more opaque on focus */
-            --file-button-bg: #4a5568; /* Darker gray */
-            --file-button-hover-bg: #2d3748;
-            --main-button-start: #4a5568;
-            --main-button-end: #2d3748;
-            --select-option-bg: #2d3748; /* Even darker neutral for options */
-            --select-option-text: #e2e8f0; /* Light gray for option text */
-        }
+// -----------------------------------------------
+// File input handling (unchanged)
+// -----------------------------------------------
+wgConfigFile.addEventListener('change', (event) => {
+    console.log('[File Input] File input change event detected.');
+    uploadedFilesContent = [];
+    const files = event.target.files;
+    fileListDiv.innerHTML = '';
+    if (files.length > 0) {
+        console.log(`[File Input] ${files.length} file(s) selected.`);
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                console.log(`[File Input] File "${file.name}" loaded successfully.`);
+                uploadedFilesContent.push(e.target.result);
+                const fileNameSpan = document.createElement('span');
+                fileNameSpan.textContent = file.name;
+                fileNameSpan.className = 'block text-gray-300';
+                fileListDiv.appendChild(fileNameSpan);
+            };
+            reader.onerror = (e) => {
+                console.error(`[File Input] Error loading file "${file.name}":`, e);
+                showMessage(`خطا در بارگذاری فایل "${file.name}".`, 'error');
+            };
+            reader.readAsText(file);
+        });
+    } else {
+        console.log('[File Input] No files selected.');
+        fileListDiv.textContent = 'هیچ فایلی انتخاب نشده است.';
+    }
+});
 
-        /* General styles using CSS variables */
-        body {
-            background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end));
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            font-family: 'Vazirmatn', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: var(--text-color);
-            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
-        }
-        
-        /* Dark theme body background */
-        body[data-theme='dark'] {
-            background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end));
-        }
+// -----------------------------------------------
+// Utility functions (unchanged)
+// -----------------------------------------------
+function showMessage(msg, type) {
+    console.log(`[Message] Displaying message: Type=${type}, Message="${msg}"`);
+    messageDiv.textContent = msg;
+    messageDiv.className = `message ${type}`;
+    messageDiv.classList.remove('hidden');
+    setTimeout(() => {
+        messageDiv.classList.add('hidden');
+        console.log('[Message] Message hidden after 5 seconds.');
+    }, 5000);
+}
 
-        .container {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 800px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: background 0.5s ease-in-out;
-        }
-        /* Container background with dynamic overlay based on theme */
-        body[data-theme='light'] .container {
-            background: 
-                linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), 
-                var(--container-bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-blend-mode: multiply; /* Blend the blue gradient with the image */
-        }
-        body[data-theme='dark'] .container {
-            background: 
-                linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), 
-                var(--container-bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-blend-mode: multiply; /* Blend the blue gradient with the image */
-        }
+// -----------------------------------------------
+// WireGuard config parsing (unchanged)
+// -----------------------------------------------
+function parseWireGuardConfigBlockOrUri(input) {
+    console.log('[Parser] Attempting to parse input:', input.substring(0, 100) + '...'); // Log first 100 chars
+    if (input.startsWith('wireguard://')) {
+        try {
+            console.log('[Parser] Input identified as WireGuard URI.');
+            const url = new URL(input);
+            const privateKey = decodeURIComponent(url.username);
+            const server = url.hostname;
+            const port = parseInt(url.port, 10);
+            const name = decodeURIComponent(url.hash.substring(1)) || "WG Proxy URI";
+            const params = new URLSearchParams(url.search);
+            const address = params.get('address') ? decodeURIComponent(params.get('address')) : '';
+            const publickey = params.get('publickey') ? decodeURIComponent(params.get('publickey')) : '';
+            const reserved = params.get('reserved')
+                ? decodeURIComponent(params.get('reserved')).split(',').map(Number).filter(n => !isNaN(n))
+                : [];
+            const mtu = params.get('mtu') ? parseInt(params.get('mtu'), 10) : 1420;
+            const keepalive = params.get('keepalive') ? parseInt(params.get('keepalive'), 10) : 0;
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--label-color);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        textarea, input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: left 1rem center;
-            background-size: 1.5em;
-            padding-left: 3rem;
-        }
-        textarea::placeholder, input::placeholder {
-            color: var(--input-placeholder);
-        }
-        textarea:focus, input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-            background-color: var(--input-focus-bg);
-        }
-        select {
-            color: var(--input-text);
-        }
-        select option {
-            background-color: var(--select-option-bg);
-            color: var(--select-option-text);
-            padding: 10px 15px;
-        }
-        select:focus {
-            color: var(--input-text);
-        }
+            const addresses = address.split(',').map(a => a.trim());
+            let ipv4 = '', ipv6 = '';
+            addresses.forEach(addr => {
+                if (addr.includes(':')) ipv6 = addr;
+                else if (addr.includes('.')) ipv4 = addr;
+            });
 
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 20px;
+            const parsedConfig = {
+                name,
+                privateKey,
+                address: ipv4.split('/')[0],
+                ipv6: ipv6.split('/')[0],
+                dns: [],
+                publicKey: publickey,
+                server,
+                port,
+                allowedIps: ['0.0.0.0/0', '::/0'],
+                mtu,
+                reserved,
+                persistentKeepalive: keepalive,
+                amneziaOptions: null
+            };
+            console.log('[Parser] Successfully parsed WireGuard URI:', parsedConfig);
+            return parsedConfig;
+        } catch (e) {
+            console.error('[Parser] Error parsing WireGuard URI:', e, 'Input:', input);
+            return null;
         }
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
+    } else {
+        console.log('[Parser] Input identified as WireGuard config block.');
+        const lines = input.split('\n').map(l => l.trim()).filter(l => l);
+        const wgConfig = {};
+        let currentSection = '', peerName = '';
+        for (const line of lines) {
+            if (line.startsWith('[Interface]')) currentSection = 'Interface';
+            else if (line.startsWith('[Peer]')) currentSection = 'Peer';
+            else if (line.startsWith('#') && currentSection === 'Peer') {
+                const m = line.match(/#\s*(.+)/);
+                if (m && m[1]) peerName = m[1].trim();
+            } else if (line.includes('=')) {
+                const [k, v] = line.split('=', 2).map(s => s.trim());
+                wgConfig[k] = v;
+            }
         }
-        .file-input-wrapper .button {
-            display: block;
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            background-color: var(--file-button-bg);
-            color: white;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
+        if (!wgConfig.PrivateKey || !wgConfig.Address || !wgConfig.PublicKey || !wgConfig.Endpoint) {
+            console.warn('[Parser] Invalid WireGuard config block: Missing essential fields (PrivateKey, Address, PublicKey, Endpoint). Input:', input);
+            return null;
         }
-        .file-input-wrapper .button:hover {
-            background-color: var(--file-button-hover-bg);
+        const [server, port] = wgConfig.Endpoint.split(':');
+        const allowedIps = wgConfig.AllowedIPs ? wgConfig.AllowedIPs.split(',').map(ip => ip.trim()) : ['0.0.0.0/0', '::/0'];
+        const dns = wgConfig.DNS ? wgConfig.DNS.split(',').map(d => d.trim()) : [];
+        const addresses = wgConfig.Address.split(',').map(a => a.trim());
+        let ipv4 = '', ipv6 = '';
+        addresses.forEach(addr => {
+            if (addr.includes(':')) ipv6 = addr;
+            else if (addr.includes('.')) ipv4 = addr;
+        });
+        let reserved = [];
+        if (wgConfig.Reserved) {
+            try {
+                reserved = wgConfig.Reserved.replace(/[\[\]\s]/g, '')
+                    .split(',')
+                    .map(Number)
+                    .filter(n => !isNaN(n));
+            } catch (e) {
+                console.warn('[Parser] Could not parse reserved field:', wgConfig.Reserved, e);
+            }
         }
-        .button-primary {
-            width: 100%;
-            padding: 15px 20px;
-            border-radius: 12px;
-            background: linear-gradient(to right, var(--main-button-start), var(--main-button-end));
-            color: white;
-            font-size: 1.125rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        const amneziaOptions = {
+            jc: wgConfig.Jc ? parseInt(wgConfig.Jc, 10) : undefined,
+            jmin: wgConfig.Jmin ? parseInt(wgConfig.Jmin, 10) : undefined,
+            jmax: wgConfig.Jmax ? parseInt(wgConfig.Jmax, 10) : undefined,
+            s1: wgConfig.S1 ? parseInt(wgConfig.S1, 10) : undefined,
+            s2: wgConfig.S2 ? parseInt(wgConfig.S2, 10) : undefined,
+            h1: wgConfig.H1 ? parseInt(wgConfig.H1, 10) : undefined,
+            h2: wgConfig.H2 ? parseInt(wgConfig.H2, 10) : undefined,
+            h3: wgConfig.H3 ? parseInt(wgConfig.H3, 10) : undefined,
+            h4: wgConfig.H4 ? parseInt(wgConfig.H4, 10) : undefined,
+        };
+        const hasAmneziaOptions = Object.values(amneziaOptions).some(v => v !== undefined);
+        let name = "WG Proxy";
+        if (peerName) {
+            let countryCode = '', identifier = '';
+            const hashMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?#(.+)$/i);
+            const hyphenMatch = peerName.match(/^([A-Z]{2})(?:-FREE)?-(.+)$/i);
+            const simple = peerName.match(/^([A-Z]{2})(?:-FREE)?$/i);
+            if (hashMatch) { countryCode = hashMatch[1].toUpperCase(); identifier = hashMatch[2].trim(); }
+            else if (hyphenMatch) { countryCode = hyphenMatch[1].toUpperCase(); identifier = hyphenMatch[2].trim(); }
+            else if (simple) { countryCode = simple[1].toUpperCase(); identifier = ''; }
+            else { name = peerName.trim().replace(/\s+/g, '-'); }
+            const emoji = countryEmojiMap[countryCode] || '';
+            if (identifier) name = `${emoji ? emoji + ' ' : ''}${countryCode}-${identifier}`;
+            else name = `${emoji ? emoji + ' ' : ''}${countryCode}`;
         }
-        .button-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
-        }
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 500;
-        }
-        .message.success {
-            background-color: var(--message-success-bg);
-            color: var(--message-success-text);
-        }
-        .message.error {
-            background-color: var(--message-error-bg);
-            color: var(--message-error-text);
-        }
-        .grid-cols-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .mb-4 {
-            margin-bottom: 1rem;
-        }
-        .mt-6 {
-            margin-top: 1.5rem;
-        }
+        name = name.trim();
+        const parsedConfig = {
+            name,
+            privateKey: wgConfig.PrivateKey,
+            address: ipv4.split('/')[0],
+            ipv6: ipv6.split('/')[0],
+            dns,
+            publicKey: wgConfig.PublicKey,
+            server,
+            port: parseInt(port, 10),
+            allowedIps,
+            mtu: wgConfig.MTU ? parseInt(wgConfig.MTU, 10) : 1420,
+            reserved,
+            persistentKeepalive: wgConfig.PersistentKeepalive ? parseInt(wgConfig.PersistentKeepalive, 10) : 0,
+            amneziaOptions: hasAmneziaOptions ? amneziaOptions : null
+        };
+        console.log('[Parser] Successfully parsed WireGuard config block:', parsedConfig);
+        return parsedConfig;
+    }
+}
 
-        /* Theme Toggle Switch */
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end; /* Align to the left in RTL for visual consistency */
-            margin-bottom: 20px;
-            gap: 10px;
-            color: var(--label-color);
+// -----------------------------------------------
+// Conversion to Mihomo proxy object (unchanged)
+// -----------------------------------------------
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    console.log('[Converter] Converting WG config to Mihomo proxy. Input WG Config:', wgConfig);
+    console.log(`[Converter] UI Amnezia values: jc=${jcUI}, jmin=${jminUI}, jmax=${jmaxUI}, Amnezia Option: ${amneziaOption}`);
+
+    const mihomoProxy = {
+        name: wgConfig.name,
+        type: 'wireguard',
+        server: wgConfig.server,
+        port: wgConfig.port,
+        ip: wgConfig.address,
+        'private-key': wgConfig.privateKey,
+        'public-key': wgConfig.publicKey,
+        'allowed-ips': wgConfig.allowedIps,
+        udp: true,
+        mtu: wgConfig.mtu,
+        'remote-dns-resolve': true,
+    };
+    if (wgConfig.ipv6) mihomoProxy.ipv6 = wgConfig.ipv6;
+    if (wgConfig.dns?.length) mihomoProxy.dns = wgConfig.dns;
+    if (wgConfig.reserved?.length) mihomoProxy.reserved = wgConfig.reserved;
+    if (wgConfig.persistentKeepalive) mihomoProxy['persistent-keepalive'] = wgConfig.persistentKeepalive;
+
+    if (amneziaOption === 'use-ui-values') {
+        console.log('[Converter] Applying UI Amnezia values.');
+        mihomoProxy['amnezia-wg-option'] = {
+            jc: jcUI, jmin: jminUI, jmax: jmaxUI,
+            s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4
+        };
+    } else if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptions) {
+        console.log('[Converter] Applying config-provided Amnezia values.');
+        const c = wgConfig.amneziaOptions;
+        if (c.jc !== undefined && c.jmin !== undefined && c.jmax !== undefined) {
+            mihomoProxy['amnezia-wg-option'] = {
+                jc: c.jc, jmin: c.jmin, jmax: c.jmax,
+                s1: c.s1 ?? 0, s2: c.s2 ?? 0,
+                h1: c.h1 ?? 1, h2: c.h2 ?? 2, h3: c.h3 ?? 3, h4: c.h4 ?? 4
+            };
+        } else {
+            console.warn('[Converter] Config-provided Amnezia options incomplete, skipping:', c);
         }
-        .theme-switch {
-            display: inline-block;
-            height: 24px;
-            position: relative;
-            width: 48px;
+    } else {
+        console.log('[Converter] No Amnezia options applied based on selection or config.');
+    }
+    console.log('[Converter] Converted Mihomo proxy:', mihomoProxy);
+    return mihomoProxy;
+}
+
+// =========================================================
+// اصلاح اصلی: یکنواخت‌سازی نام پروکسی‌ها
+// =========================================================
+function processTemplateText(templateText, mihomoProxies) {
+    console.log('[Template Processor] Starting template processing.');
+    console.log('[Template Processor] Number of Mihomo proxies:', mihomoProxies.length);
+
+    const proxyBlocks = [];
+    const proxyNames = [];
+
+    mihomoProxies.forEach((proxy, index) => {
+        console.log(`[Template Processor] Processing proxy ${index + 1}: ${proxy.name}`);
+        let yamlFrag = jsyaml.dump(proxy, {
+            indent: 2,
+            lineWidth: -1,
+            flowLevel: 2,
+            noCompatMode: true
+        }).trim();
+
+        // Ensure base64 keys are properly quoted and padded if needed
+        yamlFrag = yamlFrag
+            .replace(/^(private-key|public-key):\s*(['"]?)([A-Za-z0-9+/=]+)(['"]?)$/gm,
+                (m, key, q1, val, q2) => {
+                    // Add padding if missing and it looks like a base64 string
+                    if (!val.endsWith('=') && /^[A-Za-z0-9+/]*={0,2}$/.test(val)) {
+                        const paddingNeeded = (4 - (val.length % 4)) % 4;
+                        val += '='.repeat(paddingNeeded);
+                    }
+                    return `${key}: '${val}'`; // Always quote for safety
+                });
+
+        const block = yamlFrag.split('\n')
+            .map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`))
+            .join('\n');
+
+        proxyBlocks.push(block);
+        console.log(`[Template Processor] Generated YAML fragment for proxy ${index + 1}:\n${block}`);
+
+        const nameMatch = yamlFrag.match(/^name:\s*(.*)$/m);
+        const extractedName = nameMatch ? nameMatch[1] : `"${proxy.name}"`;
+        proxyNames.push(extractedName);
+        console.log(`[Template Processor] Extracted proxy name: ${extractedName}`);
+    });
+
+    const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
+    console.log('[Template Processor] Generated proxy names list YAML:\n', proxyNameListYaml);
+
+    let finalYaml = templateText
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
+        .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
+
+    // Clean up icon URLs if they are still in <url> tags
+    finalYaml = finalYaml.replace(/icon:\s*<url[^>]*>([^<]*)<\/url>/g, 'icon: $1');
+    console.log('[Template Processor] Final YAML generated (first 500 chars):\n', finalYaml.substring(0, 500) + '...');
+    return finalYaml;
+}
+
+// -----------------------------------------------
+// Main generator handler (unchanged)
+// -----------------------------------------------
+generateBtn.addEventListener('click', handleGenerate); // Ensure event listener is attached
+
+async function handleGenerate() {
+    console.log('[Handler] "Convert and Download" button clicked. Starting generation process.');
+
+    const jc = parseInt(jcInput.value, 10);
+    const jmin = parseInt(jminInput.value, 10);
+    const jmax = parseInt(jmaxInput.value, 10);
+    const amneziaOption = amneziaOptionSelect.value;
+    let outputFileName = outputFileNameInput.value.trim();
+    if (!outputFileName.endsWith('.yaml') && !outputFileName.endsWith('.yml')) {
+        outputFileName += '.yaml';
+    }
+    console.log(`[Handler] Input values: jc=${jc}, jmin=${jmin}, jmax=${jmax}, amneziaOption=${amneziaOption}, outputFileName=${outputFileName}`);
+
+    const selectedTemplateKey = templateSelect.value;
+    const templatePath = `./config-templates/${selectedTemplateKey}.yaml`;
+    console.log(`[Handler] Selected template: ${selectedTemplateKey}, path: ${templatePath}`);
+
+    let baseTemplateContent;
+    try {
+        console.log('[Handler] Fetching template content...');
+        const response = await fetch(templatePath);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
-        .theme-switch input {
-            display: none;
+        baseTemplateContent = await response.text();
+        console.log('[Handler] Template content fetched successfully.');
+    } catch (error) {
+        console.error('[Handler] Error fetching template:', error);
+        showMessage(`خطا در بارگذاری تمپلت: ${error.message}`, 'error');
+        return;
+    }
+    if (!baseTemplateContent) {
+        showMessage('تمپلت قوانین انتخاب شده یافت نشد.', 'error');
+        console.error('[Handler] Base template content is empty.');
+        return;
+    }
+
+    if (amneziaOption === 'use-ui-values' && (isNaN(jc) || isNaN(jmin) || isNaN(jmax))) {
+        showMessage('لطفاً مقادیر jc، jmin و jmax را به درستی وارد کنید…', 'error');
+        console.warn('[Handler] Amnezia UI values are invalid.');
+        return;
+    }
+
+    let allWgConfigs = [];
+    const textAreaContent = wgConfigInput.value.trim();
+    console.log(`[Handler] Textarea content length: ${textAreaContent.length}`);
+    console.log(`[Handler] Number of uploaded files: ${uploadedFilesContent.length}`);
+
+    const processRawBlocks = (content, source) => {
+        if (!content.trim()) {
+            console.log(`[Handler] No content to process from ${source}.`);
+            return;
         }
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 24px;
+        console.log(`[Handler] Processing raw blocks from ${source}.`);
+        const blocks = content.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+        console.log(`[Handler] Found ${blocks.length} potential blocks from ${source}.`);
+        blocks.forEach((b, index) => {
+            console.log(`[Handler] Parsing block ${index + 1} from ${source}...`);
+            const parsed = parseWireGuardConfigBlockOrUri(b.trim());
+            if (parsed) {
+                allWgConfigs.push(parsed);
+                console.log(`[Handler] Successfully parsed block ${index + 1} from ${source}. Total parsed: ${allWgConfigs.length}`);
+            } else {
+                console.warn(`[Handler] Failed to parse block ${index + 1} from ${source}.`);
+            }
+        });
+    };
+
+    if (textAreaContent) processRawBlocks(textAreaContent, 'textarea');
+    uploadedFilesContent.forEach(fc => processRawBlocks(fc, 'uploaded file'));
+
+    if (allWgConfigs.length === 0) {
+        showMessage('هیچ کانفیگ WireGuard معتبری یافت نشد.', 'error');
+        console.warn('[Handler] No valid WireGuard configurations found after parsing all inputs.');
+        return;
+    }
+    console.log(`[Handler] Total valid WireGuard configs found: ${allWgConfigs.length}`);
+
+    // unique names
+    console.log('[Handler] Ensuring unique names for proxies.');
+    const usedNames = new Set();
+    allWgConfigs.forEach(cfg => {
+        let base = cfg.name.trim();
+        if (!base || base.toLowerCase().includes('wg proxy')) {
+            base = cfg.server ? `WG-${cfg.server.replace(/\./g, '-')}` : 'WG-Proxy';
         }
-        .slider:before {
-            background-color: #fff;
-            bottom: 2px;
-            content: "";
-            height: 20px;
-            left: 2px;
-            position: absolute;
-            width: 20px;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider {
-            background-color: #2196f3;
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="theme-switch-wrapper">
-            <span>حالت شب</span>
-            <label class="theme-switch" for="themeToggle">
-                <input type="checkbox" id="themeToggle">
-                <div class="slider"></div>
-            </label>
-            <span>حالت روز</span>
-        </div>
+        let cur = base, cnt = 1;
+        while (usedNames.has(cur)) cur = `${base}-${cnt++}`;
+        cfg.name = cur;
+        usedNames.add(cur);
+        console.log(`[Handler] Assigned unique name: ${cfg.name}`);
+    });
 
-        <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
+    console.log('[Handler] Converting WireGuard configs to Mihomo proxy objects.');
+    const mihomoProxies = allWgConfigs.map(c => convertWgToMihomo(c, jc, jmin, jmax, amneziaOption));
+    console.log(`[Handler] Converted ${mihomoProxies.length} Mihomo proxies.`);
 
-        <div class="mb-4">
-            <label for="wgConfigInput">کانفیگ WireGuard (متنی)</label>
-            <textarea id="wgConfigInput" rows="10" placeholder="کانفیگ‌های WireGuard (متنی، URI، یا Mihomo/Hiddify YAML/JSON) را اینجا وارد کنید..."></textarea>
-        </div>
+    try {
+        console.log('[Handler] Processing template with generated Mihomo proxies.');
+        const finalYaml = processTemplateText(baseTemplateContent, mihomoProxies);
+        console.log('[Handler] Final YAML generated. Initiating download.');
+        downloadFile(outputFileName, finalYaml);
+        showMessage('فایل کانفیگ با موفقیت تولید و دانلود شد!', 'success');
+        console.log('[Handler] Process completed successfully.');
+    } catch (e) {
+        console.error('[Handler] Error during YAML generation or download:', e);
+        showMessage('خطا در تولید YAML: ' + e.message, 'error');
+    }
+}
+// -----------------------------------------------
+// Download helper (کامل و تست‌شده)
+// -----------------------------------------------
+function downloadFile(filename, content) {
+    console.log(`[Download] Preparing to download file: "${filename}"`);
+    // 1) ساخت Blob با MIME مناسب
+    const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
+    console.log('[Download] Blob created.');
 
-        <div class="mb-4">
-            <label for="wgConfigFile">یا فایل‌های کانفیگ WireGuard را آپلود کنید</label>
-            <div class="file-input-wrapper">
-                <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
-                <div class="button">انتخاب فایل‌ها</div>
-            </div>
-            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
-        </div>
+    // 2) ایجاد لینک مخفی
+    const link = document.createElement('a');
+    link.style.display = 'none';
+    console.log('[Download] Hidden link element created.');
 
-        <div class="grid-cols-3 mb-4">
-            <div>
-                <label for="jcInput">jc</label>
-                <input type="number" id="jcInput" value="4" min="0">
-            </div>
-            <div>
-                <label for="jminInput">jmin</label>
-                <input type="number" id="jminInput" value="40" min="0">
-            </div>
-            <div>
-                <label for="jmaxInput">jmax</label>
-                <input type="number" id="jmaxInput" value="250" min="0">
-            </div>
-        </div>
+    // 3) تولید URL موقت
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    console.log(`[Download] Temporary URL created: ${url}. Download filename set to: ${filename}`);
 
-        <div class="mb-4">
-            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
-            <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر وارد شده (پیش‌فرض)</option>
-                <option value="use-config-values">استفاده از مقادیر کانفیگ</option>
-                <option value="no-amnezia">استفاده نکردن</option>
-            </select>
-        </div>
+    // 4) اضافه به DOM، کلیک و پاک‌سازی
+    document.body.appendChild(link);
+    console.log('[Download] Link appended to DOM. Simulating click...');
+    link.click();
+    document.body.removeChild(link);
+    console.log('[Download] Link removed from DOM.');
 
-        <div class="mb-4">
-            <label for="templateSelect">انتخاب تمپلت قوانین</label>
-            <select id="templateSelect">
-                <option value="full-rule-template">قوانین کامل</option>
-                <option value="iran-template">قوانین ایران</option>
-                <option value="no-rule-template">بدون قوانین</option>
-            </select>
-        </div>
-
-        <div class="mb-6">
-            <label for="outputFileName">نام فایل خروجی</label>
-            <input type="text" id="outputFileName" value="mihomo_config">
-        </div>
-
-        <button id="generateBtn" class="button-primary">تبدیل و دانلود</button>
-
-        <div id="message" class="message hidden"></div>
-    </div>
-
-    <!-- Link to the external JavaScript file -->
-    <script type="module" src="script.js"></script>
-</body>
-</html>
+    // 5) آزادسازی حافظه
+    URL.revokeObjectURL(url);
+    console.log('[Download] Temporary URL revoked (memory freed).');
+}
