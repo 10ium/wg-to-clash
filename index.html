@@ -13,36 +13,23 @@
     <!-- js-yaml for YAML conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
-        /* CSS Variables for theming */
         :root {
-            /* Light Theme Body Background (color-based) */
-            --body-bg-start: #ADD8E6; /* Light Blue (Sky Blue) */
-            --body-bg-end: #E0F2FE;    /* Very light blue */
-
-            /* Dark Theme Body Background (color-based) */
-            --body-bg-dark-start: #1a202c; /* Dark charcoal */
-            --body-bg-dark-end: #2d3748;    /* Dark gray */
-
-            /* Container Background Image */
-            --container-bg-image: url('background.jpg'); /* Futuristic City */
-            
-            /* Container Overlay Colors (Light Theme) */
-            --container-overlay-start-light: rgba(59, 130, 246, 0.7); /* Blue with transparency */
-            --container-overlay-end-light: rgba(96, 165, 250, 0.7);    /* Lighter blue with transparency */
-            
-            /* Container Overlay Colors (Dark Theme) */
-            --container-overlay-start-dark: rgba(30, 64, 175, 0.8); /* Darker blue with more transparency */
-            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);    /* Blue with more transparency */
-
-
-            /* Text and Input Colors (Default: Light Theme, adjusted for better contrast on container background) */
-            --text-color: #f8fafc; /* Light text */
-            --label-color: #e2e8f0; /* Slightly darker light text */
-            --input-bg: rgba(255, 255, 255, 0.3); /* More opaque white for inputs */
-            --input-text: #ffffff; /* Pure white for input values */
-            --input-placeholder: #a3b1c2; /* Darker placeholder */
-            --input-focus-bg: rgba(255, 255, 255, 0.4); /* Even more opaque on focus */
-            --input-disabled-bg: rgba(100, 116, 139, 0.3); /* Disabled background */
+            --body-bg-start: #ADD8E6;
+            --body-bg-end: #E0F2FE;
+            --body-bg-dark-start: #1a202c;
+            --body-bg-dark-end: #2d3748;
+            --container-bg-image: url('background.jpg');
+            --container-overlay-start-light: rgba(59, 130, 246, 0.7);
+            --container-overlay-end-light: rgba(96, 165, 250, 0.7);
+            --container-overlay-start-dark: rgba(30, 64, 175, 0.8);
+            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);
+            --text-color: #f8fafc;
+            --label-color: #e2e8f0;
+            --input-bg: rgba(255, 255, 255, 0.3);
+            --input-text: #ffffff;
+            --input-placeholder: #a3b1c2;
+            --input-focus-bg: rgba(255, 255, 255, 0.4);
+            --input-disabled-bg: rgba(100, 116, 139, 0.3);
             --file-button-bg: #1e40af;
             --file-button-hover-bg: #2563eb;
             --main-button-start: #2563eb;
@@ -51,28 +38,24 @@
             --message-success-text: #d1fae5;
             --message-error-bg: rgba(252, 165, 165, 0.2);
             --message-error-text: #fee2e2;
-            --select-option-bg: #1a202c; /* Dark neutral for options */
-            --select-option-text: #ffffff; /* Pure white for option text */
+            --select-option-bg: #1a202c;
+            --select-option-text: #ffffff;
         }
-
-        /* Dark Theme overrides for text and input colors */
         body[data-theme='dark'] {
-            --text-color: #e2e8f0; /* Lighter text */
-            --label-color: #cbd5e1; /* Even lighter light text */
-            --input-bg: rgba(0, 0, 0, 0.4); /* More opaque black for inputs */
-            --input-text: #e2e8f0; /* Light gray for input values */
-            --input-placeholder: #a0aec0; /* Lighter placeholder */
-            --input-focus-bg: rgba(0, 0, 0, 0.5); /* Even more opaque on focus */
-            --input-disabled-bg: rgba(71, 85, 105, 0.4); /* Disabled background for dark theme */
-            --file-button-bg: #4a5568; /* Darker gray */
+            --text-color: #e2e8f0;
+            --label-color: #cbd5e1;
+            --input-bg: rgba(0, 0, 0, 0.4);
+            --input-text: #e2e8f0;
+            --input-placeholder: #a0aec0;
+            --input-focus-bg: rgba(0, 0, 0, 0.5);
+            --input-disabled-bg: rgba(71, 85, 105, 0.4);
+            --file-button-bg: #4a5568;
             --file-button-hover-bg: #2d3748;
             --main-button-start: #4a5568;
             --main-button-end: #2d3748;
-            --select-option-bg: #2d3748; /* Even darker neutral for options */
-            --select-option-text: #e2e8f0; /* Light gray for option text */
+            --select-option-bg: #2d3748;
+            --select-option-text: #e2e8f0;
         }
-
-        /* General styles using CSS variables */
         body {
             background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end));
             background-size: cover;
@@ -88,12 +71,9 @@
             color: var(--text-color);
             transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
         }
-        
-        /* Dark theme body background */
         body[data-theme='dark'] {
             background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end));
         }
-
         .container {
             background-size: cover;
             background-position: center;
@@ -106,7 +86,6 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             transition: background 0.5s ease-in-out;
         }
-        /* Container background with dynamic overlay based on theme */
         body[data-theme='light'] .container {
             background: 
                 linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), 
@@ -114,7 +93,7 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-blend-mode: multiply; /* Blend the blue gradient with the image */
+            background-blend-mode: multiply;
         }
         body[data-theme='dark'] .container {
             background: 
@@ -123,9 +102,8 @@
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-blend-mode: multiply; /* Blend the blue gradient with the image */
+            background-blend-mode: multiply;
         }
-
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
@@ -183,7 +161,6 @@
         select:focus {
             color: var(--input-text);
         }
-
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
@@ -252,18 +229,13 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
-        .mb-4 {
-            margin-bottom: 1rem;
-        }
-        .mt-6 {
-            margin-top: 1.5rem;
-        }
-
-        /* Theme Toggle Switch */
+        .mb-4 { margin-bottom: 1rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
         .theme-switch-wrapper {
             display: flex;
             align-items: center;
-            justify-content: flex-end; /* Align to the left in RTL for visual consistency */
+            justify-content: flex-end;
             margin-bottom: 20px;
             gap: 10px;
             color: var(--label-color);
@@ -274,9 +246,7 @@
             position: relative;
             width: 48px;
         }
-        .theme-switch input {
-            display: none;
-        }
+        .theme-switch input { display: none; }
         .slider {
             background-color: #ccc;
             bottom: 0;
@@ -299,12 +269,8 @@
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider {
-            background-color: #2196f3;
-        }
-        input:checked + .slider:before {
-            transform: translateX(24px);
-        }
+        input:checked + .slider { background-color: #2196f3; }
+        input:checked + .slider:before { transform: translateX(24px); }
     </style>
 </head>
 <body>
@@ -321,12 +287,12 @@
         <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
         <div class="mb-4">
-            <label for="wgConfigInput">کانفیگ WireGuard (متنی)</label>
-            <textarea id="wgConfigInput" rows="10" placeholder="کانفیگ‌های WireGuard (متنی، URI، یا Mihomo/Hiddify YAML/JSON) را اینجا وارد کنید..."></textarea>
+            <label for="wgConfigInput">ورودی کانفیگ یا لینک اشتراک</label>
+            <textarea id="wgConfigInput" rows="10" placeholder="کانفیگ‌های WireGuard یا لینک‌های اشتراک (هر کدام در یک خط) را اینجا وارد کنید..."></textarea>
         </div>
 
         <div class="mb-4">
-            <label for="wgConfigFile">یا فایل‌های کانفیگ WireGuard را آپلود کنید</label>
+            <label for="wgConfigFile">یا فایل‌های کانفیگ را آپلود کنید</label>
             <div class="file-input-wrapper">
                 <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
                 <div class="button">انتخاب فایل‌ها</div>
@@ -348,22 +314,13 @@
                 <option value="10,30,60" data-name="Rus_Flood">پیشنهاد مبدل روسی (کوچک و زیاد)</option>
             </select>
         </div>
-
+        
         <div class="grid-cols-3 mb-4">
-            <div>
-                <label for="jcInput">jc</label>
-                <input type="number" id="jcInput" value="4" min="0">
-            </div>
-            <div>
-                <label for="jminInput">jmin</label>
-                <input type="number" id="jminInput" value="40" min="0">
-            </div>
-            <div>
-                <label for="jmaxInput">jmax</label>
-                <input type="number" id="jmaxInput" value="250" min="0">
-            </div>
+            <div><label for="jcInput">jc</label><input type="number" id="jcInput" value="4" min="0"></div>
+            <div><label for="jminInput">jmin</label><input type="number" id="jminInput" value="40" min="0"></div>
+            <div><label for="jmaxInput">jmax</label><input type="number" id="jmaxInput" value="250" min="0"></div>
         </div>
-
+        
         <div class="mb-4">
             <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
             <select id="amneziaOptionSelect">
@@ -390,15 +347,19 @@
         <button id="generateBtn" class="button-primary">تبدیل و دانلود</button>
 
         <div id="message" class="message hidden"></div>
+        
+        <div id="errorDetailsContainer" class="hidden mt-4 p-4 border border-red-400 bg-red-900 bg-opacity-30 rounded-lg">
+            <h3 class="font-bold text-lg mb-2 text-red-300">جزئیات خطاها:</h3>
+            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300">
+                <!-- Error items will be dynamically added here -->
+            </ul>
+        </div>
     </div>
 
-    <!-- Link to the external JavaScript file -->
     <script type="module" src="script.js"></script>
-
-    <!-- FINAL JAVASCRIPT LOGIC -->
+    
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Get all relevant elements from the DOM
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
             const jminInput = document.getElementById('jminInput');
@@ -406,61 +367,43 @@
             const outputFileNameInput = document.getElementById('outputFileName');
             const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
             const templateSelect = document.getElementById('templateSelect');
-            const baseFileName = 'Mihomo_WireGuard'; // UPDATED BASE NAME
+            const baseFileName = 'Mihomo_WireGuard';
 
-            // Function to enable/disable the manual jc, jmin, jmax inputs
             function updateValueInputs(isCustom) {
                 jcInput.disabled = !isCustom;
                 jminInput.disabled = !isCustom;
                 jmaxInput.disabled = !isCustom;
             }
 
-            // Function to dynamically update the output filename
             function updateOutputFilename() {
                 let finalName = baseFileName;
-
-                // Part 1: Add AmneziaWG profile name if it's active
                 const amneziaMode = amneziaOptionSelect.value;
                 if (amneziaMode === 'use-ui-values') {
                     const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
-                    const profileName = selectedProfileOption.dataset.name;
-                    finalName += `_[${profileName}]`;
+                    finalName += `_[${selectedProfileOption.dataset.name}]`;
                 }
-
-                // Part 2: Add the selected rules template name
                 const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
-                const templateName = selectedTemplateOption.dataset.name;
-                finalName += `_[${templateName}]`;
-
-                // Set the final generated name to the input field
+                finalName += `_[${selectedTemplateOption.dataset.name}]`;
                 outputFileNameInput.value = finalName;
             }
 
-            // --- Event Listeners ---
-
-            // When the AmneziaWG profile changes...
             profileSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
-                // Enable/disable manual inputs
                 updateValueInputs(selectedValue === 'custom');
-                // If a preset is chosen, fill the values
                 if (selectedValue !== 'custom') {
                     const values = selectedValue.split(',');
                     jcInput.value = values[0];
                     jminInput.value = values[1];
                     jmaxInput.value = values[2];
                 }
-                // Update the filename
                 updateOutputFilename();
             });
 
-            // When the main Amnezia setting or the rules template changes...
             amneziaOptionSelect.addEventListener('change', updateOutputFilename);
             templateSelect.addEventListener('change', updateOutputFilename);
 
-            // --- Initial Setup on Page Load ---
-            updateValueInputs(profileSelect.value === 'custom'); // Set initial state of manual inputs
-            updateOutputFilename(); // Set initial filename
+            updateValueInputs(profileSelect.value === 'custom');
+            updateOutputFilename();
         });
     </script>
 </body>
