@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - Final Version with Multi-Format Parsing & All Features
+// script.js - Final Version with 4-Mode Multi-Format Parsing
 // ===================================================================
 
 // --- Country Code to Emoji Mapping ---
@@ -99,103 +99,7 @@ async function fetchSubscriptionContents(urls) {
     return Promise.all(promises);
 }
 
-// --- Mihomo/Clash Config Extractor ---
-function extractProxiesFromMihomo(configObject) {
-    const proxies = configObject.proxies || configObject.outbounds || [];
-    return proxies
-        .filter(p => p.type && p.type.toLowerCase() === 'wireguard')
-        .map(p => {
-            const localAddress = Array.isArray(p.local_address) ? p.local_address.join(',') : p.ip;
-            const amneziaOptions = p['amnezia-wg-option'] ? {
-                jc: p['amnezia-wg-option'].jc,
-                jmin: p['amnezia-wg-option'].jmin,
-                jmax: p['amnezia-wg-option'].jmax,
-            } : null;
-
-            // Map Mihomo fields to our internal standard format
-            const mappedConfig = {
-                name: p.name || null,
-                privateKey: p.private_key || null,
-                publicKey: p.public_key || p.peer_public_key || null,
-                server: p.server || null,
-                port: p.port || p.server_port || null,
-                address: localAddress || '172.16.0.2/32',
-                mtu: p.mtu || 1420,
-                allowedIps: p.allowed_ips || ['0.0.0.0/0', '::/0'],
-                dns: p.dns || [],
-                amneziaOptionsFromConfig: amneziaOptions,
-            };
-            return validateAndComplete(mappedConfig, JSON.stringify(p));
-        });
-}
-
-// --- Standard WireGuard Config Parser ---
-function parseWireGuardConfig(inputBlock) {
-    let rawConfig = {};
-    let peerComment = '';
-    
-    try {
-        if (inputBlock.startsWith('wireguard://')) {
-            const url = new URL(inputBlock);
-            const params = new URLSearchParams(url.search);
-            rawConfig = {
-                privateKey: decodeURIComponent(url.username) || null,
-                server: url.hostname || null,
-                port: url.port ? parseInt(url.port, 10) : null,
-                publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
-                address: params.get('address'),
-                mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
-                name: decodeURIComponent(url.hash.substring(1)) || null,
-            };
-        } else {
-            const lines = inputBlock.split('\n').map(l => l.trim());
-            const interfaceSection = {};
-            const peerSection = {};
-            let currentSection = '';
-
-            lines.forEach(line => {
-                if (line.startsWith('#')) {
-                    if (!peerComment) peerComment = line.substring(1).trim();
-                } else {
-                    const lowerLine = line.toLowerCase();
-                    if (lowerLine.startsWith('[interface]')) currentSection = 'Interface';
-                    else if (lowerLine.startsWith('[peer]')) currentSection = 'Peer';
-                    else if (line.includes('=')) {
-                        const [key, value] = line.split('=', 2).map(s => s.trim());
-                        if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
-                        else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
-                    }
-                }
-            });
-
-            const [server, port] = (peerSection.endpoint || '').split(':');
-            const amneziaOptions = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
-                jc: parseInt(interfaceSection.jc, 10),
-                jmin: parseInt(interfaceSection.jmin, 10),
-                jmax: parseInt(interfaceSection.jmax, 10),
-            } : null;
-
-            rawConfig = {
-                privateKey: interfaceSection.privatekey || null,
-                publicKey: peerSection.publickey || null,
-                server: server || null,
-                port: port ? parseInt(port, 10) : null,
-                address: interfaceSection.address,
-                mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu, 10) : null,
-                dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
-                allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
-                name: peerComment || null,
-                amneziaOptionsFromConfig: amneziaOptions,
-            };
-        }
-    } catch (e) {
-        return { error: true, reason: 'ساختار کلی کانفیگ نامعتبر است', source: inputBlock };
-    }
-    
-    return validateAndComplete(rawConfig, inputBlock);
-}
-
-// --- Validator and Completer ---
+// --- Universal Validator and Completer ---
 function validateAndComplete(config, source) {
     const essentials = ['privateKey', 'publicKey', 'server', 'port'];
     for (const key of essentials) {
@@ -204,7 +108,6 @@ function validateAndComplete(config, source) {
         }
     }
     
-    // Set defaults for optional fields if they are missing
     config.address = config.address || '172.16.0.2/32';
     config.mtu = config.mtu || 1420;
     config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0'];
@@ -221,14 +124,141 @@ function validateAndComplete(config, source) {
         const emoji = countryEmojiMap[countryCode] || '';
         config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' ');
     } else {
-        config.name = `WG-${config.server.replace(/[.:]/g, '-')}`;
+        config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
     }
 
-    const addresses = config.address.split(',').map(a => a.trim());
+    const addresses = Array.isArray(config.address) ? config.address : config.address.split(',');
     config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '';
     config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || '';
     
     return config;
+}
+
+// --- Format-Specific Parsers ---
+function parseFromMihomo(configObject) {
+    const proxies = configObject.proxies || [];
+    return proxies
+        .filter(p => p.type && p.type.toLowerCase() === 'wireguard')
+        .map(p => {
+            const mappedConfig = {
+                name: p.name || null,
+                privateKey: p['private-key'] || null,
+                publicKey: p['public-key'] || null,
+                server: p.server || null,
+                port: p.port || null,
+                address: p.ip,
+                ipv6: p.ipv6,
+                mtu: p.mtu,
+                allowedIps: p['allowed-ips'],
+                dns: p.dns,
+                amneziaOptionsFromConfig: p['amnezia-wg-option'] || null
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(p));
+        });
+}
+
+function parseFromSingBox(configObject) {
+    const outbounds = configObject.outbounds || [];
+    return outbounds
+        .filter(o => o.type && o.type.toLowerCase() === 'wireguard')
+        .map(o => {
+            const mappedConfig = {
+                name: o.tag || null,
+                privateKey: o.private_key || null,
+                publicKey: o.peer_public_key || null,
+                server: o.server || null,
+                port: o.server_port || null,
+                address: o.local_address,
+                mtu: o.mtu,
+                amneziaOptionsFromConfig: o.amnezia || null,
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(o));
+        });
+}
+
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    return blocks.map(block => {
+        let rawConfig = {};
+        let peerComment = '';
+        try {
+            if (block.startsWith('wireguard://')) {
+                const url = new URL(block);
+                const params = new URLSearchParams(url.search);
+                rawConfig = {
+                    name: decodeURIComponent(url.hash.substring(1)) || null,
+                    privateKey: decodeURIComponent(url.username) || null,
+                    server: url.hostname || null,
+                    port: url.port ? parseInt(url.port, 10) : null,
+                    publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
+                    address: params.get('address'),
+                    mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
+                };
+            } else {
+                const lines = block.split('\n').map(l => l.trim());
+                const interfaceSection = {}, peerSection = {};
+                let currentSection = '';
+                lines.forEach(line => {
+                    if (line.startsWith('#')) {
+                        if (!peerComment) peerComment = line.substring(1).trim();
+                    } else {
+                        const lowerLine = line.toLowerCase();
+                        if (lowerLine.startsWith('[interface]')) currentSection = 'Interface';
+                        else if (lowerLine.startsWith('[peer]')) currentSection = 'Peer';
+                        else if (line.includes('=')) {
+                            const [key, value] = line.split('=', 2).map(s => s.trim());
+                            if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
+                            else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
+                        }
+                    }
+                });
+                const [server, port] = (peerSection.endpoint || '').split(':');
+                const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
+                    jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
+                } : null;
+                rawConfig = {
+                    name: peerComment || null,
+                    privateKey: interfaceSection.privatekey || null,
+                    publicKey: peerSection.publickey || null,
+                    server: server || null,
+                    port: port ? parseInt(port, 10) : null,
+                    address: interfaceSection.address,
+                    mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
+                    dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
+                    allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
+                    amneziaOptionsFromConfig: amneziaOpts,
+                };
+            }
+            return validateAndComplete(rawConfig, block);
+        } catch (e) {
+            return { error: true, reason: 'ساختار کانفیگ نامعتبر است', source: block };
+        }
+    });
+}
+
+// --- Main Parser Orchestrator ---
+function parseAllInputs(textContent) {
+    // Attempt to parse as a structured file first (JSON or YAML)
+    try {
+        const structuredConfig = jsyaml.load(textContent);
+        if (typeof structuredConfig === 'object' && structuredConfig !== null) {
+            // Check for Sing-Box format
+            if (structuredConfig.outbounds) {
+                const configs = parseFromSingBox(structuredConfig);
+                if (configs.length > 0) return configs;
+            }
+            // Check for Clash/Mihomo format
+            if (structuredConfig.proxies) {
+                const configs = parseFromMihomo(structuredConfig);
+                if (configs.length > 0) return configs;
+            }
+        }
+    } catch (e) {
+        // Not a valid YAML/JSON file, will fallback to text parsing.
+    }
+    
+    // Fallback: Parse as plain text (blocks or URIs)
+    return parseFromText(textContent);
 }
 
 // --- Mihomo Conversion ---
@@ -247,17 +277,16 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     };
     if (wgConfig.ipv6) mihomoProxy.ipv6 = wgConfig.ipv6;
     if (wgConfig.dns?.length > 0) mihomoProxy.dns = wgConfig.dns;
-    
+
     if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptionsFromConfig) {
         mihomoProxy['amnezia-wg-option'] = wgConfig.amneziaOptionsFromConfig;
     } else if (amneziaOption === 'use-ui-values') {
         mihomoProxy['amnezia-wg-option'] = { jc: jcUI, jmin: jminUI, jmax: jmaxUI, s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4 };
     }
-    
     return mihomoProxy;
 }
 
-// --- Template Processing ---
+// --- Template Processing & Download ---
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(proxy => {
         let yamlFrag = jsyaml.dump(proxy, { indent: 4, flowLevel: 2, noCompatMode: true });
@@ -269,7 +298,6 @@ function processTemplateText(templateText, mihomoProxies) {
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
 
-// --- Download Helper ---
 function downloadFile(filename, content) {
     const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
     const link = document.createElement('a');
@@ -326,25 +354,9 @@ generateBtn.addEventListener('click', async function handleGenerate() {
         return;
     }
     
-    let parsedConfigs = [];
-    try {
-        const jsonOrYaml = jsyaml.load(finalContentToParse);
-        if (typeof jsonOrYaml === 'object' && jsonOrYaml !== null) {
-            parsedConfigs = extractProxiesFromMihomo(jsonOrYaml);
-        } else {
-             throw new Error("Not a valid object.");
-        }
-    } catch (e) {
-        // If parsing as a single object fails, fallback to block-based parsing
-        const blocks = finalContentToParse.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
-        blocks.forEach(block => {
-            const result = parseWireGuardConfig(block.trim());
-            parsedConfigs.push(result);
-        });
-    }
-    
-    const successfulConfigs = parsedConfigs.filter(p => !p.error);
-    const failedConfigs = parsedConfigs.filter(p => p.error);
+    const parsedResults = parseAllInputs(finalContentToParse);
+    const successfulConfigs = parsedResults.filter(p => !p.error);
+    const failedConfigs = parsedResults.filter(p => p.error);
     errorDetails.push(...failedConfigs);
 
     if (successfulConfigs.length === 0) {
