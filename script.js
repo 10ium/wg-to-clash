@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - Final Version with Staging Area and Config Management
+// script.js - Final Version with Bug Fixes and All Features
 // ===================================================================
 
 // --- Country Code to Emoji Mapping ---
@@ -194,7 +194,7 @@ function parseFromSingBox(configObject) {
 function parseFromText(textContent) {
     const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
-        let rawConfig = {}, peerComment = '';
+        let rawConfig = {}, interfaceComment = '', peerComment = '';
         try {
             if (block.startsWith('wireguard://')) {
                 const url = new URL(block); const params = new URLSearchParams(url.search);
@@ -208,8 +208,11 @@ function parseFromText(textContent) {
                 const lines = block.split('\n').map(l => l.trim());
                 const interfaceSection = {}, peerSection = {}; let currentSection = '';
                 lines.forEach(line => {
-                    if (line.startsWith('#')) { if (!peerComment) peerComment = line.substring(1).trim(); } 
-                    else {
+                    if (line.startsWith('#')) {
+                        const commentText = line.substring(1).trim();
+                        if (currentSection === 'Peer' && !peerComment) { peerComment = commentText; }
+                        else if (currentSection === 'Interface' && !interfaceComment) { interfaceComment = commentText; }
+                    } else {
                         const lowerLine = line.toLowerCase();
                         if (lowerLine.startsWith('[interface]')) currentSection = 'Interface';
                         else if (lowerLine.startsWith('[peer]')) currentSection = 'Peer';
@@ -225,7 +228,7 @@ function parseFromText(textContent) {
                     jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
                 } : null;
                 rawConfig = {
-                    name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
+                    name: peerComment || interfaceComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
                     server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
                     mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
                     dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
@@ -279,7 +282,10 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 // --- Template Processing & Download ---
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(proxy => {
-        let yamlFrag = jsyaml.dump(proxy, { indent: 4, flowLevel: 2, noCompatMode: true });
+        let cleanProxy = {...proxy};
+        let yamlFrag = jsyaml.dump(cleanProxy, { indent: 4, flowLevel: 2, noCompatMode: true, quotingType: "'" });
+        // Force quotes on keys to fix Base64 issue
+        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, "$1: '$2'");
         return `  - ${yamlFrag.replace(/\n/g, '\n    ').trim()}`;
     }).join('\n');
     const proxyNameListYaml = mihomoProxies.map(p => `      - "${p.name}"`).join('\n');
