@@ -287,8 +287,12 @@
         <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
         <div class="mb-4">
-            <label for="wgConfigInput">ورودی کانفیگ یا لینک اشتراک</label>
-            <textarea id="wgConfigInput" rows="10" placeholder="کانفیگ‌های WireGuard یا لینک‌های اشتراک (هر کدام در یک خط) را اینجا وارد کنید..."></textarea>
+            <label for="wgConfigInput">ورودی کانفیگ (متن کامل یا لینک)</label>
+            <textarea id="wgConfigInput" rows="10" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..."></textarea>
+            <!-- NEW: Helper text to inform users about supported formats -->
+            <p class="text-sm text-gray-400 -mt-3 mb-3">
+                پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI
+            </p>
         </div>
 
         <div class="mb-4">
