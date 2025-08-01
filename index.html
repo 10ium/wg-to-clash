@@ -34,6 +34,8 @@
             --file-button-hover-bg: #2563eb;
             --main-button-start: #2563eb;
             --main-button-end: #3b82f6;
+            --secondary-button-bg: rgba(71, 85, 105, 0.6);
+            --secondary-button-hover-bg: rgba(100, 116, 139, 0.6);
             --message-success-bg: rgba(134, 239, 172, 0.2);
             --message-success-text: #d1fae5;
             --message-error-bg: rgba(252, 165, 165, 0.2);
@@ -53,248 +55,61 @@
             --file-button-hover-bg: #2d3748;
             --main-button-start: #4a5568;
             --main-button-end: #2d3748;
+            --secondary-button-bg: rgba(30, 41, 59, 0.8);
+            --secondary-button-hover-bg: rgba(51, 65, 85, 0.8);
             --select-option-bg: #2d3748;
             --select-option-text: #e2e8f0;
         }
-        body {
-            background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end));
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            font-family: 'Vazirmatn', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            color: var(--text-color);
-            transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
-        }
-        body[data-theme='dark'] {
-            background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end));
-        }
-        .container {
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 800px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: background 0.5s ease-in-out;
-        }
-        body[data-theme='light'] .container {
-            background: 
-                linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), 
-                var(--container-bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-blend-mode: multiply;
-        }
-        body[data-theme='dark'] .container {
-            background: 
-                linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), 
-                var(--container-bg-image);
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-blend-mode: multiply;
-        }
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 30px;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--label-color);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-        }
-        textarea, input[type="text"], input[type="number"], select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 20px;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            background-color: var(--input-bg);
-            color: var(--input-text);
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: left 1rem center;
-            background-size: 1.5em;
-            padding-left: 3rem;
-        }
-        textarea::placeholder, input::placeholder {
-            color: var(--input-placeholder);
-        }
-        textarea:focus, input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
-            background-color: var(--input-focus-bg);
-        }
-        input:disabled {
-            background-color: var(--input-disabled-bg);
-            cursor: not-allowed;
-        }
-        select {
-            color: var(--input-text);
-        }
-        select option {
-            background-color: var(--select-option-bg);
-            color: var(--select-option-text);
-            padding: 10px 15px;
-        }
-        select:focus {
-            color: var(--input-text);
-        }
-        .file-input-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .file-input-wrapper input[type=file] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            width: 100%;
-            height: 100%;
-        }
-        .file-input-wrapper .button {
-            display: block;
-            width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            background-color: var(--file-button-bg);
-            color: white;
-            text-align: center;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 15px rgba(30, 64, 175, 0.4);
-        }
-        .file-input-wrapper .button:hover {
-            background-color: var(--file-button-hover-bg);
-        }
-        .button-primary {
-            width: 100%;
-            padding: 15px 20px;
-            border-radius: 12px;
-            background: linear-gradient(to right, var(--main-button-start), var(--main-button-end));
-            color: white;
-            font-size: 1.125rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
-        }
-        .button-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
-        }
-        .message {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 500;
-        }
-        .message.success {
-            background-color: var(--message-success-bg);
-            color: var(--message-success-text);
-        }
-        .message.error {
-            background-color: var(--message-error-bg);
-            color: var(--message-error-text);
-        }
-        .grid-cols-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-        .mb-4 { margin-bottom: 1rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mt-6 { margin-top: 1.5rem; }
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-bottom: 20px;
-            gap: 10px;
-            color: var(--label-color);
-        }
-        .theme-switch {
-            display: inline-block;
-            height: 24px;
-            position: relative;
-            width: 48px;
-        }
+        body { background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end)); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; font-family: 'Vazirmatn', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); transition: background 0.5s ease-in-out, color 0.5s ease-in-out; }
+        body[data-theme='dark'] { background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end)); }
+        .container { background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); width: 100%; max-width: 800px; border: 1px solid rgba(255, 255, 255, 0.3); transition: background 0.5s ease-in-out; }
+        body[data-theme='light'] .container { background: linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+        body[data-theme='dark'] .container { background: linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; color: #fff; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--label-color); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+        textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.4); background-color: var(--input-bg); color: var(--input-text); outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 1rem center; background-size: 1.5em; padding-left: 3rem; }
+        textarea::placeholder, input::placeholder { color: var(--input-placeholder); }
+        textarea:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); background-color: var(--input-focus-bg); }
+        input:disabled { background-color: var(--input-disabled-bg); cursor: not-allowed; }
+        select option { background-color: var(--select-option-bg); color: var(--select-option-text); }
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 20px; }
+        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .file-input-wrapper .button { display: block; width: 100%; padding: 12px 15px; border-radius: 10px; background-color: var(--file-button-bg); color: white; text-align: center; cursor: pointer; transition: background-color 0.3s ease; }
+        .button-primary { width: 100%; padding: 15px 20px; border-radius: 12px; background: linear-gradient(to right, var(--main-button-start), var(--main-button-end)); color: white; font-size: 1.125rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+        .button-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6); }
+        .button-secondary { background-color: var(--secondary-button-bg); color: var(--label-color); padding: 6px 12px; font-size: 0.875rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .button-secondary:hover { background-color: var(--secondary-button-hover-bg); }
+        .message { margin-top: 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; }
+        .message.success { background-color: var(--message-success-bg); color: var(--message-success-text); }
+        .message.error { background-color: var(--message-error-bg); color: var(--message-error-text); }
+        .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .mb-4 { margin-bottom: 1rem; } .mt-4 { margin-top: 1rem; } .mt-6 { margin-top: 1.5rem; }
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; gap: 10px; color: var(--label-color); }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
         .theme-switch input { display: none; }
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            background-color: #fff;
-            bottom: 2px;
-            content: "";
-            height: 20px;
-            left: 2px;
-            position: absolute;
-            width: 20px;
-            transition: .4s;
-            border-radius: 50%;
-        }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 20px; left: 2px; position: absolute; width: 20px; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #2196f3; }
         input:checked + .slider:before { transform: translateX(24px); }
+        #stagedConfigsList li { display: flex; align-items: center; padding: 8px; border-radius: 8px; transition: background-color 0.2s ease; }
+        #stagedConfigsList li:hover { background-color: rgba(255,255,255,0.1); }
+        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="theme-switch-wrapper">
             <span>حالت شب</span>
-            <label class="theme-switch" for="themeToggle">
-                <input type="checkbox" id="themeToggle">
-                <div class="slider"></div>
-            </label>
+            <label class="theme-switch" for="themeToggle"><input type="checkbox" id="themeToggle"><div class="slider"></div></label>
             <span>حالت روز</span>
         </div>
-
         <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
         <div class="mb-4">
             <label for="wgConfigInput">ورودی کانفیگ (متن کامل یا لینک)</label>
-            <textarea id="wgConfigInput" rows="10" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..."></textarea>
-            <!-- NEW: Helper text to inform users about supported formats -->
-            <p class="text-sm text-gray-400 -mt-3 mb-3">
-                پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI
-            </p>
+            <textarea id="wgConfigInput" rows="8" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..."></textarea>
+            <p class="text-sm text-gray-400 -mt-3 mb-3">پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI</p>
         </div>
-
         <div class="mb-4">
             <label for="wgConfigFile">یا فایل‌های کانفیگ را آپلود کنید</label>
             <div class="file-input-wrapper">
@@ -304,36 +119,51 @@
             <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
         </div>
 
-        <div class="mb-4">
-            <label for="profileSelect">انتخاب پروفایل AmneziaWG</label>
-            <select id="profileSelect">
-                <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
-                <option value="4,64,120" data-name="Optimal">حالت بهینه (اینترنت خوب)</option>
-                <option value="6,64,80" data-name="Weak_Net">اینترنت ضعیف یا ناپایدار</option>
-                <option value="8,64,150" data-name="Aggressive">حداکثر پنهان‌سازی (تهاجمی)</option>
-                <option value="2,64,70" data-name="Fast">حداکثر سرعت (حداقل پنهان‌سازی)</option>
-                <option value="4,40,70" data-name="wbnet">پیشنهاد کانال @wbnet (محافظه‌کار)</option>
-                <option value="4,40,250" data-name="hamedp71">پیشنهاد hamedp-71 (بازه بزرگ)</option>
-                <option value="3,10,30" data-name="Rus_Micro">پیشنهاد مبدل روسی (میکرو پکت)</option>
-                <option value="10,30,60" data-name="Rus_Flood">پیشنهاد مبدل روسی (کوچک و زیاد)</option>
-            </select>
+        <button id="processInputBtn" class="button-primary mb-6">پردازش و افزودن کانفیگ‌ها</button>
+        
+        <div id="stagedConfigsContainer" class="hidden">
+            <hr class="border-gray-600 my-4">
+            <h2 class="text-2xl font-bold mb-3">لیست کانفیگ‌های آماده</h2>
+            <div class="flex justify-between items-center mb-3">
+                <span id="configCounter" class="text-sm text-gray-300"></span>
+                <div class="flex gap-2">
+                    <button id="selectAllBtn" class="button-secondary">انتخاب همه</button>
+                    <button id="deselectAllBtn" class="button-secondary">لغو انتخاب همه</button>
+                    <button id="clearListBtn" class="button-secondary bg-red-800 hover:bg-red-700 text-white">پاک کردن لیست</button>
+                </div>
+            </div>
+            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto bg-black bg-opacity-20 p-2 rounded-lg">
+            </div>
+            <hr class="border-gray-600 my-4">
         </div>
         
+        <div class="mb-4">
+            <label for="profileSelect">انتخاب پروفایل AmneziaWG (برای تولید نهایی)</label>
+            <select id="profileSelect">
+                <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
+                <option value="4,64,120" data-name="Optimal">حالت بهینه</option>
+                <option value="6,64,80" data-name="Weak_Net">اینترنت ضعیف</option>
+                <option value="8,64,150" data-name="Aggressive">حداکثر پنهان‌سازی</option>
+                <option value="2,64,70" data-name="Fast">حداکثر سرعت</option>
+                <option value="4,40,70" data-name="wbnet">پیشنهاد @wbnet</option>
+                <option value="4,40,250" data-name="hamedp71">پیشنهاد hamedp71</option>
+                <option value="3,10,30" data-name="Rus_Micro">مبدل روسی (میکرو)</option>
+                <option value="10,30,60" data-name="Rus_Flood">مبدل روسی (زیاد)</option>
+            </select>
+        </div>
         <div class="grid-cols-3 mb-4">
             <div><label for="jcInput">jc</label><input type="number" id="jcInput" value="4" min="0"></div>
             <div><label for="jminInput">jmin</label><input type="number" id="jminInput" value="40" min="0"></div>
             <div><label for="jmaxInput">jmax</label><input type="number" id="jmaxInput" value="250" min="0"></div>
         </div>
-        
         <div class="mb-4">
             <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
             <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر وارد شده (پیش‌فرض)</option>
-                <option value="use-config-values">استفاده از مقادیر کانفیگ</option>
-                <option value="no-amnezia">استفاده نکردن</option>
+                <option value="use-ui-values">استفاده از مقادیر UI (پیش‌فرض)</option>
+                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
+                <option value="no-amnezia">غیرفعال</option>
             </select>
         </div>
-
         <div class="mb-4">
             <label for="templateSelect">انتخاب تمپلت قوانین</label>
             <select id="templateSelect">
@@ -342,21 +172,17 @@
                 <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
             </select>
         </div>
-
         <div class="mb-6">
             <label for="outputFileName">نام فایل خروجی</label>
             <input type="text" id="outputFileName" value="Mihomo_WireGuard">
         </div>
 
-        <button id="generateBtn" class="button-primary">تبدیل و دانلود</button>
+        <button id="generateBtn" class="button-primary">تولید و دانلود فایل نهایی</button>
 
         <div id="message" class="message hidden"></div>
-        
         <div id="errorDetailsContainer" class="hidden mt-4 p-4 border border-red-400 bg-red-900 bg-opacity-30 rounded-lg">
             <h3 class="font-bold text-lg mb-2 text-red-300">جزئیات خطاها:</h3>
-            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300">
-                <!-- Error items will be dynamically added here -->
-            </ul>
+            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300"></ul>
         </div>
     </div>
 
@@ -372,40 +198,11 @@
             const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
             const templateSelect = document.getElementById('templateSelect');
             const baseFileName = 'Mihomo_WireGuard';
-
-            function updateValueInputs(isCustom) {
-                jcInput.disabled = !isCustom;
-                jminInput.disabled = !isCustom;
-                jmaxInput.disabled = !isCustom;
-            }
-
-            function updateOutputFilename() {
-                let finalName = baseFileName;
-                const amneziaMode = amneziaOptionSelect.value;
-                if (amneziaMode === 'use-ui-values') {
-                    const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
-                    finalName += `_[${selectedProfileOption.dataset.name}]`;
-                }
-                const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
-                finalName += `_[${selectedTemplateOption.dataset.name}]`;
-                outputFileNameInput.value = finalName;
-            }
-
-            profileSelect.addEventListener('change', function() {
-                const selectedValue = this.value;
-                updateValueInputs(selectedValue === 'custom');
-                if (selectedValue !== 'custom') {
-                    const values = selectedValue.split(',');
-                    jcInput.value = values[0];
-                    jminInput.value = values[1];
-                    jmaxInput.value = values[2];
-                }
-                updateOutputFilename();
-            });
-
+            function updateValueInputs(isCustom) { jcInput.disabled = !isCustom; jminInput.disabled = !isCustom; jmaxInput.disabled = !isCustom; }
+            function updateOutputFilename() { let finalName = baseFileName; const amneziaMode = amneziaOptionSelect.value; if (amneziaMode === 'use-ui-values') { const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex]; finalName += `_[${selectedProfileOption.dataset.name}]`; } const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex]; finalName += `_[${selectedTemplateOption.dataset.name}]`; outputFileNameInput.value = finalName; }
+            profileSelect.addEventListener('change', function() { const selectedValue = this.value; updateValueInputs(selectedValue === 'custom'); if (selectedValue !== 'custom') { const values = selectedValue.split(','); jcInput.value = values[0]; jminInput.value = values[1]; jmaxInput.value = values[2]; } updateOutputFilename(); });
             amneziaOptionSelect.addEventListener('change', updateOutputFilename);
             templateSelect.addEventListener('change', updateOutputFilename);
-
             updateValueInputs(profileSelect.value === 'custom');
             updateOutputFilename();
         });
