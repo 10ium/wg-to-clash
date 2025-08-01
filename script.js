@@ -236,30 +236,35 @@ function parseFromText(textContent) {
     });
 }
 
-// --- Main Parser Orchestrator ---
+// --- Main Parser Orchestrator (BUG FIXED) ---
 function parseAllInputs(textContent) {
-    // Attempt to parse as a structured file first (JSON or YAML)
+    let structuredConfig;
     try {
-        const structuredConfig = jsyaml.load(textContent);
-        if (typeof structuredConfig === 'object' && structuredConfig !== null) {
-            // Check for Sing-Box format
-            if (structuredConfig.outbounds) {
-                const configs = parseFromSingBox(structuredConfig);
-                if (configs.length > 0) return configs;
-            }
-            // Check for Clash/Mihomo format
-            if (structuredConfig.proxies) {
-                const configs = parseFromMihomo(structuredConfig);
-                if (configs.length > 0) return configs;
-            }
-        }
+        structuredConfig = jsyaml.load(textContent);
     } catch (e) {
-        // Not a valid YAML/JSON file, will fallback to text parsing.
+        // It's not a valid YAML/JSON object, so treat as plain text.
+        return parseFromText(textContent);
+    }
+
+    if (typeof structuredConfig === 'object' && structuredConfig !== null) {
+        // Check for Sing-Box format (priority)
+        if (structuredConfig.outbounds && Array.isArray(structuredConfig.outbounds)) {
+            // If the "outbounds" key exists, we commit to parsing it as Sing-Box
+            // and do not fall back, even if it contains no WG proxies.
+            return parseFromSingBox(structuredConfig);
+        }
+        // Check for Clash/Mihomo format
+        if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
+            // If "proxies" key exists, we commit to parsing as Clash/Mihomo.
+            return parseFromMihomo(structuredConfig);
+        }
     }
     
-    // Fallback: Parse as plain text (blocks or URIs)
+    // Fallback: If it was a valid YAML/JSON but didn't match our structures,
+    // or if it wasn't an object, parse as plain text.
     return parseFromText(textContent);
 }
+
 
 // --- Mihomo Conversion ---
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
