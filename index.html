@@ -42,6 +42,7 @@
             --input-text: #ffffff; /* Pure white for input values */
             --input-placeholder: #a3b1c2; /* Darker placeholder */
             --input-focus-bg: rgba(255, 255, 255, 0.4); /* Even more opaque on focus */
+            --input-disabled-bg: rgba(100, 116, 139, 0.3); /* Disabled background */
             --file-button-bg: #1e40af;
             --file-button-hover-bg: #2563eb;
             --main-button-start: #2563eb;
@@ -62,6 +63,7 @@
             --input-text: #e2e8f0; /* Light gray for input values */
             --input-placeholder: #a0aec0; /* Lighter placeholder */
             --input-focus-bg: rgba(0, 0, 0, 0.5); /* Even more opaque on focus */
+            --input-disabled-bg: rgba(71, 85, 105, 0.4); /* Disabled background for dark theme */
             --file-button-bg: #4a5568; /* Darker gray */
             --file-button-hover-bg: #2d3748;
             --main-button-start: #4a5568;
@@ -165,6 +167,10 @@
             border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5);
             background-color: var(--input-focus-bg);
+        }
+        input:disabled {
+            background-color: var(--input-disabled-bg);
+            cursor: not-allowed;
         }
         select {
             color: var(--input-text);
@@ -328,6 +334,22 @@
             <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
         </div>
 
+        <!-- NEW PROFILE SELECTOR -->
+        <div class="mb-4">
+            <label for="profileSelect">انتخاب پروفایل AmneziaWG</label>
+            <select id="profileSelect">
+                <option value="custom" selected>مقادیر دستی (سفارشی)</option>
+                <option value="4,64,120">حالت بهینه (اینترنت خوب)</option>
+                <option value="6,64,80">اینترنت ضعیف یا ناپایدار</option>
+                <option value="8,64,150">حداکثر پنهان‌سازی (تهاجمی)</option>
+                <option value="2,64,70">حداکثر سرعت (حداقل پنهان‌سازی)</option>
+                <option value="4,40,70">پیشنهاد کانال @wbnet (محافظه‌کار)</option>
+                <option value="4,40,250">پیشنهاد hamedp-71 (بازه بزرگ)</option>
+                <option value="3,10,30">پیشنهاد مبدل روسی (میکرو پکت)</option>
+                <option value="10,30,60">پیشنهاد مبدل روسی (کوچک و زیاد)</option>
+            </select>
+        </div>
+
         <div class="grid-cols-3 mb-4">
             <div>
                 <label for="jcInput">jc</label>
@@ -373,5 +395,37 @@
 
     <!-- Link to the external JavaScript file -->
     <script type="module" src="script.js"></script>
+
+    <!-- NEW JAVASCRIPT LOGIC FOR PROFILE SELECTOR -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const profileSelect = document.getElementById('profileSelect');
+            const jcInput = document.getElementById('jcInput');
+            const jminInput = document.getElementById('jminInput');
+            const jmaxInput = document.getElementById('jmaxInput');
+
+            function updateInputs(isCustom) {
+                jcInput.disabled = !isCustom;
+                jminInput.disabled = !isCustom;
+                jmaxInput.disabled = !isCustom;
+            }
+
+            profileSelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (selectedValue === 'custom') {
+                    updateInputs(true);
+                } else {
+                    const values = selectedValue.split(',');
+                    jcInput.value = values[0];
+                    jminInput.value = values[1];
+                    jmaxInput.value = values[2];
+                    updateInputs(false);
+                }
+            });
+
+            // Set initial state based on the default selected option
+            updateInputs(profileSelect.value === 'custom');
+        });
+    </script>
 </body>
 </html>
