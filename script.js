@@ -194,7 +194,7 @@ function parseFromSingBox(configObject) {
 function parseFromText(textContent) {
     const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
-        let rawConfig = {}, interfaceComment = '', peerComment = '';
+        let rawConfig = {}, peerComment = '';
         try {
             if (block.startsWith('wireguard://')) {
                 const url = new URL(block); const params = new URLSearchParams(url.search);
@@ -208,20 +208,17 @@ function parseFromText(textContent) {
                 const lines = block.split('\n').map(l => l.trim());
                 const interfaceSection = {}, peerSection = {}; let currentSection = '';
                 lines.forEach(line => {
-                    if (line.startsWith('#')) {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.startsWith('[interface]')) { currentSection = 'Interface'; }
+                    else if (lowerLine.startsWith('[peer]')) { currentSection = 'Peer'; }
+                    else if (line.startsWith('#') && currentSection === 'Peer') {
                         const commentText = line.substring(1).trim();
-                        // **BUG FIX**: Correctly associate comment with its section
-                        if (currentSection === 'Peer') { peerComment = commentText; }
-                        else if (currentSection === 'Interface') { interfaceComment = commentText; }
-                    } else {
-                        const lowerLine = line.toLowerCase();
-                        if (lowerLine.startsWith('[interface]')) currentSection = 'Interface';
-                        else if (lowerLine.startsWith('[peer]')) currentSection = 'Peer';
-                        else if (line.includes('=')) {
-                            const [key, value] = line.split('=', 2).map(s => s.trim());
-                            if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
-                            else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
-                        }
+                        if (!peerComment) { peerComment = commentText; }
+                    }
+                    else if (line.includes('=')) {
+                        const [key, value] = line.split('=', 2).map(s => s.trim());
+                        if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
+                        else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
                     }
                 });
                 const [server, port] = (peerSection.endpoint || '').split(':');
@@ -229,7 +226,7 @@ function parseFromText(textContent) {
                     jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
                 } : null;
                 rawConfig = {
-                    name: peerComment || interfaceComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
+                    name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
                     server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
                     mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
                     dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
@@ -284,7 +281,6 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(proxy => {
         let cleanProxy = {...proxy};
-        // **BUG FIX**: Use js-yaml's quotingType to ensure keys are always quoted
         let yamlFrag = jsyaml.dump(cleanProxy, {
             indent: 4,
             flowLevel: 2,
