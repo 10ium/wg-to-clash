@@ -210,8 +210,9 @@ function parseFromText(textContent) {
                 lines.forEach(line => {
                     if (line.startsWith('#')) {
                         const commentText = line.substring(1).trim();
-                        if (currentSection === 'Peer' && !peerComment) { peerComment = commentText; }
-                        else if (currentSection === 'Interface' && !interfaceComment) { interfaceComment = commentText; }
+                        // **BUG FIX**: Correctly associate comment with its section
+                        if (currentSection === 'Peer') { peerComment = commentText; }
+                        else if (currentSection === 'Interface') { interfaceComment = commentText; }
                     } else {
                         const lowerLine = line.toLowerCase();
                         if (lowerLine.startsWith('[interface]')) currentSection = 'Interface';
@@ -267,7 +268,7 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     const mihomoProxy = {
         name: wgConfig.name, type: 'wireguard', server: wgConfig.server, port: wgConfig.port, ip: wgConfig.ip,
         'private-key': wgConfig.privateKey, 'public-key': wgConfig.publicKey, 'allowed-ips': wgConfig.allowedIps,
-        udp: true, mtu: wgConfig.mtu,
+        udp: true, mtu: wgConfig.mtu, 'remote-dns-resolve': true,
     };
     if (wgConfig.ipv6) mihomoProxy.ipv6 = wgConfig.ipv6;
     if (wgConfig.dns?.length > 0) mihomoProxy.dns = wgConfig.dns;
@@ -283,9 +284,13 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(proxy => {
         let cleanProxy = {...proxy};
-        let yamlFrag = jsyaml.dump(cleanProxy, { indent: 4, flowLevel: 2, noCompatMode: true, quotingType: "'" });
-        // Force quotes on keys to fix Base64 issue
-        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, "$1: '$2'");
+        // **BUG FIX**: Use js-yaml's quotingType to ensure keys are always quoted
+        let yamlFrag = jsyaml.dump(cleanProxy, {
+            indent: 4,
+            flowLevel: 2,
+            noCompatMode: true,
+            quotingType: "'"
+        });
         return `  - ${yamlFrag.replace(/\n/g, '\n    ').trim()}`;
     }).join('\n');
     const proxyNameListYaml = mihomoProxies.map(p => `      - "${p.name}"`).join('\n');
