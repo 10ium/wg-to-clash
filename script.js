@@ -278,22 +278,40 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     return mihomoProxy;
 }
 
-// --- Template Processing & Download ---
+// --- Template Processing & Download (BUG FIXED) ---
 function processTemplateText(templateText, mihomoProxies) {
-    const proxyBlocks = mihomoProxies.map(proxy => {
-        let cleanProxy = {...proxy};
-        // **BUG FIX**: Use js-yaml's quotingType to ensure keys are always quoted
-        let yamlFrag = jsyaml.dump(cleanProxy, {
-            indent: 4,
-            flowLevel: 2,
-            noCompatMode: true,
-            quotingType: "'"
+    const proxyBlocks = [];
+    const proxyNames = [];
+
+    mihomoProxies.forEach(proxy => {
+        let yamlFrag = jsyaml.dump(proxy, {
+            indent: 2,
+            lineWidth: -1,
+            flowLevel: 3, // Use flow level 3 to better handle arrays
+            noCompatMode: true
+        }).trim();
+
+        // **BUG FIX**: Force quoting for base64 keys, mimicking old reliable method
+        yamlFrag = yamlFrag
+            .replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, "$1: '$2'");
+
+        // **BUG FIX**: Manually format arrays to match Clash's expected format
+        yamlFrag = yamlFrag.replace(/^(allowed-ips|dns):\s*\[([^\]]+)\]$/gm, (match, key, values) => {
+            const items = values.split(',').map(v => v.trim());
+            return `${key}:\n${items.map(item => `      - ${item}`).join('\n')}`;
         });
-        return `  - ${yamlFrag.replace(/\n/g, '\n    ').trim()}`;
-    }).join('\n');
-    const proxyNameListYaml = mihomoProxies.map(p => `      - "${p.name}"`).join('\n');
+
+        const block = yamlFrag.split('\n')
+            .map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`))
+            .join('\n');
+        
+        proxyBlocks.push(block);
+        proxyNames.push(`"${proxy.name}"`);
+    });
+
+    const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     return templateText
-        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks)
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
 
