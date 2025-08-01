@@ -287,20 +287,30 @@ function processTemplateText(templateText, mihomoProxies) {
         let yamlFrag = jsyaml.dump(proxy, {
             indent: 2,
             lineWidth: -1,
-            flowLevel: 3, // Use flow level 3 to better handle arrays
+            flowLevel: 3, 
             noCompatMode: true
         }).trim();
-
+        
         // **BUG FIX**: Force quoting for base64 keys, mimicking old reliable method
-        yamlFrag = yamlFrag
-            .replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, "$1: '$2'");
-
-        // **BUG FIX**: Manually format arrays to match Clash's expected format
-        yamlFrag = yamlFrag.replace(/^(allowed-ips|dns):\s*\[([^\]]+)\]$/gm, (match, key, values) => {
-            const items = values.split(',').map(v => v.trim());
-            return `${key}:\n${items.map(item => `      - ${item}`).join('\n')}`;
+        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, (match, key, value) => {
+            // Add padding if missing
+            if (!value.endsWith('=')) {
+                const paddingNeeded = (4 - (value.length % 4)) % 4;
+                if(paddingNeeded < 3) value += '='.repeat(paddingNeeded);
+            }
+            return `${key}: '${value}'`;
         });
 
+        // **BUG FIX**: Manually format arrays to match Clash's expected block style
+        if (proxy.dns && proxy.dns.length > 0) {
+            const dnsBlock = proxy.dns.map(d => `      - ${d}`).join('\n');
+            yamlFrag = yamlFrag.replace(/dns:\s*\[.*\]/, `dns:\n${dnsBlock}`);
+        }
+         if (proxy.allowedIps && proxy.allowedIps.length > 0) {
+            const allowedIpsBlock = proxy.allowedIps.map(ip => `      - '${ip}'`).join('\n');
+            yamlFrag = yamlFrag.replace(/allowed-ips:\s*\[.*\]/, `allowed-ips:\n${allowedIpsBlock}`);
+        }
+        
         const block = yamlFrag.split('\n')
             .map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`))
             .join('\n');
@@ -314,6 +324,7 @@ function processTemplateText(templateText, mihomoProxies) {
         .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
+
 
 function downloadFile(filename, content) {
     const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
