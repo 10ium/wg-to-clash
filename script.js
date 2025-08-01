@@ -207,6 +207,7 @@ function parseFromText(textContent) {
             } else {
                 const lines = block.split('\n').map(l => l.trim());
                 const interfaceSection = {}, peerSection = {}; let currentSection = '';
+                // **BUG FIX**: Correctly associate comment with its section
                 lines.forEach(line => {
                     const lowerLine = line.toLowerCase();
                     if (lowerLine.startsWith('[interface]')) { currentSection = 'Interface'; }
@@ -281,6 +282,7 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(proxy => {
         let cleanProxy = {...proxy};
+        // **BUG FIX**: Use js-yaml's quotingType to ensure keys are always quoted
         let yamlFrag = jsyaml.dump(cleanProxy, {
             indent: 4,
             flowLevel: 2,
