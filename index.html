@@ -334,19 +334,18 @@
             <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
         </div>
 
-        <!-- NEW PROFILE SELECTOR -->
         <div class="mb-4">
             <label for="profileSelect">انتخاب پروفایل AmneziaWG</label>
             <select id="profileSelect">
-                <option value="custom" selected>مقادیر دستی (سفارشی)</option>
-                <option value="4,64,120">حالت بهینه (اینترنت خوب)</option>
-                <option value="6,64,80">اینترنت ضعیف یا ناپایدار</option>
-                <option value="8,64,150">حداکثر پنهان‌سازی (تهاجمی)</option>
-                <option value="2,64,70">حداکثر سرعت (حداقل پنهان‌سازی)</option>
-                <option value="4,40,70">پیشنهاد کانال @wbnet (محافظه‌کار)</option>
-                <option value="4,40,250">پیشنهاد hamedp-71 (بازه بزرگ)</option>
-                <option value="3,10,30">پیشنهاد مبدل روسی (میکرو پکت)</option>
-                <option value="10,30,60">پیشنهاد مبدل روسی (کوچک و زیاد)</option>
+                <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
+                <option value="4,64,120" data-name="Optimal">حالت بهینه (اینترنت خوب)</option>
+                <option value="6,64,80" data-name="Weak_Net">اینترنت ضعیف یا ناپایدار</option>
+                <option value="8,64,150" data-name="Aggressive">حداکثر پنهان‌سازی (تهاجمی)</option>
+                <option value="2,64,70" data-name="Fast">حداکثر سرعت (حداقل پنهان‌سازی)</option>
+                <option value="4,40,70" data-name="wbnet">پیشنهاد کانال @wbnet (محافظه‌کار)</option>
+                <option value="4,40,250" data-name="hamedp71">پیشنهاد hamedp-71 (بازه بزرگ)</option>
+                <option value="3,10,30" data-name="Rus_Micro">پیشنهاد مبدل روسی (میکرو پکت)</option>
+                <option value="10,30,60" data-name="Rus_Flood">پیشنهاد مبدل روسی (کوچک و زیاد)</option>
             </select>
         </div>
 
@@ -377,15 +376,15 @@
         <div class="mb-4">
             <label for="templateSelect">انتخاب تمپلت قوانین</label>
             <select id="templateSelect">
-                <option value="full-rule-template">قوانین کامل</option>
-                <option value="iran-template">قوانین ایران</option>
-                <option value="no-rule-template">بدون قوانین</option>
+                <option value="full-rule-template" data-name="Full">قوانین کامل</option>
+                <option value="iran-template" data-name="Iran">قوانین ایران</option>
+                <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
             </select>
         </div>
 
         <div class="mb-6">
             <label for="outputFileName">نام فایل خروجی</label>
-            <input type="text" id="outputFileName" value="mihomo_config">
+            <input type="text" id="outputFileName" value="Mihomo_WireGuard">
         </div>
 
         <button id="generateBtn" class="button-primary">تبدیل و دانلود</button>
@@ -396,35 +395,72 @@
     <!-- Link to the external JavaScript file -->
     <script type="module" src="script.js"></script>
 
-    <!-- NEW JAVASCRIPT LOGIC FOR PROFILE SELECTOR -->
+    <!-- FINAL JAVASCRIPT LOGIC -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Get all relevant elements from the DOM
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
             const jminInput = document.getElementById('jminInput');
             const jmaxInput = document.getElementById('jmaxInput');
+            const outputFileNameInput = document.getElementById('outputFileName');
+            const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
+            const templateSelect = document.getElementById('templateSelect');
+            const baseFileName = 'Mihomo_WireGuard'; // UPDATED BASE NAME
 
-            function updateInputs(isCustom) {
+            // Function to enable/disable the manual jc, jmin, jmax inputs
+            function updateValueInputs(isCustom) {
                 jcInput.disabled = !isCustom;
                 jminInput.disabled = !isCustom;
                 jmaxInput.disabled = !isCustom;
             }
 
+            // Function to dynamically update the output filename
+            function updateOutputFilename() {
+                let finalName = baseFileName;
+
+                // Part 1: Add AmneziaWG profile name if it's active
+                const amneziaMode = amneziaOptionSelect.value;
+                if (amneziaMode === 'use-ui-values') {
+                    const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
+                    const profileName = selectedProfileOption.dataset.name;
+                    finalName += `_[${profileName}]`;
+                }
+
+                // Part 2: Add the selected rules template name
+                const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
+                const templateName = selectedTemplateOption.dataset.name;
+                finalName += `_[${templateName}]`;
+
+                // Set the final generated name to the input field
+                outputFileNameInput.value = finalName;
+            }
+
+            // --- Event Listeners ---
+
+            // When the AmneziaWG profile changes...
             profileSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
-                if (selectedValue === 'custom') {
-                    updateInputs(true);
-                } else {
+                // Enable/disable manual inputs
+                updateValueInputs(selectedValue === 'custom');
+                // If a preset is chosen, fill the values
+                if (selectedValue !== 'custom') {
                     const values = selectedValue.split(',');
                     jcInput.value = values[0];
                     jminInput.value = values[1];
                     jmaxInput.value = values[2];
-                    updateInputs(false);
                 }
+                // Update the filename
+                updateOutputFilename();
             });
 
-            // Set initial state based on the default selected option
-            updateInputs(profileSelect.value === 'custom');
+            // When the main Amnezia setting or the rules template changes...
+            amneziaOptionSelect.addEventListener('change', updateOutputFilename);
+            templateSelect.addEventListener('change', updateOutputFilename);
+
+            // --- Initial Setup on Page Load ---
+            updateValueInputs(profileSelect.value === 'custom'); // Set initial state of manual inputs
+            updateOutputFilename(); // Set initial filename
         });
     </script>
 </body>
