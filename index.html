@@ -50,17 +50,18 @@
             --select-option-bg: #1f2937;
             --theme-switcher-bg: #2c3e50;
             --hr-separator-bg: linear-gradient(to left, transparent, var(--container-border-hover), transparent);
+            --body-bg-gradient: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
         }
 
         /* ===== LIGHT THEME ===== */
         body.light-theme {
-            --container-bg: rgba(249, 250, 251, 0.75);
+            --container-bg: rgba(239, 246, 255, 0.65); /* A softer, translucent blueish-white */
             --container-border: rgba(0, 0, 0, 0.1);
             --container-border-hover: rgba(79, 70, 229, 0.5);
             --text-primary: #111827; /* Very Dark Gray */
             --text-secondary: #4b5563; /* Medium Gray */
             --text-glow: #4f46e5;
-            --input-bg: rgba(255, 255, 255, 0.7);
+            --input-bg: rgba(255, 255, 255, 0.6);
             --input-border: rgba(0, 0, 0, 0.15);
             --input-focus-border: #4f46e5;
             --input-focus-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
@@ -76,12 +77,13 @@
             --select-option-bg: #ffffff;
             --theme-switcher-bg: #bdc3c7;
             --hr-separator-bg: linear-gradient(to left, transparent, #cccccc, transparent);
+            --body-bg-gradient: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)); /* Lighter overlay, less opaque */
         }
 
         /* ===== BASE & BODY STYLES ===== */
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
+            background-image: var(--body-bg-gradient), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -92,12 +94,7 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
-            transition: background-image 0.5s ease, color 0.5s ease;
-        }
-
-        /* ===== LIGHT THEME BACKGROUND OVERRIDE ===== */
-        body.light-theme {
-             background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
+            transition: color 0.5s ease;
         }
 
         /* ===== CONTAINER & LAYOUT ===== */
@@ -368,7 +365,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // ===== EXISTING SCRIPT LOGIC (Unchanged) =====
+            // ===== ELEMENT SELECTORS (Defined once for performance) =====
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
             const jminInput = document.getElementById('jminInput');
@@ -377,11 +374,25 @@
             const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
             const templateSelect = document.getElementById('templateSelect');
             const baseFileName = 'Mihomo_WireGuard';
+            const generateBtn = document.getElementById('generateBtn');
+            const messageEl = document.getElementById('message');
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const favicon = document.querySelector("link[rel='icon']");
 
+            // ===== BUSINESS LOGIC FUNCTIONS =====
             function updateValueInputs(isCustom) {
-                jcInput.disabled = !isCustom;
-                jminInput.disabled = !isCustom;
-                jmaxInput.disabled = !isCustom;
+                const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
+                jcInput.disabled = !isCustom || !useUiValues;
+                jminInput.disabled = !isCustom || !useUiValues;
+                jmaxInput.disabled = !isCustom || !useUiValues;
+            }
+
+            function updateProfileSectionState() {
+                const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
+                profileSelect.disabled = !useUiValues;
+                // We must also re-evaluate the custom inputs based on the new state
+                updateValueInputs(profileSelect.value === 'custom');
             }
             
             function updateOutputFilename() {
@@ -396,26 +407,41 @@
                 outputFileNameInput.value = finalName;
             }
 
+            // ===== THEME SWITCHER LOGIC =====
+            const applyTheme = (theme) => {
+                body.classList.toggle('light-theme', theme === 'light');
+                themeToggle.checked = (theme === 'light');
+                const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
+                favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
+                localStorage.setItem('theme', theme);
+            };
+            
+            // ===== EVENT LISTENERS =====
             profileSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
-                updateValueInputs(selectedValue === 'custom');
-                if (selectedValue !== 'custom') {
+                const isCustom = selectedValue === 'custom';
+                if (!isCustom) {
                     const values = selectedValue.split(',');
                     jcInput.value = values[0];
                     jminInput.value = values[1];
                     jmaxInput.value = values[2];
                 }
+                updateValueInputs(isCustom);
                 updateOutputFilename();
             });
             
-            amneziaOptionSelect.addEventListener('change', updateOutputFilename);
-            templateSelect.addEventListener('change', updateOutputFilename);
-            
-            updateValueInputs(profileSelect.value === 'custom');
-            updateOutputFilename();
+            amneziaOptionSelect.addEventListener('change', () => {
+                updateProfileSectionState();
+                updateOutputFilename();
+            });
 
-            const generateBtn = document.getElementById('generateBtn');
-            const messageEl = document.getElementById('message');
+            templateSelect.addEventListener('change', updateOutputFilename);
+
+            themeToggle.addEventListener('change', () => {
+                const newTheme = themeToggle.checked ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
+            
             generateBtn.addEventListener('click', () => {
                 messageEl.textContent = 'این یک پیام آزمایشی برای نمایش است!';
                 messageEl.className = 'message success show';
@@ -425,52 +451,32 @@
                 }, 4000);
             });
             
-            // ===== NEW THEME SWITCHER LOGIC =====
-            const themeToggle = document.getElementById('theme-toggle');
-            const body = document.body;
-            const favicon = document.querySelector("link[rel='icon']");
-
-            const applyTheme = (theme) => {
-                // Apply class to body for CSS overrides
-                body.classList.toggle('light-theme', theme === 'light');
-                // Update checkbox state
-                themeToggle.checked = (theme === 'light');
-                // Change favicon color based on theme
-                const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
-                favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
-                // Store user's preference
-                localStorage.setItem('theme', theme);
-            };
-
-            themeToggle.addEventListener('change', () => {
-                const newTheme = themeToggle.checked ? 'light' : 'dark';
-                applyTheme(newTheme);
-            });
-
-            // Initial theme setup on page load
-            const savedTheme = localStorage.getItem('theme');
-            if (savedTheme) {
-                // 1. Use saved theme if it exists
-                applyTheme(savedTheme);
-            } else {
-                // 2. Otherwise, determine theme based on Tehran's time
-                let defaultTheme = 'dark'; // Fallback theme
-                try {
-                    const tehranTime = new Date().toLocaleTimeString('en-US', {
-                        timeZone: 'Asia/Tehran',
-                        hour12: false,
-                        hour: 'numeric'
-                    });
-                    const tehranHour = parseInt(tehranTime, 10);
-                    // Set to light theme between 6 AM and 6 PM (18:00) Tehran time
-                    if (tehranHour >= 6 && tehranHour < 18) {
-                        defaultTheme = 'light';
+            // ===== INITIALIZATION =====
+            function initialize() {
+                // Initialize theme
+                const savedTheme = localStorage.getItem('theme');
+                if (savedTheme) {
+                    applyTheme(savedTheme);
+                } else {
+                    let defaultTheme = 'dark';
+                    try {
+                        const tehranTime = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Tehran', hour12: false, hour: 'numeric' });
+                        const tehranHour = parseInt(tehranTime, 10);
+                        if (tehranHour >= 6 && tehranHour < 18) {
+                            defaultTheme = 'light';
+                        }
+                    } catch (error) {
+                        console.error("Could not determine Tehran time, defaulting to dark theme.", error);
                     }
-                } catch (error) {
-                    console.error("Could not determine Tehran time, defaulting to dark theme.", error);
+                    applyTheme(defaultTheme);
                 }
-                applyTheme(defaultTheme);
+
+                // Initialize UI states based on default selections
+                updateProfileSectionState();
+                updateOutputFilename();
             }
+            
+            initialize();
         });
     </script>
 </body>
