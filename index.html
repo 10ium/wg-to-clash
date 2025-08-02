@@ -48,8 +48,8 @@
 </head>
 <body class="bg-sky-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-    <!-- The main container with the CORRECT background image -->
-    <div class="min-h-screen w-full flex flex-col items-center justify-start sm:justify-center p-4 bg-cover bg-center bg-fixed" style="background-image: url('https://i.imgur.com/uRAlJ2p.jpeg');">
+    <!-- The main container with the CORRECT background image from the provided GitHub link -->
+    <div class="min-h-screen w-full flex flex-col items-center justify-start sm:justify-center p-4 bg-cover bg-center bg-fixed" style="background-image: url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');">
         <div class="w-full max-w-3xl space-y-6 my-8">
 
             <!-- Header and Theme Switch -->
@@ -72,19 +72,19 @@
                     <!-- Input Section -->
                     <section id="input-section">
                         <div>
-                            <label for="wgConfigInput" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">ورودی کانفیگ (متن کامل یا لینک)</label>
-                            <textarea id="wgConfigInput" rows="6" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..." class="w-full p-3 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-gray-500 dark:placeholder-slate-400"></textarea>
-                            <p class="text-xs text-gray-600 dark:text-slate-400 mt-1">پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI</p>
+                            <label for="wgConfigInput" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">ورودی کانفیگ (متن کامل یا لینک)</label>
+                            <textarea id="wgConfigInput" rows="6" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..." class="w-full p-3 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 placeholder-slate-500 dark:placeholder-slate-400"></textarea>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1">پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI</p>
                         </div>
 
                         <div class="mt-6">
-                            <label class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">یا فایل‌های کانفیگ را آپلود کنید</label>
+                            <label class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">یا فایل‌های کانفیگ را آپلود کنید</label>
                             <label class="w-full flex items-center justify-center px-4 py-3 bg-sky-100 dark:bg-slate-700 text-sky-800 dark:text-slate-200 rounded-lg shadow-sm tracking-wide border border-sky-300 dark:border-slate-600 cursor-pointer hover:bg-sky-200 dark:hover:bg-slate-600 transition-colors">
                                 <svg class="w-6 h-6 ml-2" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M16.88 9.1A4 4 0 0 1 16 17H5a5 5 0 0 1-1-9.9V7a3 3 0 0 1 4.52-2.59A4.98 4.98 0 0 1 17 8c0 .38-.04.74-.12 1.1zM11 11h3l-4 4-4-4h3V9h2v2z" /></svg>
                                 <span class="text-base leading-normal font-semibold">انتخاب فایل‌ها</span>
                                 <input type='file' id="wgConfigFile" class="hidden" multiple accept=".conf,.txt,.yaml,.yml,.json" />
                             </label>
-                            <div id="fileList" class="text-sm text-gray-700 dark:text-slate-300 mt-2 break-all"></div>
+                            <div id="fileList" class="text-sm text-slate-700 dark:text-slate-300 mt-2 break-all"></div>
                         </div>
 
                         <button id="processInputBtn" class="w-full mt-6 py-3 px-4 font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-200">
@@ -94,10 +94,10 @@
 
                     <!-- Staged Configs Section -->
                     <section id="stagedConfigsContainer" class="hidden">
-                        <hr class="border-gray-200 dark:border-slate-700 my-6">
-                        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">لیست کانفیگ‌های آماده</h2>
+                        <hr class="border-sky-200 dark:border-slate-700 my-6">
+                        <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">لیست کانفیگ‌های آماده</h2>
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-3 gap-3">
-                            <span id="configCounter" class="text-sm font-medium text-gray-600 dark:text-slate-300"></span>
+                            <span id="configCounter" class="text-sm font-medium text-slate-600 dark:text-slate-300"></span>
                             <div class="flex gap-2 flex-wrap justify-center">
                                 <button id="selectAllBtn" class="py-1 px-3 text-xs font-medium bg-sky-100 hover:bg-sky-200 dark:bg-slate-600/80 dark:hover:bg-slate-600 text-sky-800 dark:text-white rounded-md transition border border-sky-200 dark:border-slate-600">انتخاب همه</button>
                                 <button id="deselectAllBtn" class="py-1 px-3 text-xs font-medium bg-sky-100 hover:bg-sky-200 dark:bg-slate-600/80 dark:hover:bg-slate-600 text-sky-800 dark:text-white rounded-md transition border border-sky-200 dark:border-slate-600">لغو انتخاب همه</button>
@@ -110,21 +110,21 @@
 
                     <!-- Generation Settings Section -->
                     <section id="generation-settings-section">
-                        <hr class="border-gray-200 dark:border-slate-700 my-6">
-                        <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-white">تنظیمات خروجی نهایی</h2>
+                        <hr class="border-sky-200 dark:border-slate-700 my-6">
+                        <h2 class="text-xl font-bold mb-4 text-slate-900 dark:text-white">تنظیمات خروجی نهایی</h2>
                         
                         <div class="space-y-4">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="amneziaOptionSelect" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">تنظیمات AmneziaWG</label>
+                                    <label for="amneziaOptionSelect" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">تنظیمات AmneziaWG</label>
                                     <select id="amneziaOptionSelect" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none select-arrow">
-                                        <option value="use-ui-values">استفاده از مقادیر UI (پیش‌فرض)</option>
+                                        <option value="use-ui-values">استفاده از مقادیر رابط کاربری (پیش‌فرض)</option>
                                         <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
                                         <option value="no-amnezia">غیرفعال کردن AmneziaWG</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="profileSelect" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">پروفایل AmneziaWG</label>
+                                    <label for="profileSelect" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">پروفایل AmneziaWG</label>
                                     <select id="profileSelect" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none select-arrow">
                                         <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
                                         <option value="4,64,120" data-name="Optimal">حالت بهینه</option>
@@ -141,22 +141,22 @@
 
                             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div>
-                                    <label for="jcInput" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">jc</label>
+                                    <label for="jcInput" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">jc</label>
                                     <input type="number" id="jcInput" value="4" min="0" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-sky-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed">
                                 </div>
                                 <div>
-                                    <label for="jminInput" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">jmin</label>
+                                    <label for="jminInput" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">jmin</label>
                                     <input type="number" id="jminInput" value="40" min="0" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-sky-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed">
                                 </div>
                                 <div>
-                                    <label for="jmaxInput" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">jmax</label>
+                                    <label for="jmaxInput" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">jmax</label>
                                     <input type="number" id="jmaxInput" value="250" min="0" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-sky-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed">
                                 </div>
                             </div>
                             
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="templateSelect" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">تمپلت قوانین</label>
+                                    <label for="templateSelect" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">تمپلت قوانین</label>
                                     <select id="templateSelect" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none select-arrow">
                                         <option value="full-rule-template" data-name="Full">قوانین کامل</option>
                                         <option value="iran-template" data-name="Iran">قوانین ایران</option>
@@ -164,8 +164,8 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="outputFileName" class="block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-300">نام فایل خروجی</label>
-                                    <input type="text" id="outputFileName" value="Mihomo_WireGuard" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ltr text-left placeholder-gray-500 dark:placeholder-slate-400">
+                                    <label for="outputFileName" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">نام فایل خروجی</label>
+                                    <input type="text" id="outputFileName" value="Mihomo_WireGuard" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition ltr text-left placeholder-slate-500 dark:placeholder-slate-400">
                                 </div>
                             </div>
                         </div>
