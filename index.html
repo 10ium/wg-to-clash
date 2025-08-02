@@ -211,12 +211,13 @@
         
         /* ===== STAGED CONFIGS LIST ===== */
         #stagedConfigsContainer.hidden { display: none; }
-        #stagedConfigsList { max-h-60px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
+        #stagedConfigsList { max-height: 90px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
         body.light-theme #stagedConfigsList { background-color: rgba(0, 0, 0, 0.03); }
         #stagedConfigsList li { display: flex; align-items: center; padding: 0.5rem; border-radius: 8px; transition: background-color 0.2s ease; }
         #stagedConfigsList li:hover { background-color: rgba(0, 246, 255, 0.1); }
         body.light-theme #stagedConfigsList li:hover { background-color: rgba(0, 0, 0, 0.07); }
-        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); }
+        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); flex-shrink: 0; }
+        #stagedConfigsList label { margin-bottom: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; cursor: pointer; }
         
         /* ===== SOCIAL LINKS SECTION ===== */
         .social-links-container { text-align: center; }
@@ -359,13 +360,24 @@
         </div>
 
     </div>
-
-    <!-- The external script.js file should be linked here if used -->
-    <!-- <script type="module" src="script.js"></script> -->
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // ===== ELEMENT SELECTORS (Defined once for performance) =====
+            // Inputs
+            const wgConfigInput = document.getElementById('wgConfigInput');
+            const wgConfigFile = document.getElementById('wgConfigFile');
+            // Staged List
+            const stagedConfigsContainer = document.getElementById('stagedConfigsContainer');
+            const stagedConfigsList = document.getElementById('stagedConfigsList');
+            const configCounter = document.getElementById('configCounter');
+            // Buttons
+            const processInputBtn = document.getElementById('processInputBtn');
+            const selectAllBtn = document.getElementById('selectAllBtn');
+            const deselectAllBtn = document.getElementById('deselectAllBtn');
+            const clearListBtn = document.getElementById('clearListBtn');
+            const generateBtn = document.getElementById('generateBtn');
+            // Config Options
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
             const jminInput = document.getElementById('jminInput');
@@ -373,14 +385,38 @@
             const outputFileNameInput = document.getElementById('outputFileName');
             const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
             const templateSelect = document.getElementById('templateSelect');
-            const baseFileName = 'Mihomo_WireGuard';
-            const generateBtn = document.getElementById('generateBtn');
+            // UI Feedback
             const messageEl = document.getElementById('message');
             const themeToggle = document.getElementById('theme-toggle');
             const body = document.body;
             const favicon = document.querySelector("link[rel='icon']");
+            // Constants
+            const baseFileName = 'Mihomo_WireGuard';
+            let configIdCounter = 0;
 
-            // ===== BUSINESS LOGIC FUNCTIONS =====
+            // ===== HELPER & UI FUNCTIONS =====
+            function showMessage(text, type) {
+                messageEl.textContent = text;
+                messageEl.className = `message ${type} show`;
+                setTimeout(() => { messageEl.classList.remove('show'); }, 4000);
+            }
+
+            function updateConfigCounter() {
+                const count = stagedConfigsList.getElementsByTagName('li').length;
+                configCounter.textContent = `${count} کانفیگ در لیست`;
+            }
+            
+            function addConfigToList(name) {
+                configIdCounter++;
+                const li = document.createElement('li');
+                const safeName = name.replace(/</g, "<").replace(/>/g, ">"); // Basic sanitization
+                li.innerHTML = `
+                    <input type="checkbox" id="config_${configIdCounter}" checked>
+                    <label for="config_${configIdCounter}">${safeName}</label>
+                `;
+                stagedConfigsList.appendChild(li);
+            }
+
             function updateValueInputs(isCustom) {
                 const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
                 jcInput.disabled = !isCustom || !useUiValues;
@@ -391,7 +427,6 @@
             function updateProfileSectionState() {
                 const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
                 profileSelect.disabled = !useUiValues;
-                // We must also re-evaluate the custom inputs based on the new state
                 updateValueInputs(profileSelect.value === 'custom');
             }
             
@@ -407,7 +442,6 @@
                 outputFileNameInput.value = finalName;
             }
 
-            // ===== THEME SWITCHER LOGIC =====
             const applyTheme = (theme) => {
                 body.classList.toggle('light-theme', theme === 'light');
                 themeToggle.checked = (theme === 'light');
@@ -417,6 +451,51 @@
             };
             
             // ===== EVENT LISTENERS =====
+            processInputBtn.addEventListener('click', () => {
+                const textInput = wgConfigInput.value.trim();
+                const files = wgConfigFile.files;
+                let addedCount = 0;
+
+                if (textInput) {
+                    const lines = textInput.split('\n').filter(line => line.trim() !== '');
+                    lines.forEach(line => {
+                        addConfigToList(line);
+                        addedCount++;
+                    });
+                }
+
+                if (files.length > 0) {
+                    Array.from(files).forEach(file => {
+                        addConfigToList(file.name);
+                        addedCount++;
+                    });
+                }
+
+                if (addedCount > 0) {
+                    stagedConfigsContainer.classList.remove('hidden');
+                    updateConfigCounter();
+                    showMessage(`${addedCount} کانفیگ با موفقیت اضافه شد.`, 'success');
+                    wgConfigInput.value = '';
+                    wgConfigFile.value = '';
+                } else {
+                    showMessage('هیچ ورودی معتبری برای پردازش یافت نشد.', 'error');
+                }
+            });
+            
+            selectAllBtn.addEventListener('click', () => {
+                stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
+            });
+
+            deselectAllBtn.addEventListener('click', () => {
+                stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            });
+
+            clearListBtn.addEventListener('click', () => {
+                stagedConfigsList.innerHTML = '';
+                stagedConfigsContainer.classList.add('hidden');
+                updateConfigCounter();
+            });
+
             profileSelect.addEventListener('change', function() {
                 const selectedValue = this.value;
                 const isCustom = selectedValue === 'custom';
@@ -443,17 +522,11 @@
             });
             
             generateBtn.addEventListener('click', () => {
-                messageEl.textContent = 'این یک پیام آزمایشی برای نمایش است!';
-                messageEl.className = 'message success show';
-
-                setTimeout(() => {
-                    messageEl.classList.remove('show');
-                }, 4000);
+                showMessage('منطق دکمه تولید نهایی هنوز پیاده‌سازی نشده است!', 'error');
             });
             
             // ===== INITIALIZATION =====
             function initialize() {
-                // Initialize theme
                 const savedTheme = localStorage.getItem('theme');
                 if (savedTheme) {
                     applyTheme(savedTheme);
@@ -462,16 +535,10 @@
                     try {
                         const tehranTime = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Tehran', hour12: false, hour: 'numeric' });
                         const tehranHour = parseInt(tehranTime, 10);
-                        if (tehranHour >= 6 && tehranHour < 18) {
-                            defaultTheme = 'light';
-                        }
-                    } catch (error) {
-                        console.error("Could not determine Tehran time, defaulting to dark theme.", error);
-                    }
+                        if (tehranHour >= 6 && tehranHour < 18) { defaultTheme = 'light'; }
+                    } catch (e) { console.error("Could not determine Tehran time, defaulting to dark theme.", e); }
                     applyTheme(defaultTheme);
                 }
-
-                // Initialize UI states based on default selections
                 updateProfileSectionState();
                 updateOutputFilename();
             }
