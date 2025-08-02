@@ -107,7 +107,6 @@
         }
         body.light-theme h1 { color: var(--text-primary); text-shadow: none; animation: none; }
         label { display: block; margin-bottom: 0.75rem; font-weight: 500; color: var(--text-secondary); }
-        body.light-theme label { text-shadow: none; }
         p.help-text { font-size: 0.875rem; color: var(--text-secondary); opacity: 0.8; margin-top: -1rem; margin-bottom: 1rem; }
 
         /* ===== FORM ELEMENTS (INPUTS, TEXTAREA, SELECT) ===== */
@@ -154,8 +153,8 @@
         body.light-theme .button-danger:hover { color: #fff; background-color: rgba(220, 38, 38, 0.6);}
 
         /* ===== MESSAGES & NOTIFICATIONS ===== */
-        .message { margin-top: 1.5rem; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; border: 1px solid; opacity: 0; transform: translateY(10px); transition: all 0.4s ease-in-out; }
-        .message.show { opacity: 1; transform: translateY(0); }
+        .message { margin-top: 1.5rem; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; border: 1px solid; opacity: 0; transform: translateY(10px); transition: all 0.4s ease-in-out; display: none; }
+        .message.show { opacity: 1; transform: translateY(0); display: block; }
         .message.success { background-color: var(--message-success-bg); color: #a7f3d0; border-color: #16a34a; }
         .message.error { background-color: var(--message-error-bg); color: #fecaca; border-color: #dc2626; }
         body.light-theme .message.success { color: #166534; }
@@ -168,13 +167,13 @@
         
         /* ===== STAGED CONFIGS LIST ===== */
         #stagedConfigsContainer.hidden { display: none; }
-        #stagedConfigsList { max-height: 90px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
+        #stagedConfigsList { max-height: 120px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
         body.light-theme #stagedConfigsList { background-color: rgba(0, 0, 0, 0.03); }
         #stagedConfigsList li { display: flex; align-items: center; padding: 0.5rem; border-radius: 8px; transition: background-color 0.2s ease; }
         #stagedConfigsList li:hover { background-color: rgba(0, 246, 255, 0.1); }
         body.light-theme #stagedConfigsList li:hover { background-color: rgba(0, 0, 0, 0.07); }
-        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); flex-shrink: 0; }
-        #stagedConfigsList label { margin-bottom: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; cursor: pointer; }
+        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); flex-shrink: 0; cursor: pointer;}
+        #stagedConfigsList label { margin-bottom: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; cursor: pointer; flex-grow: 1; }
         
         /* ===== THEME SWITCHER ===== */
         .theme-switcher { position: absolute; top: 2rem; right: 2rem; }
@@ -196,6 +195,21 @@
         #theme-toggle:checked + .slider-label::after { transform: translateX(-30px); }
         #theme-toggle:checked + .slider-label .sun-icon { opacity: 1; }
         #theme-toggle:checked + .slider-label .moon-icon { opacity: 0; }
+
+        /* Spinner for loading state */
+        .spinner {
+            display: inline-block;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            width: 1.2rem;
+            height: 1.2rem;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -219,25 +233,24 @@
             <label for="wgConfigFile">یا فایل‌های کانفیگ را آپلود کنید</label>
             <div class="file-input-wrapper">
                 <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
-                <div class="button">انتخاب فایل‌ها</div>
+                <div class="button">انتخاب فایل‌ها <span id="fileListInfo"></span></div>
             </div>
-            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
         </div>
 
         <button id="processInputBtn" class="button-primary mb-6">پردازش و افزودن کانفیگ‌ها</button>
         
         <div id="stagedConfigsContainer" class="hidden">
             <hr class="separator">
-            <h2 class="text-2xl font-bold mb-3 text-center">لیست کانفیگ‌های آماده</h2>
-            <div class="flex justify-between items-center mb-3">
-                <span id="configCounter" class="text-sm text-gray-300"></span>
-                <div class="flex gap-2">
+            <h2 style="font-size: 1.75rem; font-weight: 700; text-align: center; margin-bottom: 1rem;">لیست کانفیگ‌های آماده</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <span id="configCounter" style="color: var(--text-secondary); font-size: 0.875rem;"></span>
+                <div style="display: flex; gap: 0.5rem;">
                     <button id="selectAllBtn" class="button-secondary">انتخاب همه</button>
                     <button id="deselectAllBtn" class="button-secondary">لغو انتخاب</button>
                     <button id="clearListBtn" class="button-secondary button-danger">پاک کردن لیست</button>
                 </div>
             </div>
-            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto"></div>
+            <div id="stagedConfigsList"></div>
             <hr class="separator">
         </div>
         
@@ -285,7 +298,7 @@
         </div>
 
         <button id="generateBtn" class="button-primary">تولید و دانلود فایل نهایی</button>
-        <div id="message" class="message" style="display: none;"></div>
+        <div id="message" class="message"></div>
     </div>
     
     <script>
@@ -293,6 +306,7 @@
         // ===== ELEMENT SELECTORS =====
         const wgConfigInput = document.getElementById('wgConfigInput');
         const wgConfigFile = document.getElementById('wgConfigFile');
+        const fileListInfo = document.getElementById('fileListInfo');
         const stagedConfigsContainer = document.getElementById('stagedConfigsContainer');
         const stagedConfigsList = document.getElementById('stagedConfigsList');
         const configCounter = document.getElementById('configCounter');
@@ -319,20 +333,40 @@
         let stagedConfigsData = [];
 
         // ===== UI & HELPER FUNCTIONS =====
-        function showMessage(text, type) {
+        function showMessage(text, type, duration = 4000) {
             messageEl.textContent = text;
-            messageEl.className = `message ${type} show`;
-            messageEl.style.display = 'block';
-            setTimeout(() => { messageEl.classList.remove('show'); messageEl.style.display = 'none'; }, 4000);
+            messageEl.className = `message ${type}`;
+            messageEl.classList.add('show');
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, duration);
+        }
+        
+        function setButtonLoading(btn, isLoading) {
+            if (isLoading) {
+                btn.disabled = true;
+                btn.innerHTML = btn.innerHTML + '<span class="spinner"></span>';
+            } else {
+                btn.disabled = false;
+                const spinner = btn.querySelector('.spinner');
+                if (spinner) spinner.remove();
+            }
         }
 
         function updateConfigCounter() {
             const count = stagedConfigsData.length;
-            configCounter.textContent = `${count} کانفیگ در لیست`;
+            const checkedCount = stagedConfigsData.filter(c => c.checked).length;
+            configCounter.textContent = `${count} کانفیگ در لیست (${checkedCount} انتخاب شده)`;
         }
         
         function renderStagedList() {
             stagedConfigsList.innerHTML = '';
+            if (stagedConfigsData.length > 0) {
+                stagedConfigsContainer.classList.remove('hidden');
+            } else {
+                stagedConfigsContainer.classList.add('hidden');
+            }
+
             stagedConfigsData.forEach(config => {
                 const li = document.createElement('li');
                 const safeName = config.name.replace(/</g, "<").replace(/>/g, ">");
@@ -342,26 +376,35 @@
                 `;
                 stagedConfigsList.appendChild(li);
             });
-            // Re-attach listeners for checkboxes inside the list
+            
             stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                 cb.addEventListener('change', (e) => {
                     const id = parseInt(e.target.dataset.id, 10);
                     const config = stagedConfigsData.find(c => c.id === id);
-                    if (config) config.checked = e.target.checked;
+                    if (config) {
+                        config.checked = e.target.checked;
+                        updateConfigCounter();
+                    }
                 });
             });
+            updateConfigCounter();
         }
 
-        function addConfigToList(name, rawData) {
+        function addConfigToList(parsedConfig) {
             configIdCounter++;
-            stagedConfigsData.push({ id: configIdCounter, name, raw: rawData, checked: true });
+            stagedConfigsData.push({
+                id: configIdCounter,
+                ...parsedConfig,
+                checked: true
+            });
         }
         
         function updateValueInputs(isCustom) {
             const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
-            jcInput.disabled = !isCustom || !useUiValues;
-            jminInput.disabled = !isCustom || !useUiValues;
-            jmaxInput.disabled = !isCustom || !useUiValues;
+            const disabled = !isCustom || !useUiValues;
+            jcInput.disabled = disabled;
+            jminInput.disabled = disabled;
+            jmaxInput.disabled = disabled;
         }
 
         function updateProfileSectionState() {
@@ -376,6 +419,8 @@
             if (amneziaMode === 'use-ui-values') {
                 const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
                 finalName += `_[${selectedProfileOption.dataset.name}]`;
+            } else if (amneziaMode === 'use-config-values') {
+                finalName += `_[Amnezia-Native]`;
             }
             const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
             finalName += `_[${selectedTemplateOption.dataset.name}]`;
@@ -390,32 +435,125 @@
             localStorage.setItem('theme', theme);
         };
 
-        // ===== CORE LOGIC FUNCTIONS =====
-
-        // Placeholder for parsing a single WireGuard config line
-        // In a real app, this would be much more complex, handling URI, block format, etc.
-        function parseWgConfig(configString) {
-            try {
-                // Example for wg://... URI format
-                if (configString.startsWith('wireguard://')) {
-                    const url = new URL(configString);
-                    const privateKey = url.searchParams.get('privatekey');
-                    const address = url.searchParams.get('address');
-                    const publicKey = url.searchParams.get('publickey');
-                    const endpoint = url.searchParams.get('endpoint');
-                    const name = new URLSearchParams(url.hash.substring(1)).toString() || `WG_${endpoint.split(':')[0]}`;
-
-                    if (!privateKey || !publicKey || !endpoint) return null;
-                    return { name, type: 'wireguard', server: endpoint.split(':')[0], port: endpoint.split(':')[1], 'private-key': privateKey, 'public-key': publicKey, ip: address.split('/')[0] };
+        // ===== CORE PARSING LOGIC =====
+        function parseWgBlock(content) {
+            const config = {};
+            const lines = content.split('\n');
+            let inPeerSection = false;
+            lines.forEach(line => {
+                if (line.trim().startsWith('[Peer]')) {
+                    inPeerSection = true;
                 }
-                // Add more parsers here for block format, JSON, YAML etc.
-                return null; // Fallback
+                const match = line.match(/^\s*(\w+)\s*=\s*(.*)\s*$/);
+                if (match) {
+                    const key = match[1].toLowerCase();
+                    const value = match[2].trim();
+                    if (key === 'privatekey') config['private-key'] = value;
+                    if (key === 'address') config['ip'] = value.split('/')[0];
+                    if (key === 'dns') config['dns'] = value.split(',').map(s => s.trim());
+                    if (inPeerSection) {
+                        if (key === 'publickey') config['public-key'] = value;
+                        if (key === 'endpoint') {
+                            const [server, port] = value.split(':');
+                            config['server'] = server;
+                            config['port'] = parseInt(port, 10);
+                        }
+                    }
+                }
+            });
+            if (config.server && config['private-key'] && config['public-key']) {
+                config.name = `WG-${config.server}`;
+                config.type = 'wireguard';
+                return [config];
+            }
+            return [];
+        }
+
+        function parseWgUri(uri) {
+            try {
+                const url = new URL(uri);
+                const config = { type: 'wireguard' };
+                const peer = new URLSearchParams(url.search);
+                config['private-key'] = peer.get('privateKey');
+                config['public-key'] = peer.get('publicKey');
+                const [server, port] = peer.get('endpoint').split(':');
+                config['server'] = server;
+                config['port'] = parseInt(port, 10);
+                config['ip'] = peer.get('address').split('/')[0];
+                const nameMatch = uri.match(/#(.+)$/);
+                config.name = nameMatch ? decodeURIComponent(nameMatch[1]) : `WG-${server}`;
+                return [config];
             } catch (e) {
-                console.error("Failed to parse config string:", configString, e);
-                return null;
+                return [];
             }
         }
 
+        function parseYaml(content) {
+            try {
+                const data = jsyaml.load(content);
+                if (data && Array.isArray(data.proxies)) {
+                    return data.proxies.filter(p => p.type === 'wireguard');
+                }
+            } catch (e) { console.error("YAML parsing error:", e); }
+            return [];
+        }
+
+        function parseJson(content) {
+            try {
+                const data = JSON.parse(content);
+                if (data && Array.isArray(data.outbounds)) {
+                    return data.outbounds
+                        .filter(o => o.type === 'wireguard')
+                        .map(o => ({ ...o.settings, name: o.tag, type: 'wireguard' }));
+                }
+            } catch (e) { console.error("JSON parsing error:", e); }
+            return [];
+        }
+
+        async function processContent(content, sourceName) {
+            let parsedConfigs = [];
+            content = content.trim();
+
+            if (content.startsWith('wireguard://')) {
+                parsedConfigs = parseWgUri(content);
+            } else if (content.startsWith('[Interface]')) {
+                parsedConfigs = parseWgBlock(content);
+            } else if (sourceName.endsWith('.json')) {
+                 parsedConfigs = parseJson(content);
+            } else { // Try YAML as a default for text blobs
+                try {
+                    const potentialYaml = jsyaml.load(content);
+                    if (potentialYaml && potentialYaml.proxies) {
+                         parsedConfigs = parseYaml(content);
+                    } else { // Fallback to block parser if not valid yaml
+                        parsedConfigs = parseWgBlock(content);
+                    }
+                } catch(e){
+                     parsedConfigs = parseWgBlock(content);
+                }
+            }
+            
+            parsedConfigs.forEach(addConfigToList);
+            return parsedConfigs.length;
+        }
+        
+        async function fetchAndProcessUrl(url) {
+            try {
+                // Using a CORS proxy for cross-origin requests
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+                const data = await response.json();
+                const content = data.contents;
+                if (!content) throw new Error("No content received from proxy.");
+                return await processContent(content, url);
+            } catch (error) {
+                showMessage(`خطا در دریافت لینک: ${url}. ممکن است به دلیل CORS باشد.`, 'error');
+                console.error(`Fetch error for ${url}:`, error);
+                return 0;
+            }
+        }
+        
+        // ===== FINAL CONFIG GENERATION =====
         function generateFinalConfig() {
             const selectedConfigs = stagedConfigsData.filter(c => c.checked);
             if (selectedConfigs.length === 0) {
@@ -423,59 +561,54 @@
                 return;
             }
             
-            // 1. Gather UI settings
             const amneziaMode = amneziaOptionSelect.value;
             const template = templateSelect.value;
             
-            // 2. Build the proxies list
-            let proxies = [];
-            let proxyNames = [];
-            selectedConfigs.forEach(config => {
-                // This is a simplified parser. A real implementation would be more robust.
-                const parsed = parseWgConfig(config.raw);
-                if (parsed) {
-                    let proxy = { ...parsed }; // Create a copy
-                    proxy.name = `WG-${proxy.server}-${proxies.length + 1}`; // Ensure unique name
+            const proxies = selectedConfigs.map((config, index) => {
+                const proxy = {
+                    name: config.name || `WG-${config.server}-${index + 1}`,
+                    type: 'wireguard',
+                    server: config.server,
+                    port: config.port,
+                    ip: config.ip,
+                    'public-key': config['public-key'],
+                    'private-key': config['private-key'],
+                };
+                if (config.mtu) proxy.mtu = config.mtu;
+                if (config.dns) proxy.dns = config.dns;
 
-                    if (amneziaMode === 'use-ui-values') {
-                        proxy['jc'] = parseInt(jcInput.value, 10);
-                        proxy['jmin'] = parseInt(jminInput.value, 10);
-                        proxy['jmax'] = parseInt(jmaxInput.value, 10);
-                    }
-                    proxies.push(proxy);
-                    proxyNames.push(proxy.name);
-                } else {
-                     console.warn(`Could not parse config: ${config.name}`);
+                if (amneziaMode === 'use-ui-values') {
+                    proxy.udp = true;
+                    proxy.jc = parseInt(jcInput.value, 10);
+                    proxy.jmin = parseInt(jminInput.value, 10);
+                    proxy.jmax = parseInt(jmaxInput.value, 10);
+                } else if (amneziaMode === 'use-config-values' && config.jc && config.jmin && config.jmax) {
+                    proxy.udp = true;
+                    proxy.jc = config.jc;
+                    proxy.jmin = config.jmin;
+                    proxy.jmax = config.jmax;
                 }
+                return proxy;
             });
 
-            if (proxies.length === 0) {
-                showMessage('هیچکدام از کانفیگ‌های انتخاب شده معتبر نبودند.', 'error');
-                return;
-            }
+            const proxyNames = proxies.map(p => p.name);
 
-            // 3. Define proxy groups
             const proxyGroups = [
-                { name: 'Proxy', type: 'select', proxies: ['DIRECT', ...proxyNames] },
+                { name: 'PROXY', type: 'select', proxies: ['DIRECT', 'REJECT', ...proxyNames] },
                 { name: 'Auto', type: 'url-test', proxies: proxyNames, url: 'http://www.gstatic.com/generate_204', interval: 300 },
             ];
 
-            // 4. Define rules based on template
             let rules = [];
             if (template === 'full-rule-template') {
                 rules = [
-                    'DOMAIN-SUFFIX,ir,DIRECT',
-                    'DOMAIN-SUFFIX,ircf.space,DIRECT',
-                    'DOMAIN-KEYWORD,shaparak,DIRECT',
-                    'IP-CIDR,185.143.232.0/22,DIRECT',
-                    'MATCH,Proxy'
+                    'DOMAIN-SUFFIX,ir,DIRECT', 'DOMAIN-SUFFIX,cn,DIRECT', 'DOMAIN-KEYWORD,google,PROXY',
+                    'DOMAIN-KEYWORD,instagram,PROXY', 'DOMAIN-KEYWORD,telegram,PROXY', 'GEOIP,IR,DIRECT',
+                    'MATCH,Auto'
                 ];
             } else if (template === 'iran-template') {
-                rules = ['MATCH,Proxy'];
+                rules = ['GEOIP,IR,DIRECT', 'MATCH,PROXY'];
             }
-            // No rules for 'no-rule-template'
 
-            // 5. Assemble the final YAML object
             const mihomoConfig = {
                 'port': 7890,
                 'socks-port': 7891,
@@ -488,57 +621,61 @@
                 'rules': rules,
             };
 
-            // 6. Convert to YAML and trigger download
             try {
-                const yamlString = jsyaml.dump(mihomoConfig);
+                const yamlString = jsyaml.dump(mihomoConfig, { indent: 2, noRefs: true });
                 const blob = new Blob([yamlString], { type: 'text/yaml;charset=utf-8' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `${outputFileNameInput.value.trim()}.yaml`;
+                a.download = `${outputFileNameInput.value.trim().replace(/\s/g, '_')}.yaml`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
                 showMessage('فایل با موفقیت تولید و دانلود شد!', 'success');
             } catch (e) {
-                showMessage('خطا در تولید فایل YAML!', 'error');
+                showMessage(`خطا در تولید فایل YAML: ${e.message}`, 'error');
                 console.error(e);
             }
         }
         
         // ===== EVENT LISTENERS =====
-        processInputBtn.addEventListener('click', () => {
+        processInputBtn.addEventListener('click', async () => {
+            setButtonLoading(processInputBtn, true);
             const textInput = wgConfigInput.value.trim();
-            const files = wgConfigFile.files;
+            const files = Array.from(wgConfigFile.files);
             let addedCount = 0;
 
             if (textInput) {
-                const lines = textInput.split('\n').filter(line => line.trim() !== '');
-                lines.forEach(line => {
-                    addConfigToList(line, line);
-                    addedCount++;
-                });
+                const lines = textInput.split(/[\n\s]+/).filter(line => line.trim() !== '');
+                for (const line of lines) {
+                    if (line.startsWith('http://') || line.startsWith('https://')) {
+                        addedCount += await fetchAndProcessUrl(line);
+                    } else {
+                        addedCount += await processContent(line, 'text-input');
+                    }
+                }
             }
-            if (files.length > 0) {
-                Array.from(files).forEach(file => {
-                    // In a real app, you'd read file content here.
-                    // For now, we use the filename as a placeholder.
-                    addConfigToList(file.name, `file://${file.name}`);
-                    addedCount++;
-                });
+
+            for (const file of files) {
+                try {
+                    const content = await file.text();
+                    addedCount += await processContent(content, file.name);
+                } catch (e) {
+                    showMessage(`خطا در خواندن فایل ${file.name}`, 'error');
+                }
             }
 
             if (addedCount > 0) {
-                stagedConfigsContainer.classList.remove('hidden');
                 renderStagedList();
-                updateConfigCounter();
                 showMessage(`${addedCount} کانفیگ با موفقیت اضافه شد.`, 'success');
                 wgConfigInput.value = '';
-                wgConfigFile.value = ''; // Reset file input
+                wgConfigFile.value = '';
+                fileListInfo.textContent = '';
             } else {
-                showMessage('هیچ ورودی معتبری برای پردازش یافت نشد.', 'error');
+                showMessage('هیچ کانفیگ معتبری برای پردازش یافت نشد.', 'error');
             }
+            setButtonLoading(processInputBtn, false);
         });
         
         selectAllBtn.addEventListener('click', () => {
@@ -552,10 +689,10 @@
         });
 
         clearListBtn.addEventListener('click', () => {
-            stagedConfigsData = [];
-            renderStagedList();
-            stagedConfigsContainer.classList.add('hidden');
-            updateConfigCounter();
+            if (confirm('آیا از پاک کردن کل لیست مطمئن هستید؟')) {
+                stagedConfigsData = [];
+                renderStagedList();
+            }
         });
 
         profileSelect.addEventListener('change', function() {
@@ -571,12 +708,25 @@
             updateOutputFilename();
         });
         
+        wgConfigFile.addEventListener('change', () => {
+            const numFiles = wgConfigFile.files.length;
+            if (numFiles > 0) {
+                fileListInfo.textContent = `(${numFiles} فایل انتخاب شد)`;
+            } else {
+                fileListInfo.textContent = '';
+            }
+        });
+
         amneziaOptionSelect.addEventListener('change', () => {
             updateProfileSectionState();
             updateOutputFilename();
         });
 
         templateSelect.addEventListener('change', updateOutputFilename);
+
+        [jcInput, jminInput, jmaxInput, outputFileNameInput].forEach(input => {
+            input.addEventListener('change', updateOutputFilename);
+        });
 
         themeToggle.addEventListener('change', () => {
             applyTheme(themeToggle.checked ? 'light' : 'dark');
