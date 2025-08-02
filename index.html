@@ -46,7 +46,6 @@
             --button-secondary-hover-bg: rgba(0, 246, 255, 0.2);
             --message-success-bg: rgba(22, 163, 74, 0.3);
             --message-error-bg: rgba(220, 38, 38, 0.3);
-            --select-arrow-color: '#00f6ff';
             --select-option-bg: #1f2937;
             --theme-switcher-bg: #2c3e50;
             --hr-separator-bg: linear-gradient(to left, transparent, var(--container-border-hover), transparent);
@@ -55,11 +54,11 @@
 
         /* ===== LIGHT THEME ===== */
         body.light-theme {
-            --container-bg: rgba(239, 246, 255, 0.65); /* A softer, translucent blueish-white */
+            --container-bg: rgba(239, 246, 255, 0.65);
             --container-border: rgba(0, 0, 0, 0.1);
             --container-border-hover: rgba(79, 70, 229, 0.5);
-            --text-primary: #111827; /* Very Dark Gray */
-            --text-secondary: #4b5563; /* Medium Gray */
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
             --text-glow: #4f46e5;
             --input-bg: rgba(255, 255, 255, 0.6);
             --input-border: rgba(0, 0, 0, 0.15);
@@ -73,97 +72,58 @@
             --button-secondary-hover-bg: rgba(0, 0, 0, 0.1);
             --message-success-bg: rgba(34, 197, 94, 0.2);
             --message-error-bg: rgba(239, 68, 68, 0.2);
-            --select-arrow-color: '#4b5563';
             --select-option-bg: #ffffff;
             --theme-switcher-bg: #bdc3c7;
             --hr-separator-bg: linear-gradient(to left, transparent, #cccccc, transparent);
-            --body-bg-gradient: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)); /* Lighter overlay, less opaque */
+            --body-bg-gradient: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2));
         }
 
         /* ===== BASE & BODY STYLES ===== */
         body {
             font-family: 'Vazirmatn', sans-serif;
             background-image: var(--body-bg-gradient), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
+            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+            color: var(--text-primary); min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 2rem;
             transition: color 0.5s ease;
         }
 
         /* ===== CONTAINER & LAYOUT ===== */
         .container {
-            width: 100%;
-            max-width: 800px;
-            background-color: var(--container-bg);
-            border: 1px solid var(--container-border);
-            border-radius: 20px;
-            padding: 2.5rem;
+            width: 100%; max-width: 800px;
+            background-color: var(--container-bg); border: 1px solid var(--container-border);
+            border-radius: 20px; padding: 2.5rem;
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            transition: all 0.3s ease;
-            animation: fadeIn 1s ease-out;
-            position: relative; /* Needed for theme switcher positioning */
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            transition: all 0.3s ease; animation: fadeIn 1s ease-out; position: relative;
         }
-        .container:hover {
-            border-color: var(--container-border-hover);
-        }
+        .container:hover { border-color: var(--container-border-hover); }
 
         /* ===== TYPOGRAPHY ===== */
         h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2rem;
-            color: #fff;
-            text-shadow: 0 0 5px var(--text-glow), 0 0 10px var(--text-glow);
+            font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 2rem;
+            color: #fff; text-shadow: 0 0 5px var(--text-glow), 0 0 10px var(--text-glow);
             animation: subtle-float 4s ease-in-out infinite;
         }
-        body.light-theme h1 {
-            color: var(--text-primary);
-            text-shadow: none;
-            animation: none;
-        }
-        label {
-            display: block;
-            margin-bottom: 0.75rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-            transition: color 0.3s ease;
-        }
+        body.light-theme h1 { color: var(--text-primary); text-shadow: none; animation: none; }
+        label { display: block; margin-bottom: 0.75rem; font-weight: 500; color: var(--text-secondary); }
         body.light-theme label { text-shadow: none; }
         p.help-text { font-size: 0.875rem; color: var(--text-secondary); opacity: 0.8; margin-top: -1rem; margin-bottom: 1rem; }
 
         /* ===== FORM ELEMENTS (INPUTS, TEXTAREA, SELECT) ===== */
-        textarea, input[type="text"], input[type="number"] {
+        textarea, input[type="text"], input[type="number"], select {
             width: 100%; padding: 12px 15px; margin-bottom: 1.5rem;
             border-radius: 10px; border: 1px solid var(--input-border);
             background-color: var(--input-bg); color: var(--text-primary);
             outline: none; transition: all 0.3s ease; caret-color: var(--input-focus-border);
         }
         select {
-            width: 100%; padding: 12px 15px; margin-bottom: 1.5rem;
-            border-radius: 10px; border: 1px solid var(--input-border);
-            background-color: var(--input-bg); color: var(--text-primary);
-            outline: none; transition: all 0.3s ease;
             appearance: none; -webkit-appearance: none; -moz-appearance: none;
-            /* Default dark theme arrow */
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2300f6ff'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: left 1rem center;
             background-size: 1.5em; padding-left: 3rem;
         }
-        /* Light theme arrow override */
-        body.light-theme select {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234b5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-        }
+        body:not(.light-theme) select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2300f6ff'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); }
+        body.light-theme select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234b5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); }
         textarea::placeholder, input::placeholder { color: var(--text-secondary); opacity: 0.6; }
         textarea:focus, input:focus, select:focus { border-color: var(--input-focus-border); box-shadow: var(--input-focus-shadow); }
         input:disabled { background-color: rgba(0,0,0,0.5); cursor: not-allowed; opacity: 0.5; }
@@ -190,9 +150,8 @@
         .button-secondary:hover { background-color: var(--button-secondary-hover-bg); color: var(--text-primary); transform: scale(1.05); }
         .button-danger { background-color: rgba(220, 38, 38, 0.3); border-color: rgba(220, 38, 38, 0.7); color: #fecaca; }
         .button-danger:hover { background-color: rgba(220, 38, 38, 0.5); color: #fff; }
-        body.light-theme .button-danger { color: #dc2626; }
-        body.light-theme .button-danger:hover { color: #fff; }
-
+        body.light-theme .button-danger { color: #dc2626; border-color: rgba(220, 38, 38, 0.4); }
+        body.light-theme .button-danger:hover { color: #fff; background-color: rgba(220, 38, 38, 0.6);}
 
         /* ===== MESSAGES & NOTIFICATIONS ===== */
         .message { margin-top: 1.5rem; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; border: 1px solid; opacity: 0; transform: translateY(10px); transition: all 0.4s ease-in-out; }
@@ -201,8 +160,6 @@
         .message.error { background-color: var(--message-error-bg); color: #fecaca; border-color: #dc2626; }
         body.light-theme .message.success { color: #166534; }
         body.light-theme .message.error { color: #991b1b; }
-        #errorDetailsContainer { display: none; margin-top: 1rem; padding: 1rem; border: 1px solid #dc2626; background-color: rgba(220, 38, 38, 0.2); border-radius: 10px; }
-        #errorDetailsContainer.show { display: block; animation: fadeIn 0.5s; }
         
         /* ===== UTILITY & STRUCTURE CLASSES ===== */
         .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
@@ -218,15 +175,6 @@
         body.light-theme #stagedConfigsList li:hover { background-color: rgba(0, 0, 0, 0.07); }
         #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); flex-shrink: 0; }
         #stagedConfigsList label { margin-bottom: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; cursor: pointer; }
-        
-        /* ===== SOCIAL LINKS SECTION ===== */
-        .social-links-container { text-align: center; }
-        .social-links { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 1.5rem; }
-        .social-links a { display: inline-block; transition: transform 0.3s ease, filter 0.3s ease; }
-        .social-links img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: box-shadow 0.3s ease; }
-        .social-links a:hover { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 0 15px var(--text-glow)); }
-        .social-links a:hover img { box-shadow: 0 0 20px rgba(0, 246, 255, 0.7); }
-        body.light-theme .social-links a:hover img { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
         
         /* ===== THEME SWITCHER ===== */
         .theme-switcher { position: absolute; top: 2rem; right: 2rem; }
@@ -248,12 +196,10 @@
         #theme-toggle:checked + .slider-label::after { transform: translateX(-30px); }
         #theme-toggle:checked + .slider-label .sun-icon { opacity: 1; }
         #theme-toggle:checked + .slider-label .moon-icon { opacity: 0; }
-
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Theme Switcher Added Here -->
         <div class="theme-switcher">
             <input type="checkbox" id="theme-toggle">
             <label for="theme-toggle" class="slider-label">
@@ -291,12 +237,10 @@
                     <button id="clearListBtn" class="button-secondary button-danger">پاک کردن لیست</button>
                 </div>
             </div>
-            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto">
-            </div>
+            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto"></div>
             <hr class="separator">
         </div>
         
-        <!-- ===== SECTIONS REORDERED & TEXT UPDATED ===== -->
         <div class="mb-4">
             <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
             <select id="amneziaOptionSelect">
@@ -341,210 +285,315 @@
         </div>
 
         <button id="generateBtn" class="button-primary">تولید و دانلود فایل نهایی</button>
-
-        <div id="message" class="message"></div>
-        <div id="errorDetailsContainer">
-            <h3 class="font-bold text-lg mb-2 text-red-300">جزئیات خطاها:</h3>
-            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300"></ul>
-        </div>
-        
-        <hr class="separator">
-
-        <div class="social-links-container">
-            <div class="social-links">
-                <a href="https://t.me/vpnclashfa" target="_blank" title="Telegram"><img src="https://cdn.dribbble.com/users/4507400/screenshots/15420681/media/c00f77bc443cbc4ac96d138f9ac854c5.gif" alt="Telegram"></a>
-                <a href="https://twitter.com/coldwater_10" target="_blank" title="Twitter"><img src="https://cdn.dribbble.com/users/2652449/screenshots/14764078/media/2b620382444946ce84aac0a132c40063.gif" alt="Twitter"></a>
-                <a href="https://www.tvtime.com/en/user/43351079/profile" target="_blank" title="TvTime"><img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTFhMDk5NzJlYzdmZTJjMDM2Y2MzMjBkOTVkODAxM2FjMTdjZGMwNSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/lj1ghwUoflkw2F3o0T/giphy.gif" alt="TvTime"></a>
-                <a href="https://linktr.ee/coldwater_10" target="_blank" title="Linktree"><img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGZrdHVxaGkycXV5M2g2emdvdHkwOWVvOHI5YWR3cTVtODJtbGQwcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/U3ig2IVcuNn6VgU3oO/giphy.gif" alt="Linktree"></a>
-            </div>
-        </div>
-
+        <div id="message" class="message" style="display: none;"></div>
     </div>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // ===== ELEMENT SELECTORS (Defined once for performance) =====
-            // Inputs
-            const wgConfigInput = document.getElementById('wgConfigInput');
-            const wgConfigFile = document.getElementById('wgConfigFile');
-            // Staged List
-            const stagedConfigsContainer = document.getElementById('stagedConfigsContainer');
-            const stagedConfigsList = document.getElementById('stagedConfigsList');
-            const configCounter = document.getElementById('configCounter');
-            // Buttons
-            const processInputBtn = document.getElementById('processInputBtn');
-            const selectAllBtn = document.getElementById('selectAllBtn');
-            const deselectAllBtn = document.getElementById('deselectAllBtn');
-            const clearListBtn = document.getElementById('clearListBtn');
-            const generateBtn = document.getElementById('generateBtn');
-            // Config Options
-            const profileSelect = document.getElementById('profileSelect');
-            const jcInput = document.getElementById('jcInput');
-            const jminInput = document.getElementById('jminInput');
-            const jmaxInput = document.getElementById('jmaxInput');
-            const outputFileNameInput = document.getElementById('outputFileName');
-            const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
-            const templateSelect = document.getElementById('templateSelect');
-            // UI Feedback
-            const messageEl = document.getElementById('message');
-            const themeToggle = document.getElementById('theme-toggle');
-            const body = document.body;
-            const favicon = document.querySelector("link[rel='icon']");
-            // Constants
-            const baseFileName = 'Mihomo_WireGuard';
-            let configIdCounter = 0;
+    document.addEventListener('DOMContentLoaded', function () {
+        // ===== ELEMENT SELECTORS =====
+        const wgConfigInput = document.getElementById('wgConfigInput');
+        const wgConfigFile = document.getElementById('wgConfigFile');
+        const stagedConfigsContainer = document.getElementById('stagedConfigsContainer');
+        const stagedConfigsList = document.getElementById('stagedConfigsList');
+        const configCounter = document.getElementById('configCounter');
+        const processInputBtn = document.getElementById('processInputBtn');
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const deselectAllBtn = document.getElementById('deselectAllBtn');
+        const clearListBtn = document.getElementById('clearListBtn');
+        const generateBtn = document.getElementById('generateBtn');
+        const profileSelect = document.getElementById('profileSelect');
+        const jcInput = document.getElementById('jcInput');
+        const jminInput = document.getElementById('jminInput');
+        const jmaxInput = document.getElementById('jmaxInput');
+        const outputFileNameInput = document.getElementById('outputFileName');
+        const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
+        const templateSelect = document.getElementById('templateSelect');
+        const messageEl = document.getElementById('message');
+        const themeToggle = document.getElementById('theme-toggle');
+        const body = document.body;
+        const favicon = document.querySelector("link[rel='icon']");
+        
+        // ===== STATE MANAGEMENT =====
+        const baseFileName = 'Mihomo_WireGuard';
+        let configIdCounter = 0;
+        let stagedConfigsData = [];
 
-            // ===== HELPER & UI FUNCTIONS =====
-            function showMessage(text, type) {
-                messageEl.textContent = text;
-                messageEl.className = `message ${type} show`;
-                setTimeout(() => { messageEl.classList.remove('show'); }, 4000);
-            }
+        // ===== UI & HELPER FUNCTIONS =====
+        function showMessage(text, type) {
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            messageEl.style.display = 'block';
+            setTimeout(() => { messageEl.classList.remove('show'); messageEl.style.display = 'none'; }, 4000);
+        }
 
-            function updateConfigCounter() {
-                const count = stagedConfigsList.getElementsByTagName('li').length;
-                configCounter.textContent = `${count} کانفیگ در لیست`;
-            }
-            
-            function addConfigToList(name) {
-                configIdCounter++;
+        function updateConfigCounter() {
+            const count = stagedConfigsData.length;
+            configCounter.textContent = `${count} کانفیگ در لیست`;
+        }
+        
+        function renderStagedList() {
+            stagedConfigsList.innerHTML = '';
+            stagedConfigsData.forEach(config => {
                 const li = document.createElement('li');
-                const safeName = name.replace(/</g, "<").replace(/>/g, ">"); // Basic sanitization
+                const safeName = config.name.replace(/</g, "<").replace(/>/g, ">");
                 li.innerHTML = `
-                    <input type="checkbox" id="config_${configIdCounter}" checked>
-                    <label for="config_${configIdCounter}">${safeName}</label>
+                    <input type="checkbox" id="config_${config.id}" data-id="${config.id}" ${config.checked ? 'checked' : ''}>
+                    <label for="config_${config.id}">${safeName}</label>
                 `;
                 stagedConfigsList.appendChild(li);
-            }
+            });
+            // Re-attach listeners for checkboxes inside the list
+            stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const id = parseInt(e.target.dataset.id, 10);
+                    const config = stagedConfigsData.find(c => c.id === id);
+                    if (config) config.checked = e.target.checked;
+                });
+            });
+        }
 
-            function updateValueInputs(isCustom) {
-                const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
-                jcInput.disabled = !isCustom || !useUiValues;
-                jminInput.disabled = !isCustom || !useUiValues;
-                jmaxInput.disabled = !isCustom || !useUiValues;
-            }
+        function addConfigToList(name, rawData) {
+            configIdCounter++;
+            stagedConfigsData.push({ id: configIdCounter, name, raw: rawData, checked: true });
+        }
+        
+        function updateValueInputs(isCustom) {
+            const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
+            jcInput.disabled = !isCustom || !useUiValues;
+            jminInput.disabled = !isCustom || !useUiValues;
+            jmaxInput.disabled = !isCustom || !useUiValues;
+        }
 
-            function updateProfileSectionState() {
-                const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
-                profileSelect.disabled = !useUiValues;
-                updateValueInputs(profileSelect.value === 'custom');
+        function updateProfileSectionState() {
+            const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
+            profileSelect.disabled = !useUiValues;
+            updateValueInputs(profileSelect.value === 'custom');
+        }
+        
+        function updateOutputFilename() {
+            let finalName = baseFileName;
+            const amneziaMode = amneziaOptionSelect.value;
+            if (amneziaMode === 'use-ui-values') {
+                const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
+                finalName += `_[${selectedProfileOption.dataset.name}]`;
+            }
+            const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
+            finalName += `_[${selectedTemplateOption.dataset.name}]`;
+            outputFileNameInput.value = finalName;
+        }
+
+        const applyTheme = (theme) => {
+            body.classList.toggle('light-theme', theme === 'light');
+            themeToggle.checked = (theme === 'light');
+            const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
+            favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
+            localStorage.setItem('theme', theme);
+        };
+
+        // ===== CORE LOGIC FUNCTIONS =====
+
+        // Placeholder for parsing a single WireGuard config line
+        // In a real app, this would be much more complex, handling URI, block format, etc.
+        function parseWgConfig(configString) {
+            try {
+                // Example for wg://... URI format
+                if (configString.startsWith('wireguard://')) {
+                    const url = new URL(configString);
+                    const privateKey = url.searchParams.get('privatekey');
+                    const address = url.searchParams.get('address');
+                    const publicKey = url.searchParams.get('publickey');
+                    const endpoint = url.searchParams.get('endpoint');
+                    const name = new URLSearchParams(url.hash.substring(1)).toString() || `WG_${endpoint.split(':')[0]}`;
+
+                    if (!privateKey || !publicKey || !endpoint) return null;
+                    return { name, type: 'wireguard', server: endpoint.split(':')[0], port: endpoint.split(':')[1], 'private-key': privateKey, 'public-key': publicKey, ip: address.split('/')[0] };
+                }
+                // Add more parsers here for block format, JSON, YAML etc.
+                return null; // Fallback
+            } catch (e) {
+                console.error("Failed to parse config string:", configString, e);
+                return null;
+            }
+        }
+
+        function generateFinalConfig() {
+            const selectedConfigs = stagedConfigsData.filter(c => c.checked);
+            if (selectedConfigs.length === 0) {
+                showMessage('هیچ کانفیگی برای تولید فایل انتخاب نشده است!', 'error');
+                return;
             }
             
-            function updateOutputFilename() {
-                let finalName = baseFileName;
-                const amneziaMode = amneziaOptionSelect.value;
-                if (amneziaMode === 'use-ui-values') {
-                    const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
-                    finalName += `_[${selectedProfileOption.dataset.name}]`;
+            // 1. Gather UI settings
+            const amneziaMode = amneziaOptionSelect.value;
+            const template = templateSelect.value;
+            
+            // 2. Build the proxies list
+            let proxies = [];
+            let proxyNames = [];
+            selectedConfigs.forEach(config => {
+                // This is a simplified parser. A real implementation would be more robust.
+                const parsed = parseWgConfig(config.raw);
+                if (parsed) {
+                    let proxy = { ...parsed }; // Create a copy
+                    proxy.name = `WG-${proxy.server}-${proxies.length + 1}`; // Ensure unique name
+
+                    if (amneziaMode === 'use-ui-values') {
+                        proxy['jc'] = parseInt(jcInput.value, 10);
+                        proxy['jmin'] = parseInt(jminInput.value, 10);
+                        proxy['jmax'] = parseInt(jmaxInput.value, 10);
+                    }
+                    proxies.push(proxy);
+                    proxyNames.push(proxy.name);
+                } else {
+                     console.warn(`Could not parse config: ${config.name}`);
                 }
-                const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
-                finalName += `_[${selectedTemplateOption.dataset.name}]`;
-                outputFileNameInput.value = finalName;
+            });
+
+            if (proxies.length === 0) {
+                showMessage('هیچکدام از کانفیگ‌های انتخاب شده معتبر نبودند.', 'error');
+                return;
             }
 
-            const applyTheme = (theme) => {
-                body.classList.toggle('light-theme', theme === 'light');
-                themeToggle.checked = (theme === 'light');
-                const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
-                favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
-                localStorage.setItem('theme', theme);
+            // 3. Define proxy groups
+            const proxyGroups = [
+                { name: 'Proxy', type: 'select', proxies: ['DIRECT', ...proxyNames] },
+                { name: 'Auto', type: 'url-test', proxies: proxyNames, url: 'http://www.gstatic.com/generate_204', interval: 300 },
+            ];
+
+            // 4. Define rules based on template
+            let rules = [];
+            if (template === 'full-rule-template') {
+                rules = [
+                    'DOMAIN-SUFFIX,ir,DIRECT',
+                    'DOMAIN-SUFFIX,ircf.space,DIRECT',
+                    'DOMAIN-KEYWORD,shaparak,DIRECT',
+                    'IP-CIDR,185.143.232.0/22,DIRECT',
+                    'MATCH,Proxy'
+                ];
+            } else if (template === 'iran-template') {
+                rules = ['MATCH,Proxy'];
+            }
+            // No rules for 'no-rule-template'
+
+            // 5. Assemble the final YAML object
+            const mihomoConfig = {
+                'port': 7890,
+                'socks-port': 7891,
+                'allow-lan': false,
+                'mode': 'rule',
+                'log-level': 'info',
+                'external-controller': '127.0.0.1:9090',
+                'proxies': proxies,
+                'proxy-groups': proxyGroups,
+                'rules': rules,
             };
-            
-            // ===== EVENT LISTENERS =====
-            processInputBtn.addEventListener('click', () => {
-                const textInput = wgConfigInput.value.trim();
-                const files = wgConfigFile.files;
-                let addedCount = 0;
 
-                if (textInput) {
-                    const lines = textInput.split('\n').filter(line => line.trim() !== '');
-                    lines.forEach(line => {
-                        addConfigToList(line);
-                        addedCount++;
-                    });
-                }
-
-                if (files.length > 0) {
-                    Array.from(files).forEach(file => {
-                        addConfigToList(file.name);
-                        addedCount++;
-                    });
-                }
-
-                if (addedCount > 0) {
-                    stagedConfigsContainer.classList.remove('hidden');
-                    updateConfigCounter();
-                    showMessage(`${addedCount} کانفیگ با موفقیت اضافه شد.`, 'success');
-                    wgConfigInput.value = '';
-                    wgConfigFile.value = '';
-                } else {
-                    showMessage('هیچ ورودی معتبری برای پردازش یافت نشد.', 'error');
-                }
-            });
-            
-            selectAllBtn.addEventListener('click', () => {
-                stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = true);
-            });
-
-            deselectAllBtn.addEventListener('click', () => {
-                stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            });
-
-            clearListBtn.addEventListener('click', () => {
-                stagedConfigsList.innerHTML = '';
-                stagedConfigsContainer.classList.add('hidden');
-                updateConfigCounter();
-            });
-
-            profileSelect.addEventListener('change', function() {
-                const selectedValue = this.value;
-                const isCustom = selectedValue === 'custom';
-                if (!isCustom) {
-                    const values = selectedValue.split(',');
-                    jcInput.value = values[0];
-                    jminInput.value = values[1];
-                    jmaxInput.value = values[2];
-                }
-                updateValueInputs(isCustom);
-                updateOutputFilename();
-            });
-            
-            amneziaOptionSelect.addEventListener('change', () => {
-                updateProfileSectionState();
-                updateOutputFilename();
-            });
-
-            templateSelect.addEventListener('change', updateOutputFilename);
-
-            themeToggle.addEventListener('change', () => {
-                const newTheme = themeToggle.checked ? 'light' : 'dark';
-                applyTheme(newTheme);
-            });
-            
-            generateBtn.addEventListener('click', () => {
-                showMessage('منطق دکمه تولید نهایی هنوز پیاده‌سازی نشده است!', 'error');
-            });
-            
-            // ===== INITIALIZATION =====
-            function initialize() {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme) {
-                    applyTheme(savedTheme);
-                } else {
-                    let defaultTheme = 'dark';
-                    try {
-                        const tehranTime = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Tehran', hour12: false, hour: 'numeric' });
-                        const tehranHour = parseInt(tehranTime, 10);
-                        if (tehranHour >= 6 && tehranHour < 18) { defaultTheme = 'light'; }
-                    } catch (e) { console.error("Could not determine Tehran time, defaulting to dark theme.", e); }
-                    applyTheme(defaultTheme);
-                }
-                updateProfileSectionState();
-                updateOutputFilename();
+            // 6. Convert to YAML and trigger download
+            try {
+                const yamlString = jsyaml.dump(mihomoConfig);
+                const blob = new Blob([yamlString], { type: 'text/yaml;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${outputFileNameInput.value.trim()}.yaml`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showMessage('فایل با موفقیت تولید و دانلود شد!', 'success');
+            } catch (e) {
+                showMessage('خطا در تولید فایل YAML!', 'error');
+                console.error(e);
             }
-            
-            initialize();
+        }
+        
+        // ===== EVENT LISTENERS =====
+        processInputBtn.addEventListener('click', () => {
+            const textInput = wgConfigInput.value.trim();
+            const files = wgConfigFile.files;
+            let addedCount = 0;
+
+            if (textInput) {
+                const lines = textInput.split('\n').filter(line => line.trim() !== '');
+                lines.forEach(line => {
+                    addConfigToList(line, line);
+                    addedCount++;
+                });
+            }
+            if (files.length > 0) {
+                Array.from(files).forEach(file => {
+                    // In a real app, you'd read file content here.
+                    // For now, we use the filename as a placeholder.
+                    addConfigToList(file.name, `file://${file.name}`);
+                    addedCount++;
+                });
+            }
+
+            if (addedCount > 0) {
+                stagedConfigsContainer.classList.remove('hidden');
+                renderStagedList();
+                updateConfigCounter();
+                showMessage(`${addedCount} کانفیگ با موفقیت اضافه شد.`, 'success');
+                wgConfigInput.value = '';
+                wgConfigFile.value = ''; // Reset file input
+            } else {
+                showMessage('هیچ ورودی معتبری برای پردازش یافت نشد.', 'error');
+            }
         });
+        
+        selectAllBtn.addEventListener('click', () => {
+            stagedConfigsData.forEach(c => c.checked = true);
+            renderStagedList();
+        });
+
+        deselectAllBtn.addEventListener('click', () => {
+            stagedConfigsData.forEach(c => c.checked = false);
+            renderStagedList();
+        });
+
+        clearListBtn.addEventListener('click', () => {
+            stagedConfigsData = [];
+            renderStagedList();
+            stagedConfigsContainer.classList.add('hidden');
+            updateConfigCounter();
+        });
+
+        profileSelect.addEventListener('change', function() {
+            const selectedValue = this.value;
+            const isCustom = selectedValue === 'custom';
+            if (!isCustom) {
+                const values = selectedValue.split(',');
+                jcInput.value = values[0];
+                jminInput.value = values[1];
+                jmaxInput.value = values[2];
+            }
+            updateValueInputs(isCustom);
+            updateOutputFilename();
+        });
+        
+        amneziaOptionSelect.addEventListener('change', () => {
+            updateProfileSectionState();
+            updateOutputFilename();
+        });
+
+        templateSelect.addEventListener('change', updateOutputFilename);
+
+        themeToggle.addEventListener('change', () => {
+            applyTheme(themeToggle.checked ? 'light' : 'dark');
+        });
+        
+        generateBtn.addEventListener('click', generateFinalConfig);
+        
+        // ===== INITIALIZATION =====
+        function initialize() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+            updateProfileSectionState();
+            updateOutputFilename();
+        }
+        
+        initialize();
+    });
     </script>
 </body>
 </html>
