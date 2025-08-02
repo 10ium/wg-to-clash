@@ -26,7 +26,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* ===== GLOBAL & THEME VARIABLES ===== */
+        /* ===== GLOBAL & THEME VARIABLES (DEFAULT: DARK THEME) ===== */
         :root {
             --container-bg: rgba(10, 15, 30, 0.6);
             --container-border: rgba(0, 246, 255, 0.2);
@@ -46,27 +46,58 @@
             --button-secondary-hover-bg: rgba(0, 246, 255, 0.2);
             --message-success-bg: rgba(22, 163, 74, 0.3);
             --message-error-bg: rgba(220, 38, 38, 0.3);
-            --select-arrow-color: #00f6ff;
+            --select-arrow-color: '#00f6ff';
+            --select-option-bg: #1f2937;
+            --theme-switcher-bg: #2c3e50;
+            --hr-separator-bg: linear-gradient(to left, transparent, var(--container-border-hover), transparent);
+        }
+
+        /* ===== LIGHT THEME ===== */
+        body.light-theme {
+            --container-bg: rgba(249, 250, 251, 0.75);
+            --container-border: rgba(0, 0, 0, 0.1);
+            --container-border-hover: rgba(79, 70, 229, 0.5);
+            --text-primary: #111827; /* Very Dark Gray */
+            --text-secondary: #4b5563; /* Medium Gray */
+            --text-glow: #4f46e5;
+            --input-bg: rgba(255, 255, 255, 0.7);
+            --input-border: rgba(0, 0, 0, 0.15);
+            --input-focus-border: #4f46e5;
+            --input-focus-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
+            --button-primary-bg: linear-gradient(90deg, #4f46e5, #8b5cf6);
+            --button-primary-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
+            --button-primary-hover-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+            --button-secondary-bg: rgba(0, 0, 0, 0.05);
+            --button-secondary-border: rgba(0, 0, 0, 0.2);
+            --button-secondary-hover-bg: rgba(0, 0, 0, 0.1);
+            --message-success-bg: rgba(34, 197, 94, 0.2);
+            --message-error-bg: rgba(239, 68, 68, 0.2);
+            --select-arrow-color: '#4b5563';
+            --select-option-bg: #ffffff;
+            --theme-switcher-bg: #bdc3c7;
+            --hr-separator-bg: linear-gradient(to left, transparent, #cccccc, transparent);
         }
 
         /* ===== BASE & BODY STYLES ===== */
         body {
             font-family: 'Vazirmatn', sans-serif;
-            
-            /* [تغییر اصلی] حذف گرادینت متحرک و جایگزینی با تصویر ثابت */
-            /* [نکته] برای استفاده از عکس خودتان، آدرس زیر را با 'background.jpg' جایگزین کنید */
             background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            background-attachment: fixed; /* ایجاد افکت پارالاکس */
-            
+            background-attachment: fixed;
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 2rem;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.light-theme {
+            background-color: #f0f2f5;
+            background-image: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23d8dde4" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
         }
 
         /* ===== CONTAINER & LAYOUT ===== */
@@ -82,6 +113,7 @@
             -webkit-backdrop-filter: blur(16px);
             transition: all 0.3s ease;
             animation: fadeIn 1s ease-out;
+            position: relative; /* Needed for theme switcher positioning */
         }
         .container:hover {
             border-color: var(--container-border-hover);
@@ -97,169 +129,141 @@
             text-shadow: 0 0 5px var(--text-glow), 0 0 10px var(--text-glow);
             animation: subtle-float 4s ease-in-out infinite;
         }
+        body.light-theme h1 {
+            color: var(--text-primary);
+            text-shadow: none;
+            animation: none;
+        }
         label {
             display: block;
             margin-bottom: 0.75rem;
             font-weight: 500;
             color: var(--text-secondary);
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: color 0.3s ease;
         }
-        p.help-text {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            opacity: 0.8;
-            margin-top: -1rem;
-            margin-bottom: 1rem;
-        }
+        body.light-theme label { text-shadow: none; }
+        p.help-text { font-size: 0.875rem; color: var(--text-secondary); opacity: 0.8; margin-top: -1rem; margin-bottom: 1rem; }
 
         /* ===== FORM ELEMENTS (INPUTS, TEXTAREA, SELECT) ===== */
         textarea, input[type="text"], input[type="number"] {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid var(--input-border);
-            background-color: var(--input-bg);
-            color: var(--text-primary);
-            outline: none;
-            transition: all 0.3s ease;
-            caret-color: var(--input-focus-border);
+            width: 100%; padding: 12px 15px; margin-bottom: 1.5rem;
+            border-radius: 10px; border: 1px solid var(--input-border);
+            background-color: var(--input-bg); color: var(--text-primary);
+            outline: none; transition: all 0.3s ease; caret-color: var(--input-focus-border);
         }
         select {
-            width: 100%;
-            padding: 12px 15px;
-            margin-bottom: 1.5rem;
-            border-radius: 10px;
-            border: 1px solid var(--input-border);
-            background-color: var(--input-bg);
-            color: var(--text-primary);
-            outline: none;
-            transition: all 0.3s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='${encodeURIComponent(getComputedStyle(document.documentElement).getPropertyValue('--select-arrow-color'))}'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: left 1rem center;
-            background-size: 1.5em;
-            padding-left: 3rem;
+            width: 100%; padding: 12px 15px; margin-bottom: 1.5rem;
+            border-radius: 10px; border: 1px solid var(--input-border);
+            background-color: var(--input-bg); color: var(--text-primary);
+            outline: none; transition: all 0.3s ease;
+            appearance: none; -webkit-appearance: none; -moz-appearance: none;
+            /* Default dark theme arrow */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2300f6ff'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: left 1rem center;
+            background-size: 1.5em; padding-left: 3rem;
+        }
+        /* Light theme arrow override */
+        body.light-theme select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234b5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
         }
         textarea::placeholder, input::placeholder { color: var(--text-secondary); opacity: 0.6; }
-        textarea:focus, input:focus, select:focus {
-            border-color: var(--input-focus-border);
-            box-shadow: var(--input-focus-shadow);
-        }
+        textarea:focus, input:focus, select:focus { border-color: var(--input-focus-border); box-shadow: var(--input-focus-shadow); }
         input:disabled { background-color: rgba(0,0,0,0.5); cursor: not-allowed; opacity: 0.5; }
-        select option { background-color: #1f2937; color: var(--text-primary); }
+        body.light-theme input:disabled { background-color: rgba(0,0,0,0.1); }
+        select option { background-color: var(--select-option-bg); color: var(--text-primary); }
         
         /* ===== BUTTONS ===== */
-        .button {
-            padding: 12px 15px;
-            border-radius: 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-            font-weight: 500;
-        }
+        .button { padding: 12px 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; border: none; font-weight: 500; }
         .file-input-wrapper { position: relative; overflow: hidden; display: block; margin-bottom: 1.5rem; }
         .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-input-wrapper .button {
-            background-color: var(--button-secondary-bg);
-            border: 1px solid var(--button-secondary-border);
-            color: var(--text-glow);
-        }
-        .file-input-wrapper .button:hover {
-            background-color: var(--button-secondary-hover-bg);
-            transform: scale(1.02);
-        }
+        .file-input-wrapper .button { background-color: var(--button-secondary-bg); border: 1px solid var(--button-secondary-border); color: var(--text-glow); }
+        .file-input-wrapper .button:hover { background-color: var(--button-secondary-hover-bg); transform: scale(1.02); }
         .button-primary {
-            width: 100%;
-            padding: 15px 20px;
-            border-radius: 12px;
-            background: var(--button-primary-bg);
-            background-size: 200% auto;
-            color: white;
-            font-size: 1.125rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: var(--button-primary-shadow);
+            width: 100%; padding: 15px 20px; border-radius: 12px; background: var(--button-primary-bg);
+            background-size: 200% auto; color: white; font-size: 1.125rem; font-weight: 700;
+            cursor: pointer; box-shadow: var(--button-primary-shadow);
         }
-        .button-primary:hover {
-            background-position: right center;
-            transform: translateY(-3px);
-            box-shadow: var(--button-primary-hover-shadow);
-        }
+        .button-primary:hover { background-position: right center; transform: translateY(-3px); box-shadow: var(--button-primary-hover-shadow); }
         .button-secondary {
-            background-color: var(--button-secondary-bg);
-            color: var(--text-secondary);
-            border: 1px solid var(--button-secondary-border);
-            padding: 6px 12px;
-            font-size: 0.875rem;
-            border-radius: 8px;
+            background-color: var(--button-secondary-bg); color: var(--text-secondary);
+            border: 1px solid var(--button-secondary-border); padding: 6px 12px;
+            font-size: 0.875rem; border-radius: 8px;
         }
-        .button-secondary:hover {
-            background-color: var(--button-secondary-hover-bg);
-            color: var(--text-primary);
-            transform: scale(1.05);
-        }
-        .button-danger { background-color: rgba(220, 38, 38, 0.3); border-color: rgba(220, 38, 38, 0.7); }
-        .button-danger:hover { background-color: rgba(220, 38, 38, 0.5); }
+        .button-secondary:hover { background-color: var(--button-secondary-hover-bg); color: var(--text-primary); transform: scale(1.05); }
+        .button-danger { background-color: rgba(220, 38, 38, 0.3); border-color: rgba(220, 38, 38, 0.7); color: #fecaca; }
+        .button-danger:hover { background-color: rgba(220, 38, 38, 0.5); color: #fff; }
+        body.light-theme .button-danger { color: #dc2626; }
+        body.light-theme .button-danger:hover { color: #fff; }
+
 
         /* ===== MESSAGES & NOTIFICATIONS ===== */
         .message { margin-top: 1.5rem; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; border: 1px solid; opacity: 0; transform: translateY(10px); transition: all 0.4s ease-in-out; }
         .message.show { opacity: 1; transform: translateY(0); }
         .message.success { background-color: var(--message-success-bg); color: #a7f3d0; border-color: #16a34a; }
         .message.error { background-color: var(--message-error-bg); color: #fecaca; border-color: #dc2626; }
+        body.light-theme .message.success { color: #166534; }
+        body.light-theme .message.error { color: #991b1b; }
         #errorDetailsContainer { display: none; margin-top: 1rem; padding: 1rem; border: 1px solid #dc2626; background-color: rgba(220, 38, 38, 0.2); border-radius: 10px; }
         #errorDetailsContainer.show { display: block; animation: fadeIn 0.5s; }
         
         /* ===== UTILITY & STRUCTURE CLASSES ===== */
         .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
         .mb-4 { margin-bottom: 1rem; } .mb-6 { margin-bottom: 1.5rem; }
-        hr.separator { border: 0; height: 1px; background-image: linear-gradient(to left, transparent, var(--container-border-hover), transparent); margin: 2rem 0; }
+        hr.separator { border: 0; height: 1px; background-image: var(--hr-separator-bg); margin: 2rem 0; }
         
         /* ===== STAGED CONFIGS LIST ===== */
         #stagedConfigsContainer.hidden { display: none; }
         #stagedConfigsList { max-h-60px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
+        body.light-theme #stagedConfigsList { background-color: rgba(0, 0, 0, 0.03); }
         #stagedConfigsList li { display: flex; align-items: center; padding: 0.5rem; border-radius: 8px; transition: background-color 0.2s ease; }
         #stagedConfigsList li:hover { background-color: rgba(0, 246, 255, 0.1); }
+        body.light-theme #stagedConfigsList li:hover { background-color: rgba(0, 0, 0, 0.07); }
         #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); }
         
         /* ===== SOCIAL LINKS SECTION ===== */
-        .social-links-container {
-            text-align: center;
+        .social-links-container { text-align: center; }
+        .social-links { display: flex; justify-content: center; align-items: center; gap: 1.5rem; margin-top: 1.5rem; }
+        .social-links a { display: inline-block; transition: transform 0.3s ease, filter 0.3s ease; }
+        .social-links img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; box-shadow: 0 0 10px rgba(0,0,0,0.5); transition: box-shadow 0.3s ease; }
+        .social-links a:hover { transform: scale(1.15) translateY(-5px); filter: drop-shadow(0 0 15px var(--text-glow)); }
+        .social-links a:hover img { box-shadow: 0 0 20px rgba(0, 246, 255, 0.7); }
+        body.light-theme .social-links a:hover img { box-shadow: 0 0 20px rgba(79, 70, 229, 0.5); }
+        
+        /* ===== THEME SWITCHER ===== */
+        .theme-switcher { position: absolute; top: 2rem; right: 2rem; }
+        #theme-toggle { display: none; }
+        .slider-label {
+            display: flex; align-items: center; justify-content: space-between;
+            width: 60px; height: 30px; background-color: var(--theme-switcher-bg);
+            border-radius: 15px; cursor: pointer; position: relative;
+            padding: 0 5px; transition: background-color 0.3s ease;
         }
-        .social-links {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 1.5rem;
-            margin-top: 1.5rem;
+        .slider-label::after {
+            content: ''; display: block; width: 22px; height: 22px;
+            background-color: #fff; border-radius: 50%;
+            position: absolute; top: 4px; right: 4px;
+            transition: transform 0.3s ease;
         }
-        .social-links a {
-            display: inline-block;
-            transition: transform 0.3s ease, filter 0.3s ease;
-        }
-        .social-links img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-            transition: box-shadow 0.3s ease;
-        }
-        .social-links a:hover {
-            transform: scale(1.15) translateY(-5px);
-            filter: drop-shadow(0 0 15px var(--text-glow));
-        }
-        .social-links a:hover img {
-            box-shadow: 0 0 20px rgba(0, 246, 255, 0.7);
-        }
+        .sun-icon, .moon-icon { font-size: 16px; user-select: none; z-index: 1; }
+        .sun-icon { opacity: 0; } .moon-icon { opacity: 1; }
+        #theme-toggle:checked + .slider-label::after { transform: translateX(-30px); }
+        #theme-toggle:checked + .slider-label .sun-icon { opacity: 1; }
+        #theme-toggle:checked + .slider-label .moon-icon { opacity: 0; }
+
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Theme Switcher Added Here -->
+        <div class="theme-switcher">
+            <input type="checkbox" id="theme-toggle">
+            <label for="theme-toggle" class="slider-label">
+                <span class="moon-icon">🌙</span>
+                <span class="sun-icon">☀️</span>
+            </label>
+        </div>
+
         <h1>مبدل کانفیگ WireGuard</h1>
 
         <div class="mb-4">
@@ -316,7 +320,7 @@
         <div class="mb-4">
             <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
             <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر UI (پیش‌فرض)</option>
+                <option value="use-ui-values">استفاده از مقادیر رابط کاربری</option>
                 <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
                 <option value="no-amnezia">غیرفعال</option>
             </select>
@@ -360,6 +364,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // ===== EXISTING SCRIPT LOGIC (Unchanged) =====
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
             const jminInput = document.getElementById('jminInput');
@@ -415,6 +420,53 @@
                     messageEl.classList.remove('show');
                 }, 4000);
             });
+            
+            // ===== NEW THEME SWITCHER LOGIC =====
+            const themeToggle = document.getElementById('theme-toggle');
+            const body = document.body;
+            const favicon = document.querySelector("link[rel='icon']");
+
+            const applyTheme = (theme) => {
+                // Apply class to body for CSS overrides
+                body.classList.toggle('light-theme', theme === 'light');
+                // Update checkbox state
+                themeToggle.checked = (theme === 'light');
+                // Change favicon color based on theme
+                const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
+                favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
+                // Store user's preference
+                localStorage.setItem('theme', theme);
+            };
+
+            themeToggle.addEventListener('change', () => {
+                const newTheme = themeToggle.checked ? 'light' : 'dark';
+                applyTheme(newTheme);
+            });
+
+            // Initial theme setup on page load
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                // 1. Use saved theme if it exists
+                applyTheme(savedTheme);
+            } else {
+                // 2. Otherwise, determine theme based on Tehran's time
+                let defaultTheme = 'dark'; // Fallback theme
+                try {
+                    const tehranTime = new Date().toLocaleTimeString('en-US', {
+                        timeZone: 'Asia/Tehran',
+                        hour12: false,
+                        hour: 'numeric'
+                    });
+                    const tehranHour = parseInt(tehranTime, 10);
+                    // Set to light theme between 6 AM and 6 PM (18:00) Tehran time
+                    if (tehranHour >= 6 && tehranHour < 18) {
+                        defaultTheme = 'light';
+                    }
+                } catch (error) {
+                    console.error("Could not determine Tehran time, defaulting to dark theme.", error);
+                }
+                applyTheme(defaultTheme);
+            }
         });
     </script>
 </body>
