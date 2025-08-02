@@ -92,12 +92,12 @@
             justify-content: center;
             align-items: center;
             padding: 2rem;
-            transition: background-color 0.5s ease, color 0.5s ease;
+            transition: background-image 0.5s ease, color 0.5s ease;
         }
 
+        /* ===== LIGHT THEME BACKGROUND OVERRIDE ===== */
         body.light-theme {
-            background-color: #f0f2f5;
-            background-image: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url('data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23d8dde4" fill-opacity="0.4"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');
+             background-image: linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.7)), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
         }
 
         /* ===== CONTAINER & LAYOUT ===== */
@@ -298,6 +298,16 @@
             <hr class="separator">
         </div>
         
+        <!-- ===== SECTIONS REORDERED & TEXT UPDATED ===== -->
+        <div class="mb-4">
+            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
+            <select id="amneziaOptionSelect">
+                <option value="use-ui-values">استفاده از مقادیر رابط کاربری (پیش‌فرض)</option>
+                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
+                <option value="no-amnezia">غیرفعال</option>
+            </select>
+        </div>
+
         <div class="mb-4">
             <label for="profileSelect">انتخاب پروفایل AmneziaWG (برای تولید نهایی)</label>
             <select id="profileSelect">
@@ -312,19 +322,13 @@
                 <option value="10,30,60" data-name="Rus_Flood">مبدل روسی (زیاد)</option>
             </select>
         </div>
+        
         <div class="grid-cols-3 mb-4">
             <div><label for="jcInput">jc</label><input type="number" id="jcInput" value="4" min="0"></div>
             <div><label for="jminInput">jmin</label><input type="number" id="jminInput" value="40" min="0"></div>
             <div><label for="jmaxInput">jmax</label><input type="number" id="jmaxInput" value="250" min="0"></div>
         </div>
-        <div class="mb-4">
-            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
-            <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر رابط کاربری</option>
-                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
-                <option value="no-amnezia">غیرفعال</option>
-            </select>
-        </div>
+        
         <div class="mb-4">
             <label for="templateSelect">انتخاب تمپلت قوانین</label>
             <select id="templateSelect">
