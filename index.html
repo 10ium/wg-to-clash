@@ -12,10 +12,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         /* ===== KEYFRAMES & ANIMATIONS ===== */
-        @keyframes background-pan {
-            0% { background-position: 0% center; }
-            100% { background-position: -200% center; }
-        }
         @keyframes glow {
             0% { box-shadow: 0 0 5px #00f6ff, 0 0 10px #00f6ff, 0 0 15px #00f6ff; }
             50% { box-shadow: 0 0 10px #00f6ff, 0 0 20px #00f6ff, 0 0 30px #00f6ff; }
@@ -32,9 +28,6 @@
 
         /* ===== GLOBAL & THEME VARIABLES ===== */
         :root {
-            --bg-dark-start: #0f0c29;
-            --bg-dark-mid: #302b63;
-            --bg-dark-end: #24243e;
             --container-bg: rgba(10, 15, 30, 0.6);
             --container-border: rgba(0, 246, 255, 0.2);
             --container-border-hover: rgba(0, 246, 255, 0.5);
@@ -59,9 +52,15 @@
         /* ===== BASE & BODY STYLES ===== */
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background: linear-gradient(270deg, var(--bg-dark-start), var(--bg-dark-mid), var(--bg-dark-end));
-            background-size: 200% 200%;
-            animation: background-pan 15s ease infinite;
+            
+            /* [تغییر اصلی] حذف گرادینت متحرک و جایگزینی با تصویر ثابت */
+            /* [نکته] برای استفاده از عکس خودتان، آدرس زیر را با 'background.jpg' جایگزین کنید */
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1534723328310-e82dad3ee43f?auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed; /* ایجاد افکت پارالاکس */
+            
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
@@ -114,7 +113,6 @@
         }
 
         /* ===== FORM ELEMENTS (INPUTS, TEXTAREA, SELECT) ===== */
-        /* FIX: General styles for inputs WITHOUT arrow */
         textarea, input[type="text"], input[type="number"] {
             width: 100%;
             padding: 12px 15px;
@@ -127,7 +125,6 @@
             transition: all 0.3s ease;
             caret-color: var(--input-focus-border);
         }
-        /* FIX: Specific style for SELECT with arrow */
         select {
             width: 100%;
             padding: 12px 15px;
@@ -222,15 +219,6 @@
         .mb-4 { margin-bottom: 1rem; } .mb-6 { margin-bottom: 1.5rem; }
         hr.separator { border: 0; height: 1px; background-image: linear-gradient(to left, transparent, var(--container-border-hover), transparent); margin: 2rem 0; }
         
-        /* ===== THEME SWITCH ===== */
-        .theme-switch-wrapper { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 1.5rem; gap: 10px; color: var(--text-secondary); font-size: 0.875rem; }
-        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
-        .theme-switch input { display: none; }
-        .slider { background-color: rgba(0,0,0,0.5); border: 1px solid var(--input-border); bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
-        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 20px; left: 2px; position: absolute; width: 20px; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #4f46e5; border-color: #4f46e5; }
-        input:checked + .slider:before { transform: translateX(24px); background-color: var(--text-glow); }
-
         /* ===== STAGED CONFIGS LIST ===== */
         #stagedConfigsContainer.hidden { display: none; }
         #stagedConfigsList { max-h-60px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
@@ -246,7 +234,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 1.5rem; /* Increased gap */
+            gap: 1.5rem;
             margin-top: 1.5rem;
         }
         .social-links a {
@@ -254,7 +242,7 @@
             transition: transform 0.3s ease, filter 0.3s ease;
         }
         .social-links img {
-            width: 50px; /* Smaller icons */
+            width: 50px;
             height: 50px;
             border-radius: 50%;
             object-fit: cover;
@@ -272,14 +260,6 @@
 </head>
 <body>
     <div class="container">
-        <!-- THEME SWITCH REMOVED as per dark-only futuristic theme, but can be added back if needed -->
-        <!-- 
-        <div class="theme-switch-wrapper">
-            <span>حالت شب</span>
-            <label class="theme-switch" for="themeToggle"><input type="checkbox" id="themeToggle" checked><div class="slider"></div></label>
-            <span>حالت روز</span>
-        </div>
-        -->
         <h1>مبدل کانفیگ WireGuard</h1>
 
         <div class="mb-4">
@@ -379,7 +359,6 @@
     <!-- <script type="module" src="script.js"></script> -->
     
     <script>
-        // This script remains mostly the same, as it deals with logic, not style.
         document.addEventListener('DOMContentLoaded', function () {
             const profileSelect = document.getElementById('profileSelect');
             const jcInput = document.getElementById('jcInput');
@@ -423,16 +402,13 @@
             amneziaOptionSelect.addEventListener('change', updateOutputFilename);
             templateSelect.addEventListener('change', updateOutputFilename);
             
-            // Initial state setup
             updateValueInputs(profileSelect.value === 'custom');
             updateOutputFilename();
 
-            // Dummy logic for showing messages (replace with your actual logic)
             const generateBtn = document.getElementById('generateBtn');
             const messageEl = document.getElementById('message');
             generateBtn.addEventListener('click', () => {
-                // Example of showing a success message
-                messageEl.textContent = 'فایل با موفقیت تولید شد!';
+                messageEl.textContent = 'این یک پیام آزمایشی برای نمایش است!';
                 messageEl.className = 'message success show';
 
                 setTimeout(() => {
