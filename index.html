@@ -3,266 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مبدل پیشرفته کانفیگ WireGuard به Mihomo</title>
+    <title>مبدل کانفیگ WireGuard به Mihomo</title>
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300f6ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Vazirmatn Font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
     <!-- js-yaml for YAML conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
-        /* ===== KEYFRAMES & ANIMATIONS ===== */
-        @keyframes glow {
-            0% { box-shadow: 0 0 5px #00f6ff, 0 0 10px #00f6ff, 0 0 15px #00f6ff; }
-            50% { box-shadow: 0 0 10px #00f6ff, 0 0 20px #00f6ff, 0 0 30px #00f6ff; }
-            100% { box-shadow: 0 0 5px #00f6ff, 0 0 10px #00f6ff, 0 0 15px #00f6ff; }
-        }
-        @keyframes subtle-float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        /* ===== GLOBAL & THEME VARIABLES (DEFAULT: DARK THEME) ===== */
         :root {
-            --container-bg: rgba(10, 15, 30, 0.6);
-            --container-border: rgba(0, 246, 255, 0.2);
-            --container-border-hover: rgba(0, 246, 255, 0.5);
-            --text-primary: #e0eAFC;
-            --text-secondary: #a7bce8;
-            --text-glow: #00f6ff;
+            --body-bg-start: #ADD8E6;
+            --body-bg-end: #E0F2FE;
+            --body-bg-dark-start: #1a202c;
+            --body-bg-dark-end: #2d3748;
+            --container-bg-image: url('background.jpg');
+            --container-overlay-start-light: rgba(59, 130, 246, 0.7);
+            --container-overlay-end-light: rgba(96, 165, 250, 0.7);
+            --container-overlay-start-dark: rgba(30, 64, 175, 0.8);
+            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);
+            --text-color: #f8fafc;
+            --label-color: #e2e8f0;
+            --input-bg: rgba(255, 255, 255, 0.3);
+            --input-text: #ffffff;
+            --input-placeholder: #a3b1c2;
+            --input-focus-bg: rgba(255, 255, 255, 0.4);
+            --input-disabled-bg: rgba(100, 116, 139, 0.3);
+            --file-button-bg: #1e40af;
+            --file-button-hover-bg: #2563eb;
+            --main-button-start: #2563eb;
+            --main-button-end: #3b82f6;
+            --secondary-button-bg: rgba(71, 85, 105, 0.6);
+            --secondary-button-hover-bg: rgba(100, 116, 139, 0.6);
+            --message-success-bg: rgba(134, 239, 172, 0.2);
+            --message-success-text: #d1fae5;
+            --message-error-bg: rgba(252, 165, 165, 0.2);
+            --message-error-text: #fee2e2;
+            --select-option-bg: #1a202c;
+            --select-option-text: #ffffff;
+        }
+        body[data-theme='dark'] {
+            --text-color: #e2e8f0;
+            --label-color: #cbd5e1;
             --input-bg: rgba(0, 0, 0, 0.4);
-            --input-border: rgba(255, 255, 255, 0.2);
-            --input-focus-border: #00f6ff;
-            --input-focus-shadow: 0 0 8px rgba(0, 246, 255, 0.7);
-            --button-primary-bg: linear-gradient(90deg, #4f46e5, #c026d3);
-            --button-primary-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
-            --button-primary-hover-shadow: 0 0 25px rgba(192, 38, 211, 0.8);
-            --button-secondary-bg: rgba(0, 246, 255, 0.1);
-            --button-secondary-border: rgba(0, 246, 255, 0.5);
-            --button-secondary-hover-bg: rgba(0, 246, 255, 0.2);
-            --message-success-bg: rgba(22, 163, 74, 0.3);
-            --message-error-bg: rgba(220, 38, 38, 0.3);
-            --select-option-bg: #1f2937;
-            --theme-switcher-bg: #2c3e50;
-            --hr-separator-bg: linear-gradient(to left, transparent, var(--container-border-hover), transparent);
-            --body-bg-gradient: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5));
+            --input-text: #e2e8f0;
+            --input-placeholder: #a0aec0;
+            --input-focus-bg: rgba(0, 0, 0, 0.5);
+            --input-disabled-bg: rgba(71, 85, 105, 0.4);
+            --file-button-bg: #4a5568;
+            --file-button-hover-bg: #2d3748;
+            --main-button-start: #4a5568;
+            --main-button-end: #2d3748;
+            --secondary-button-bg: rgba(30, 41, 59, 0.8);
+            --secondary-button-hover-bg: rgba(51, 65, 85, 0.8);
+            --select-option-bg: #2d3748;
+            --select-option-text: #e2e8f0;
         }
-
-        /* ===== LIGHT THEME ===== */
-        body.light-theme {
-            --container-bg: rgba(239, 246, 255, 0.65);
-            --container-border: rgba(0, 0, 0, 0.1);
-            --container-border-hover: rgba(79, 70, 229, 0.5);
-            --text-primary: #111827;
-            --text-secondary: #4b5563;
-            --text-glow: #4f46e5;
-            --input-bg: rgba(255, 255, 255, 0.6);
-            --input-border: rgba(0, 0, 0, 0.15);
-            --input-focus-border: #4f46e5;
-            --input-focus-shadow: 0 0 8px rgba(79, 70, 229, 0.4);
-            --button-primary-bg: linear-gradient(90deg, #4f46e5, #8b5cf6);
-            --button-primary-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
-            --button-primary-hover-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
-            --button-secondary-bg: rgba(0, 0, 0, 0.05);
-            --button-secondary-border: rgba(0, 0, 0, 0.2);
-            --button-secondary-hover-bg: rgba(0, 0, 0, 0.1);
-            --message-success-bg: rgba(34, 197, 94, 0.2);
-            --message-error-bg: rgba(239, 68, 68, 0.2);
-            --select-option-bg: #ffffff;
-            --theme-switcher-bg: #bdc3c7;
-            --hr-separator-bg: linear-gradient(to left, transparent, #cccccc, transparent);
-            --body-bg-gradient: linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2));
-        }
-
-        /* ===== BASE & BODY STYLES ===== */
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            background-image: var(--body-bg-gradient), url('https://raw.githubusercontent.com/10ium/wg-to-clash/refs/heads/main/background.jpg?auto=format&fit=crop&w=1920&q=80');
-            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
-            color: var(--text-primary); min-height: 100vh;
-            display: flex; justify-content: center; align-items: center; padding: 2rem;
-            transition: color 0.5s ease;
-        }
-
-        /* ===== CONTAINER & LAYOUT ===== */
-        .container {
-            width: 100%; max-width: 800px;
-            background-color: var(--container-bg); border: 1px solid var(--container-border);
-            border-radius: 20px; padding: 2.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-            transition: all 0.3s ease; animation: fadeIn 1s ease-out; position: relative;
-        }
-        .container:hover { border-color: var(--container-border-hover); }
-
-        /* ===== TYPOGRAPHY ===== */
-        h1 {
-            font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 2rem;
-            color: #fff; text-shadow: 0 0 5px var(--text-glow), 0 0 10px var(--text-glow);
-            animation: subtle-float 4s ease-in-out infinite;
-        }
-        body.light-theme h1 { color: var(--text-primary); text-shadow: none; animation: none; }
-        label { display: block; margin-bottom: 0.75rem; font-weight: 500; color: var(--text-secondary); }
-        p.help-text { font-size: 0.875rem; color: var(--text-secondary); opacity: 0.8; margin-top: -1rem; margin-bottom: 1rem; }
-
-        /* ===== FORM ELEMENTS (INPUTS, TEXTAREA, SELECT) ===== */
-        textarea, input[type="text"], input[type="number"], select {
-            width: 100%; padding: 12px 15px; margin-bottom: 1.5rem;
-            border-radius: 10px; border: 1px solid var(--input-border);
-            background-color: var(--input-bg); color: var(--text-primary);
-            outline: none; transition: all 0.3s ease; caret-color: var(--input-focus-border);
-        }
-        select {
-            appearance: none; -webkit-appearance: none; -moz-appearance: none;
-            background-repeat: no-repeat; background-position: left 1rem center;
-            background-size: 1.5em; padding-left: 3rem;
-        }
-        body:not(.light-theme) select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2300f6ff'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); }
-        body.light-theme select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%234b5563'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); }
-        textarea::placeholder, input::placeholder { color: var(--text-secondary); opacity: 0.6; }
-        textarea:focus, input:focus, select:focus { border-color: var(--input-focus-border); box-shadow: var(--input-focus-shadow); }
-        input:disabled { background-color: rgba(0,0,0,0.5); cursor: not-allowed; opacity: 0.5; }
-        body.light-theme input:disabled { background-color: rgba(0,0,0,0.1); }
-        select option { background-color: var(--select-option-bg); color: var(--text-primary); }
-        
-        /* ===== BUTTONS ===== */
-        .button { padding: 12px 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: all 0.3s ease; border: none; font-weight: 500; }
-        .file-input-wrapper { position: relative; overflow: hidden; display: block; margin-bottom: 1.5rem; }
+        body { background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end)); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; font-family: 'Vazirmatn', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); transition: background 0.5s ease-in-out, color 0.5s ease-in-out; }
+        body[data-theme='dark'] { background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end)); }
+        .container { background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); width: 100%; max-width: 800px; border: 1px solid rgba(255, 255, 255, 0.3); transition: background 0.5s ease-in-out; }
+        body[data-theme='light'] .container { background: linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+        body[data-theme='dark'] .container { background: linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
+        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; color: #fff; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--label-color); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
+        textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.4); background-color: var(--input-bg); color: var(--input-text); outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 1rem center; background-size: 1.5em; padding-left: 3rem; }
+        textarea::placeholder, input::placeholder { color: var(--input-placeholder); }
+        textarea:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); background-color: var(--input-focus-bg); }
+        input:disabled { background-color: var(--input-disabled-bg); cursor: not-allowed; }
+        select option { background-color: var(--select-option-bg); color: var(--select-option-text); }
+        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 20px; }
         .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-input-wrapper .button { background-color: var(--button-secondary-bg); border: 1px solid var(--button-secondary-border); color: var(--text-glow); }
-        .file-input-wrapper .button:hover { background-color: var(--button-secondary-hover-bg); transform: scale(1.02); }
-        .button-primary {
-            width: 100%; padding: 15px 20px; border-radius: 12px; background: var(--button-primary-bg);
-            background-size: 200% auto; color: white; font-size: 1.125rem; font-weight: 700;
-            cursor: pointer; box-shadow: var(--button-primary-shadow);
-        }
-        .button-primary:hover { background-position: right center; transform: translateY(-3px); box-shadow: var(--button-primary-hover-shadow); }
-        .button-secondary {
-            background-color: var(--button-secondary-bg); color: var(--text-secondary);
-            border: 1px solid var(--button-secondary-border); padding: 6px 12px;
-            font-size: 0.875rem; border-radius: 8px;
-        }
-        .button-secondary:hover { background-color: var(--button-secondary-hover-bg); color: var(--text-primary); transform: scale(1.05); }
-        .button-danger { background-color: rgba(220, 38, 38, 0.3); border-color: rgba(220, 38, 38, 0.7); color: #fecaca; }
-        .button-danger:hover { background-color: rgba(220, 38, 38, 0.5); color: #fff; }
-        body.light-theme .button-danger { color: #dc2626; border-color: rgba(220, 38, 38, 0.4); }
-        body.light-theme .button-danger:hover { color: #fff; background-color: rgba(220, 38, 38, 0.6);}
-
-        /* ===== MESSAGES & NOTIFICATIONS ===== */
-        .message { margin-top: 1.5rem; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; border: 1px solid; opacity: 0; transform: translateY(10px); transition: all 0.4s ease-in-out; display: none; }
-        .message.show { opacity: 1; transform: translateY(0); display: block; }
-        .message.success { background-color: var(--message-success-bg); color: #a7f3d0; border-color: #16a34a; }
-        .message.error { background-color: var(--message-error-bg); color: #fecaca; border-color: #dc2626; }
-        body.light-theme .message.success { color: #166534; }
-        body.light-theme .message.error { color: #991b1b; }
-        
-        /* ===== UTILITY & STRUCTURE CLASSES ===== */
-        .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .mb-4 { margin-bottom: 1rem; } .mb-6 { margin-bottom: 1.5rem; }
-        hr.separator { border: 0; height: 1px; background-image: var(--hr-separator-bg); margin: 2rem 0; }
-        
-        /* ===== STAGED CONFIGS LIST ===== */
-        #stagedConfigsContainer.hidden { display: none; }
-        #stagedConfigsList { max-height: 120px; overflow-y: auto; background-color: rgba(0, 0, 0, 0.3); padding: 0.75rem; border-radius: 10px; border: 1px solid var(--input-border); }
-        body.light-theme #stagedConfigsList { background-color: rgba(0, 0, 0, 0.03); }
-        #stagedConfigsList li { display: flex; align-items: center; padding: 0.5rem; border-radius: 8px; transition: background-color 0.2s ease; }
-        #stagedConfigsList li:hover { background-color: rgba(0, 246, 255, 0.1); }
-        body.light-theme #stagedConfigsList li:hover { background-color: rgba(0, 0, 0, 0.07); }
-        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); accent-color: var(--text-glow); flex-shrink: 0; cursor: pointer;}
-        #stagedConfigsList label { margin-bottom: 0; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; cursor: pointer; flex-grow: 1; }
-        
-        /* ===== THEME SWITCHER ===== */
-        .theme-switcher { position: absolute; top: 2rem; right: 2rem; }
-        #theme-toggle { display: none; }
-        .slider-label {
-            display: flex; align-items: center; justify-content: space-between;
-            width: 60px; height: 30px; background-color: var(--theme-switcher-bg);
-            border-radius: 15px; cursor: pointer; position: relative;
-            padding: 0 5px; transition: background-color 0.3s ease;
-        }
-        .slider-label::after {
-            content: ''; display: block; width: 22px; height: 22px;
-            background-color: #fff; border-radius: 50%;
-            position: absolute; top: 4px; right: 4px;
-            transition: transform 0.3s ease;
-        }
-        .sun-icon, .moon-icon { font-size: 16px; user-select: none; z-index: 1; }
-        .sun-icon { opacity: 0; } .moon-icon { opacity: 1; }
-        #theme-toggle:checked + .slider-label::after { transform: translateX(-30px); }
-        #theme-toggle:checked + .slider-label .sun-icon { opacity: 1; }
-        #theme-toggle:checked + .slider-label .moon-icon { opacity: 0; }
-
-        /* Spinner for loading state */
-        .spinner {
-            display: inline-block;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            width: 1.2rem;
-            height: 1.2rem;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 10px;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        .file-input-wrapper .button { display: block; width: 100%; padding: 12px 15px; border-radius: 10px; background-color: var(--file-button-bg); color: white; text-align: center; cursor: pointer; transition: background-color 0.3s ease; }
+        .button-primary { width: 100%; padding: 15px 20px; border-radius: 12px; background: linear-gradient(to right, var(--main-button-start), var(--main-button-end)); color: white; font-size: 1.125rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
+        .button-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6); }
+        .button-secondary { background-color: var(--secondary-button-bg); color: var(--label-color); padding: 6px 12px; font-size: 0.875rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .button-secondary:hover { background-color: var(--secondary-button-hover-bg); }
+        .message { margin-top: 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; }
+        .message.success { background-color: var(--message-success-bg); color: var(--message-success-text); }
+        .message.error { background-color: var(--message-error-bg); color: var(--message-error-text); }
+        .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .mb-4 { margin-bottom: 1rem; } .mt-4 { margin-top: 1rem; } .mt-6 { margin-top: 1.5rem; }
+        .theme-switch-wrapper { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; gap: 10px; color: var(--label-color); }
+        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
+        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 20px; left: 2px; position: absolute; width: 20px; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #2196f3; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        #stagedConfigsList li { display: flex; align-items: center; padding: 8px; border-radius: 8px; transition: background-color 0.2s ease; }
+        #stagedConfigsList li:hover { background-color: rgba(255,255,255,0.1); }
+        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="theme-switcher">
-            <input type="checkbox" id="theme-toggle">
-            <label for="theme-toggle" class="slider-label">
-                <span class="moon-icon">🌙</span>
-                <span class="sun-icon">☀️</span>
-            </label>
+        <div class="theme-switch-wrapper">
+            <span>حالت شب</span>
+            <label class="theme-switch" for="themeToggle"><input type="checkbox" id="themeToggle"><div class="slider"></div></label>
+            <span>حالت روز</span>
         </div>
-
-        <h1>مبدل کانفیگ WireGuard</h1>
+        <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
         <div class="mb-4">
             <label for="wgConfigInput">ورودی کانفیگ (متن کامل یا لینک)</label>
             <textarea id="wgConfigInput" rows="8" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..."></textarea>
-            <p class="help-text">پشتیبانی از: Clash/Mihomo (YAML), Sing-Box (JSON), WireGuard (Block/URI)</p>
+            <p class="text-sm text-gray-400 -mt-3 mb-3">پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI</p>
         </div>
         <div class="mb-4">
             <label for="wgConfigFile">یا فایل‌های کانفیگ را آپلود کنید</label>
             <div class="file-input-wrapper">
                 <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
-                <div class="button">انتخاب فایل‌ها <span id="fileListInfo"></span></div>
+                <div class="button">انتخاب فایل‌ها</div>
             </div>
+            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
         </div>
 
         <button id="processInputBtn" class="button-primary mb-6">پردازش و افزودن کانفیگ‌ها</button>
         
         <div id="stagedConfigsContainer" class="hidden">
-            <hr class="separator">
-            <h2 style="font-size: 1.75rem; font-weight: 700; text-align: center; margin-bottom: 1rem;">لیست کانفیگ‌های آماده</h2>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <span id="configCounter" style="color: var(--text-secondary); font-size: 0.875rem;"></span>
-                <div style="display: flex; gap: 0.5rem;">
+            <hr class="border-gray-600 my-4">
+            <h2 class="text-2xl font-bold mb-3">لیست کانفیگ‌های آماده</h2>
+            <div class="flex justify-between items-center mb-3">
+                <span id="configCounter" class="text-sm text-gray-300"></span>
+                <div class="flex gap-2">
                     <button id="selectAllBtn" class="button-secondary">انتخاب همه</button>
-                    <button id="deselectAllBtn" class="button-secondary">لغو انتخاب</button>
-                    <button id="clearListBtn" class="button-secondary button-danger">پاک کردن لیست</button>
+                    <button id="deselectAllBtn" class="button-secondary">لغو انتخاب همه</button>
+                    <button id="clearListBtn" class="button-secondary bg-red-800 hover:bg-red-700 text-white">پاک کردن لیست</button>
                 </div>
             </div>
-            <div id="stagedConfigsList"></div>
-            <hr class="separator">
+            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto bg-black bg-opacity-20 p-2 rounded-lg">
+            </div>
+            <hr class="border-gray-600 my-4">
         </div>
         
-        <div class="mb-4">
-            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
-            <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر رابط کاربری (پیش‌فرض)</option>
-                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
-                <option value="no-amnezia">غیرفعال</option>
-            </select>
-        </div>
-
         <div class="mb-4">
             <label for="profileSelect">انتخاب پروفایل AmneziaWG (برای تولید نهایی)</label>
             <select id="profileSelect">
@@ -277,13 +151,19 @@
                 <option value="10,30,60" data-name="Rus_Flood">مبدل روسی (زیاد)</option>
             </select>
         </div>
-        
         <div class="grid-cols-3 mb-4">
             <div><label for="jcInput">jc</label><input type="number" id="jcInput" value="4" min="0"></div>
             <div><label for="jminInput">jmin</label><input type="number" id="jminInput" value="40" min="0"></div>
             <div><label for="jmaxInput">jmax</label><input type="number" id="jmaxInput" value="250" min="0"></div>
         </div>
-        
+        <div class="mb-4">
+            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
+            <select id="amneziaOptionSelect">
+                <option value="use-ui-values">استفاده از مقادیر UI (پیش‌فرض)</option>
+                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
+                <option value="no-amnezia">غیرفعال</option>
+            </select>
+        </div>
         <div class="mb-4">
             <label for="templateSelect">انتخاب تمپلت قوانین</label>
             <select id="templateSelect">
@@ -298,452 +178,34 @@
         </div>
 
         <button id="generateBtn" class="button-primary">تولید و دانلود فایل نهایی</button>
-        <div id="message" class="message"></div>
+
+        <div id="message" class="message hidden"></div>
+        <div id="errorDetailsContainer" class="hidden mt-4 p-4 border border-red-400 bg-red-900 bg-opacity-30 rounded-lg">
+            <h3 class="font-bold text-lg mb-2 text-red-300">جزئیات خطاها:</h3>
+            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300"></ul>
+        </div>
     </div>
+
+    <script type="module" src="script.js"></script>
     
     <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        // ===== ELEMENT SELECTORS =====
-        const wgConfigInput = document.getElementById('wgConfigInput');
-        const wgConfigFile = document.getElementById('wgConfigFile');
-        const fileListInfo = document.getElementById('fileListInfo');
-        const stagedConfigsContainer = document.getElementById('stagedConfigsContainer');
-        const stagedConfigsList = document.getElementById('stagedConfigsList');
-        const configCounter = document.getElementById('configCounter');
-        const processInputBtn = document.getElementById('processInputBtn');
-        const selectAllBtn = document.getElementById('selectAllBtn');
-        const deselectAllBtn = document.getElementById('deselectAllBtn');
-        const clearListBtn = document.getElementById('clearListBtn');
-        const generateBtn = document.getElementById('generateBtn');
-        const profileSelect = document.getElementById('profileSelect');
-        const jcInput = document.getElementById('jcInput');
-        const jminInput = document.getElementById('jminInput');
-        const jmaxInput = document.getElementById('jmaxInput');
-        const outputFileNameInput = document.getElementById('outputFileName');
-        const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
-        const templateSelect = document.getElementById('templateSelect');
-        const messageEl = document.getElementById('message');
-        const themeToggle = document.getElementById('theme-toggle');
-        const body = document.body;
-        const favicon = document.querySelector("link[rel='icon']");
-        
-        // ===== STATE MANAGEMENT =====
-        const baseFileName = 'Mihomo_WireGuard';
-        let configIdCounter = 0;
-        let stagedConfigsData = [];
-
-        // ===== UI & HELPER FUNCTIONS =====
-        function showMessage(text, type, duration = 4000) {
-            messageEl.textContent = text;
-            messageEl.className = `message ${type}`;
-            messageEl.classList.add('show');
-            setTimeout(() => {
-                messageEl.classList.remove('show');
-            }, duration);
-        }
-        
-        function setButtonLoading(btn, isLoading) {
-            if (isLoading) {
-                btn.disabled = true;
-                btn.innerHTML = btn.innerHTML + '<span class="spinner"></span>';
-            } else {
-                btn.disabled = false;
-                const spinner = btn.querySelector('.spinner');
-                if (spinner) spinner.remove();
-            }
-        }
-
-        function updateConfigCounter() {
-            const count = stagedConfigsData.length;
-            const checkedCount = stagedConfigsData.filter(c => c.checked).length;
-            configCounter.textContent = `${count} کانفیگ در لیست (${checkedCount} انتخاب شده)`;
-        }
-        
-        function renderStagedList() {
-            stagedConfigsList.innerHTML = '';
-            if (stagedConfigsData.length > 0) {
-                stagedConfigsContainer.classList.remove('hidden');
-            } else {
-                stagedConfigsContainer.classList.add('hidden');
-            }
-
-            stagedConfigsData.forEach(config => {
-                const li = document.createElement('li');
-                const safeName = config.name.replace(/</g, "<").replace(/>/g, ">");
-                li.innerHTML = `
-                    <input type="checkbox" id="config_${config.id}" data-id="${config.id}" ${config.checked ? 'checked' : ''}>
-                    <label for="config_${config.id}">${safeName}</label>
-                `;
-                stagedConfigsList.appendChild(li);
-            });
-            
-            stagedConfigsList.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-                cb.addEventListener('change', (e) => {
-                    const id = parseInt(e.target.dataset.id, 10);
-                    const config = stagedConfigsData.find(c => c.id === id);
-                    if (config) {
-                        config.checked = e.target.checked;
-                        updateConfigCounter();
-                    }
-                });
-            });
-            updateConfigCounter();
-        }
-
-        function addConfigToList(parsedConfig) {
-            configIdCounter++;
-            stagedConfigsData.push({
-                id: configIdCounter,
-                ...parsedConfig,
-                checked: true
-            });
-        }
-        
-        function updateValueInputs(isCustom) {
-            const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
-            const disabled = !isCustom || !useUiValues;
-            jcInput.disabled = disabled;
-            jminInput.disabled = disabled;
-            jmaxInput.disabled = disabled;
-        }
-
-        function updateProfileSectionState() {
-            const useUiValues = amneziaOptionSelect.value === 'use-ui-values';
-            profileSelect.disabled = !useUiValues;
+        document.addEventListener('DOMContentLoaded', function () {
+            const profileSelect = document.getElementById('profileSelect');
+            const jcInput = document.getElementById('jcInput');
+            const jminInput = document.getElementById('jminInput');
+            const jmaxInput = document.getElementById('jmaxInput');
+            const outputFileNameInput = document.getElementById('outputFileName');
+            const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
+            const templateSelect = document.getElementById('templateSelect');
+            const baseFileName = 'Mihomo_WireGuard';
+            function updateValueInputs(isCustom) { jcInput.disabled = !isCustom; jminInput.disabled = !isCustom; jmaxInput.disabled = !isCustom; }
+            function updateOutputFilename() { let finalName = baseFileName; const amneziaMode = amneziaOptionSelect.value; if (amneziaMode === 'use-ui-values') { const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex]; finalName += `_[${selectedProfileOption.dataset.name}]`; } const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex]; finalName += `_[${selectedTemplateOption.dataset.name}]`; outputFileNameInput.value = finalName; }
+            profileSelect.addEventListener('change', function() { const selectedValue = this.value; updateValueInputs(selectedValue === 'custom'); if (selectedValue !== 'custom') { const values = selectedValue.split(','); jcInput.value = values[0]; jminInput.value = values[1]; jmaxInput.value = values[2]; } updateOutputFilename(); });
+            amneziaOptionSelect.addEventListener('change', updateOutputFilename);
+            templateSelect.addEventListener('change', updateOutputFilename);
             updateValueInputs(profileSelect.value === 'custom');
-        }
-        
-        function updateOutputFilename() {
-            let finalName = baseFileName;
-            const amneziaMode = amneziaOptionSelect.value;
-            if (amneziaMode === 'use-ui-values') {
-                const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
-                finalName += `_[${selectedProfileOption.dataset.name}]`;
-            } else if (amneziaMode === 'use-config-values') {
-                finalName += `_[Amnezia-Native]`;
-            }
-            const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
-            finalName += `_[${selectedTemplateOption.dataset.name}]`;
-            outputFileNameInput.value = finalName;
-        }
-
-        const applyTheme = (theme) => {
-            body.classList.toggle('light-theme', theme === 'light');
-            themeToggle.checked = (theme === 'light');
-            const faviconColor = theme === 'light' ? '%234f46e5' : '%2300f6ff';
-            favicon.href = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${faviconColor}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E`;
-            localStorage.setItem('theme', theme);
-        };
-
-        // ===== CORE PARSING LOGIC =====
-        function parseWgBlock(content) {
-            const config = {};
-            const lines = content.split('\n');
-            let inPeerSection = false;
-            lines.forEach(line => {
-                if (line.trim().startsWith('[Peer]')) {
-                    inPeerSection = true;
-                }
-                const match = line.match(/^\s*(\w+)\s*=\s*(.*)\s*$/);
-                if (match) {
-                    const key = match[1].toLowerCase();
-                    const value = match[2].trim();
-                    if (key === 'privatekey') config['private-key'] = value;
-                    if (key === 'address') config['ip'] = value.split('/')[0];
-                    if (key === 'dns') config['dns'] = value.split(',').map(s => s.trim());
-                    if (inPeerSection) {
-                        if (key === 'publickey') config['public-key'] = value;
-                        if (key === 'endpoint') {
-                            const [server, port] = value.split(':');
-                            config['server'] = server;
-                            config['port'] = parseInt(port, 10);
-                        }
-                    }
-                }
-            });
-            if (config.server && config['private-key'] && config['public-key']) {
-                config.name = `WG-${config.server}`;
-                config.type = 'wireguard';
-                return [config];
-            }
-            return [];
-        }
-
-        function parseWgUri(uri) {
-            try {
-                const url = new URL(uri);
-                const config = { type: 'wireguard' };
-                const peer = new URLSearchParams(url.search);
-                config['private-key'] = peer.get('privateKey');
-                config['public-key'] = peer.get('publicKey');
-                const [server, port] = peer.get('endpoint').split(':');
-                config['server'] = server;
-                config['port'] = parseInt(port, 10);
-                config['ip'] = peer.get('address').split('/')[0];
-                const nameMatch = uri.match(/#(.+)$/);
-                config.name = nameMatch ? decodeURIComponent(nameMatch[1]) : `WG-${server}`;
-                return [config];
-            } catch (e) {
-                return [];
-            }
-        }
-
-        function parseYaml(content) {
-            try {
-                const data = jsyaml.load(content);
-                if (data && Array.isArray(data.proxies)) {
-                    return data.proxies.filter(p => p.type === 'wireguard');
-                }
-            } catch (e) { console.error("YAML parsing error:", e); }
-            return [];
-        }
-
-        function parseJson(content) {
-            try {
-                const data = JSON.parse(content);
-                if (data && Array.isArray(data.outbounds)) {
-                    return data.outbounds
-                        .filter(o => o.type === 'wireguard')
-                        .map(o => ({ ...o.settings, name: o.tag, type: 'wireguard' }));
-                }
-            } catch (e) { console.error("JSON parsing error:", e); }
-            return [];
-        }
-
-        async function processContent(content, sourceName) {
-            let parsedConfigs = [];
-            content = content.trim();
-
-            if (content.startsWith('wireguard://')) {
-                parsedConfigs = parseWgUri(content);
-            } else if (content.startsWith('[Interface]')) {
-                parsedConfigs = parseWgBlock(content);
-            } else if (sourceName.endsWith('.json')) {
-                 parsedConfigs = parseJson(content);
-            } else { // Try YAML as a default for text blobs
-                try {
-                    const potentialYaml = jsyaml.load(content);
-                    if (potentialYaml && potentialYaml.proxies) {
-                         parsedConfigs = parseYaml(content);
-                    } else { // Fallback to block parser if not valid yaml
-                        parsedConfigs = parseWgBlock(content);
-                    }
-                } catch(e){
-                     parsedConfigs = parseWgBlock(content);
-                }
-            }
-            
-            parsedConfigs.forEach(addConfigToList);
-            return parsedConfigs.length;
-        }
-        
-        async function fetchAndProcessUrl(url) {
-            try {
-                // Using a CORS proxy for cross-origin requests
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-                if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-                const data = await response.json();
-                const content = data.contents;
-                if (!content) throw new Error("No content received from proxy.");
-                return await processContent(content, url);
-            } catch (error) {
-                showMessage(`خطا در دریافت لینک: ${url}. ممکن است به دلیل CORS باشد.`, 'error');
-                console.error(`Fetch error for ${url}:`, error);
-                return 0;
-            }
-        }
-        
-        // ===== FINAL CONFIG GENERATION =====
-        function generateFinalConfig() {
-            const selectedConfigs = stagedConfigsData.filter(c => c.checked);
-            if (selectedConfigs.length === 0) {
-                showMessage('هیچ کانفیگی برای تولید فایل انتخاب نشده است!', 'error');
-                return;
-            }
-            
-            const amneziaMode = amneziaOptionSelect.value;
-            const template = templateSelect.value;
-            
-            const proxies = selectedConfigs.map((config, index) => {
-                const proxy = {
-                    name: config.name || `WG-${config.server}-${index + 1}`,
-                    type: 'wireguard',
-                    server: config.server,
-                    port: config.port,
-                    ip: config.ip,
-                    'public-key': config['public-key'],
-                    'private-key': config['private-key'],
-                };
-                if (config.mtu) proxy.mtu = config.mtu;
-                if (config.dns) proxy.dns = config.dns;
-
-                if (amneziaMode === 'use-ui-values') {
-                    proxy.udp = true;
-                    proxy.jc = parseInt(jcInput.value, 10);
-                    proxy.jmin = parseInt(jminInput.value, 10);
-                    proxy.jmax = parseInt(jmaxInput.value, 10);
-                } else if (amneziaMode === 'use-config-values' && config.jc && config.jmin && config.jmax) {
-                    proxy.udp = true;
-                    proxy.jc = config.jc;
-                    proxy.jmin = config.jmin;
-                    proxy.jmax = config.jmax;
-                }
-                return proxy;
-            });
-
-            const proxyNames = proxies.map(p => p.name);
-
-            const proxyGroups = [
-                { name: 'PROXY', type: 'select', proxies: ['DIRECT', 'REJECT', ...proxyNames] },
-                { name: 'Auto', type: 'url-test', proxies: proxyNames, url: 'http://www.gstatic.com/generate_204', interval: 300 },
-            ];
-
-            let rules = [];
-            if (template === 'full-rule-template') {
-                rules = [
-                    'DOMAIN-SUFFIX,ir,DIRECT', 'DOMAIN-SUFFIX,cn,DIRECT', 'DOMAIN-KEYWORD,google,PROXY',
-                    'DOMAIN-KEYWORD,instagram,PROXY', 'DOMAIN-KEYWORD,telegram,PROXY', 'GEOIP,IR,DIRECT',
-                    'MATCH,Auto'
-                ];
-            } else if (template === 'iran-template') {
-                rules = ['GEOIP,IR,DIRECT', 'MATCH,PROXY'];
-            }
-
-            const mihomoConfig = {
-                'port': 7890,
-                'socks-port': 7891,
-                'allow-lan': false,
-                'mode': 'rule',
-                'log-level': 'info',
-                'external-controller': '127.0.0.1:9090',
-                'proxies': proxies,
-                'proxy-groups': proxyGroups,
-                'rules': rules,
-            };
-
-            try {
-                const yamlString = jsyaml.dump(mihomoConfig, { indent: 2, noRefs: true });
-                const blob = new Blob([yamlString], { type: 'text/yaml;charset=utf-8' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${outputFileNameInput.value.trim().replace(/\s/g, '_')}.yaml`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                showMessage('فایل با موفقیت تولید و دانلود شد!', 'success');
-            } catch (e) {
-                showMessage(`خطا در تولید فایل YAML: ${e.message}`, 'error');
-                console.error(e);
-            }
-        }
-        
-        // ===== EVENT LISTENERS =====
-        processInputBtn.addEventListener('click', async () => {
-            setButtonLoading(processInputBtn, true);
-            const textInput = wgConfigInput.value.trim();
-            const files = Array.from(wgConfigFile.files);
-            let addedCount = 0;
-
-            if (textInput) {
-                const lines = textInput.split(/[\n\s]+/).filter(line => line.trim() !== '');
-                for (const line of lines) {
-                    if (line.startsWith('http://') || line.startsWith('https://')) {
-                        addedCount += await fetchAndProcessUrl(line);
-                    } else {
-                        addedCount += await processContent(line, 'text-input');
-                    }
-                }
-            }
-
-            for (const file of files) {
-                try {
-                    const content = await file.text();
-                    addedCount += await processContent(content, file.name);
-                } catch (e) {
-                    showMessage(`خطا در خواندن فایل ${file.name}`, 'error');
-                }
-            }
-
-            if (addedCount > 0) {
-                renderStagedList();
-                showMessage(`${addedCount} کانفیگ با موفقیت اضافه شد.`, 'success');
-                wgConfigInput.value = '';
-                wgConfigFile.value = '';
-                fileListInfo.textContent = '';
-            } else {
-                showMessage('هیچ کانفیگ معتبری برای پردازش یافت نشد.', 'error');
-            }
-            setButtonLoading(processInputBtn, false);
-        });
-        
-        selectAllBtn.addEventListener('click', () => {
-            stagedConfigsData.forEach(c => c.checked = true);
-            renderStagedList();
-        });
-
-        deselectAllBtn.addEventListener('click', () => {
-            stagedConfigsData.forEach(c => c.checked = false);
-            renderStagedList();
-        });
-
-        clearListBtn.addEventListener('click', () => {
-            if (confirm('آیا از پاک کردن کل لیست مطمئن هستید؟')) {
-                stagedConfigsData = [];
-                renderStagedList();
-            }
-        });
-
-        profileSelect.addEventListener('change', function() {
-            const selectedValue = this.value;
-            const isCustom = selectedValue === 'custom';
-            if (!isCustom) {
-                const values = selectedValue.split(',');
-                jcInput.value = values[0];
-                jminInput.value = values[1];
-                jmaxInput.value = values[2];
-            }
-            updateValueInputs(isCustom);
             updateOutputFilename();
         });
-        
-        wgConfigFile.addEventListener('change', () => {
-            const numFiles = wgConfigFile.files.length;
-            if (numFiles > 0) {
-                fileListInfo.textContent = `(${numFiles} فایل انتخاب شد)`;
-            } else {
-                fileListInfo.textContent = '';
-            }
-        });
-
-        amneziaOptionSelect.addEventListener('change', () => {
-            updateProfileSectionState();
-            updateOutputFilename();
-        });
-
-        templateSelect.addEventListener('change', updateOutputFilename);
-
-        [jcInput, jminInput, jmaxInput, outputFileNameInput].forEach(input => {
-            input.addEventListener('change', updateOutputFilename);
-        });
-
-        themeToggle.addEventListener('change', () => {
-            applyTheme(themeToggle.checked ? 'light' : 'dark');
-        });
-        
-        generateBtn.addEventListener('click', generateFinalConfig);
-        
-        // ===== INITIALIZATION =====
-        function initialize() {
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            applyTheme(savedTheme);
-            updateProfileSectionState();
-            updateOutputFilename();
-        }
-        
-        initialize();
-    });
     </script>
 </body>
 </html>
