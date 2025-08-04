@@ -233,7 +233,6 @@ function preCleanInput(rawText) {
 
     // A fallback for simple YAML/JSON that might not match the more specific regex
     try {
-        // If the whole text is valid YAML, keep it
         if(jsyaml.load(rawText)) {
             extractedConfigs.push(rawText);
         }
@@ -241,7 +240,6 @@ function preCleanInput(rawText) {
         // It's not a single valid YAML/JSON document, so we rely on the regex extractions
     }
 
-    // Remove duplicates and join
     return [...new Set(extractedConfigs)].join('\n\n');
 }
 
@@ -270,30 +268,172 @@ async function fetchSubscriptionContents(urls) {
     return Promise.all(promises);
 }
 
-function validateAndComplete(config, source) { const essentials = ['privateKey', 'publicKey', 'server', 'port']; for (const key of essentials) { if (!config[key] || (typeof config[key] === 'string' && config[key].trim() === '')) { return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source }; } } config.address = config.address || '172.16.0.2/32'; config.mtu = config.mtu || 1420; config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0']; if (config.name) { let countryCode = '', identifier = ''; const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i); if (nameMatch) { countryCode = nameMatch[1].toUpperCase(); identifier = nameMatch[2].trim(); } else { identifier = config.name; } const emoji = countryEmojiMap[countryCode] || '🏳️'; config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' '); } else { config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`; } const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : config.address.split(','); config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '172.16.0.2'; config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || ''; return config; }
-function parseFromMihomo(configObject) { return (configObject.proxies || []).filter(p=>p.type&&"wireguard"===p.type.toLowerCase()).map(p=>validateAndComplete({name:p.name||null,privateKey:p["private-key"]||null,publicKey:p["public-key"]||null,server:p.server||null,port:p.port||null,address:p.ip,ipv6:p.ipv6,mtu:p.mtu,allowedIps:p["allowed-ips"],dns:p.dns,amneziaOptionsFromConfig:p["amnezia-wg-option"]||null},JSON.stringify(p)))}
-function parseFromSingBox(configObject) { return (configObject.outbounds || []).filter(o=>o.type&&"wireguard"===o.type.toLowerCase()).map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port||null,address:o.local_address,mtu:o.mtu,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)))}
-function parseFromText(textContent) { return textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim()).map(block=>{let rawConfig={},peerComment="";try{if(block.startsWith("wireguard://")){const url=new URL(block);const params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get("publickey")?decodeURIComponent(params.get("publickey")):null,address:params.get("address"),mtu:params.get("mtu")?parseInt(params.get("mtu"),10):null}}else{const lines=block.split("\n").map(l=>l.trim()),interfaceSection={},peerSection={};let currentSection="";lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith("[interface]"))currentSection="Interface";else if(lowerLine.startsWith("[peer]"))currentSection="Peer";else if(line.startsWith("#")&¤tSection==="Peer"){const commentText=line.substring(1).trim();if(!peerComment){peerComment=commentText}}else if(line.includes("=")){const[key,value]=line.split("=",2).map(s=>s.trim());if(currentSection==="Interface")interfaceSection[key.toLowerCase()]=value;else if(currentSection==="Peer")peerSection[key.toLowerCase()]=value}});const[server,port]=(peerSection.endpoint||"").split(":");const amneziaOpts=(interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax)?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||"").split(",").map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(",").map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts}}return validateAndComplete(rawConfig,block)}catch(e){return{error:true,reason:"ساختار کانفیگ نامعتبر است",source:block}}})}
-function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if(typeof structuredConfig==="object"&&structuredConfig!==null){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies)){return parseFromMihomo(structuredConfig)}if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds)){return parseFromSingBox(structuredConfig)}}}catch(e){}return parseFromText(textContent)}
-function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,"remote-dns-resolve":true};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
-function downloadFile(filename, content) { const blob=new Blob([content],{type:"application/x-yaml; charset=utf-8;"});const link=document.createElement("a");const url=URL.createObjectURL(blob);link.href=url;link.download=filename;document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url)}
+function validateAndComplete(config, source) {
+    const essentials = ['privateKey', 'publicKey', 'server', 'port'];
+    for (const key of essentials) {
+        if (!config[key] || (typeof config[key] === 'string' && config[key].trim() === '')) {
+            return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source };
+        }
+    }
+    config.address = config.address || '172.16.0.2/32';
+    config.mtu = config.mtu || 1420;
+    config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0'];
+    if (config.name) {
+        let countryCode = '', identifier = '';
+        const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i);
+        if (nameMatch) {
+            countryCode = nameMatch[1].toUpperCase();
+            identifier = nameMatch[2].trim();
+        } else {
+            identifier = config.name;
+        }
+        const emoji = countryEmojiMap[countryCode] || '🏳️';
+        config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' ');
+    } else {
+        config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
+    }
+    const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : config.address.split(',');
+    config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '172.16.0.2';
+    config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || '';
+    return config;
+}
 
-/**
- * ===== NEW YAML FORMATTING FUNCTION =====
- * Generates properly indented, multi-line YAML for better readability and compatibility.
- * @param {string} templateText - The base template content.
- * @param {object[]} mihomoProxies - An array of proxy objects to be inserted.
- * @returns {string} - The final, formatted YAML string.
- */
+function parseFromMihomo(configObject) {
+    const proxies = configObject.proxies || [];
+    return proxies
+        .filter(p => p.type && p.type.toLowerCase() === 'wireguard')
+        .map(p => {
+            const mappedConfig = {
+                name: p.name || null, privateKey: p['private-key'] || null, publicKey: p['public-key'] || null,
+                server: p.server || null, port: p.port || null, address: p.ip, ipv6: p.ipv6, mtu: p.mtu,
+                allowedIps: p['allowed-ips'], dns: p.dns, amneziaOptionsFromConfig: p['amnezia-wg-option'] || null
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(p));
+        });
+}
+
+function parseFromSingBox(configObject) {
+    const outbounds = configObject.outbounds || [];
+    return outbounds
+        .filter(o => o.type && o.type.toLowerCase() === 'wireguard')
+        .map(o => {
+            const mappedConfig = {
+                name: o.tag || null, privateKey: o.private_key || null, publicKey: o.peer_public_key || null,
+                server: o.server || null, port: o.server_port || null, address: o.local_address, mtu: o.mtu,
+                amneziaOptionsFromConfig: o.amnezia || null,
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(o));
+        });
+}
+
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    return blocks.map(block => {
+        let rawConfig = {}, peerComment = '';
+        try {
+            if (block.startsWith('wireguard://')) {
+                const url = new URL(block);
+                const params = new URLSearchParams(url.search);
+                rawConfig = {
+                    name: decodeURIComponent(url.hash.substring(1)) || null,
+                    privateKey: decodeURIComponent(url.username) || null,
+                    server: url.hostname || null,
+                    port: url.port ? parseInt(url.port, 10) : null,
+                    publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
+                    address: params.get('address'),
+                    mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
+                };
+            } else {
+                const lines = block.split('\n').map(l => l.trim());
+                const interfaceSection = {}, peerSection = {};
+                let currentSection = '';
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.startsWith('[interface]')) { currentSection = 'Interface'; }
+                    else if (lowerLine.startsWith('[peer]')) { currentSection = 'Peer'; }
+                    else if (line.startsWith('#') && currentSection === 'Peer') {
+                        const commentText = line.substring(1).trim();
+                        if (!peerComment) { peerComment = commentText; }
+                    }
+                    else if (line.includes('=')) {
+                        const [key, value] = line.split('=', 2).map(s => s.trim());
+                        if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
+                        else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
+                    }
+                });
+                const [server, port] = (peerSection.endpoint || '').split(':');
+                const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
+                    jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
+                } : null;
+                rawConfig = {
+                    name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
+                    server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
+                    mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
+                    dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
+                    allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
+                    amneziaOptionsFromConfig: amneziaOpts,
+                };
+            }
+            return validateAndComplete(rawConfig, block);
+        } catch (e) {
+            return { error: true, reason: 'ساختار کانفیگ نامعتبر است', source: block };
+        }
+    });
+}
+
+function parseAllInputs(textContent) {
+    try {
+        const structuredConfig = jsyaml.load(textContent);
+        if (typeof structuredConfig === 'object' && structuredConfig !== null) {
+            if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
+                return parseFromMihomo(structuredConfig);
+            }
+            if (structuredConfig.outbounds && Array.isArray(structuredConfig.outbounds)) {
+                return parseFromSingBox(structuredConfig);
+            }
+        }
+    } catch (e) {
+        // Fallback to text parsing
+    }
+    return parseFromText(textContent);
+}
+
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    const mihomoProxy = {
+        name: wgConfig.name,
+        type: 'wireguard',
+        server: wgConfig.server,
+        port: wgConfig.port,
+        ip: wgConfig.ip,
+        'private-key': wgConfig.privateKey,
+        'public-key': wgConfig.publicKey,
+        'allowed-ips': wgConfig.allowedIps,
+        udp: true,
+        mtu: wgConfig.mtu,
+        'remote-dns-resolve': true,
+    };
+    if (wgConfig.ipv6) {
+        mihomoProxy.ipv6 = wgConfig.ipv6;
+    }
+    if (wgConfig.dns?.length > 0) {
+        mihomoProxy.dns = wgConfig.dns;
+    }
+    if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptionsFromConfig) {
+        mihomoProxy['amnezia-wg-option'] = wgConfig.amneziaOptionsFromConfig;
+    } else if (amneziaOption === 'use-ui-values') {
+        mihomoProxy['amnezia-wg-option'] = { jc: jcUI, jmin: jminUI, jmax: jmaxUI, s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4 };
+    }
+    return mihomoProxy;
+}
+
 function processTemplateText(templateText, mihomoProxies) {
     const proxiesYaml = jsyaml.dump(mihomoProxies, {
-        indent: 4,        // Use 4 spaces for indentation
-        lineWidth: -1,    // Don't wrap lines
-        noRefs: true,     // Don't use YAML references
-        skipInvalid: true // Skip invalid properties
+        indent: 4,
+        lineWidth: -1,
+        noRefs: true,
+        skipInvalid: true
     });
     
-    // Indent the entire block to fit under the `proxies:` key in the template
     const indentedProxiesYaml = proxiesYaml.split('\n').map(line => '  ' + line).join('\n');
     
     const proxyNames = mihomoProxies.map(p => `"${p.name}"`);
@@ -304,6 +444,17 @@ function processTemplateText(templateText, mihomoProxies) {
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
 
+function downloadFile(filename, content) {
+    const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
 
 // --- Action Handlers ---
 processInputBtn.addEventListener('click', async function handleProcessInput() {
@@ -313,7 +464,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let errorDetails = [];
     
-    // Gather inputs robustly
     let fileContents = [];
     if (wgConfigFile.files.length > 0) {
         try {
@@ -324,8 +474,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     }
     
     const allRawText = [wgConfigInput.value, ...fileContents].join('\n').trim();
-    
-    // Extract http links before cleaning, as cleaning might remove them
     const lines = allRawText.split('\n');
     const urls = lines.filter(l => l.trim().startsWith('http'));
     
@@ -347,7 +495,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
-    // ===== APPLY ADVANCED EXTRACTION =====
     const cleanedContent = preCleanInput(combinedInput);
 
     if (!cleanedContent.trim()) {
@@ -369,7 +516,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     showMessage(`عملیات انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا یافت شد)`, successfulConfigs.length > 0 ? 'success' : 'error');
     displayErrorDetails(errorDetails);
 
-    // Clear all inputs after processing
     wgConfigInput.value = '';
     wgConfigFile.value = '';
     document.getElementById('fileList').innerHTML = '';
