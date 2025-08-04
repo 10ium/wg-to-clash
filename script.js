@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v3: Fixed Checkboxes, Smart Disabling
+// script.js - v4: Final, Consolidated, and Robust Version
 // ===================================================================
 
 // --- Data Sources ---
@@ -101,23 +101,23 @@ function updateValueInputsAndProfiles() {
 function toggleProfileSectionState() {
     const isUiMode = amneziaOptionSelect.value === 'use-ui-values';
     
-    // Enable/disable the entire profile selection area
+    // Toggle opacity and pointer events for a "disabled" visual state
     profileSelectionGroup.classList.toggle('opacity-50', !isUiMode);
     profileSelectionGroup.classList.toggle('pointer-events-none', !isUiMode);
-    
-    // Enable/disable the custom values area
     customValuesGroup.classList.toggle('opacity-50', !isUiMode);
     customValuesGroup.classList.toggle('pointer-events-none', !isUiMode);
 
-    // Explicitly disable all checkboxes and inputs within if not in UI mode
+    // Also toggle the actual disabled attribute on the inputs for true disabling
     Array.from(profileCheckboxContainer.querySelectorAll('input')).forEach(cb => cb.disabled = !isUiMode);
-    jcInput.disabled = !isUiMode;
-    jminInput.disabled = !isUiMode;
-    jmaxInput.disabled = !isUiMode;
 
-    // If we re-enable, we must respect the custom/preset logic
+    // If we are enabling UI mode, re-evaluate which custom inputs should be enabled
     if (isUiMode) {
         updateValueInputsAndProfiles();
+    } else {
+        // If not UI mode, all custom inputs are disabled
+        jcInput.disabled = true;
+        jminInput.disabled = true;
+        jmaxInput.disabled = true;
     }
 }
 
@@ -213,26 +213,209 @@ function renderStagedConfigs() {
     });
 }
 
-// --- CORE LOGIC (Parsing, Generation) - LARGELY UNCHANGED ---
-// Minified for brevity as they were not the focus of this change.
-async function fetchSubscriptionContents(urls) { const corsProxy = 'https://api.allorigins.win/raw?url='; const promises = urls.map(url => fetch(`${corsProxy}${encodeURIComponent(url)}`).then(response => { if (!response.ok) throw new Error(`خطای ${response.status}`); return response.text(); }).catch(error => ({ error: true, reason: `دانلود لینک اشتراک ناموفق بود (${error.message})`, source: url }))); return Promise.all(promises); }
-function validateAndComplete(config, source) { const essentials = ['privateKey', 'publicKey', 'server', 'port']; for (const key of essentials) { if (!config[key] || (typeof config[key] === 'string' && config[key].trim() === '')) { return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source }; } } config.address = config.address || '172.16.0.2/32'; config.mtu = config.mtu || 1420; config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0']; if (config.name) { let countryCode = '', identifier = ''; const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i); if (nameMatch) { countryCode = nameMatch[1].toUpperCase(); identifier = nameMatch[2].trim(); } else { identifier = config.name; } const emoji = countryEmojiMap[countryCode] || ''; config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' '); } else { config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`; } const addresses = Array.isArray(config.address) ? config.address : config.address.split(','); config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '172.16.0.2'; config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || ''; return config; }
-function parseFromMihomo(configObject) { return (configObject.proxies || []).filter(p=>p.type&&"wireguard"===p.type.toLowerCase()).map(p=>validateAndComplete({name:p.name||null,privateKey:p["private-key"]||null,publicKey:p["public-key"]||null,server:p.server||null,port:p.port||null,address:p.ip,ipv6:p.ipv6,mtu:p.mtu,allowedIps:p["allowed-ips"],dns:p.dns,amneziaOptionsFromConfig:p["amnezia-wg-option"]||null},JSON.stringify(p)))}
-function parseFromSingBox(configObject) { return (configObject.outbounds || []).filter(o=>o.type&&"wireguard"===o.type.toLowerCase()).map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port||null,address:o.local_address,mtu:o.mtu,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)))}
-function parseFromText(textContent) { return textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim()).map(block=>{let rawConfig={},peerComment="";try{if(block.startsWith("wireguard://")){const url=new URL(block),params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get("publickey")?decodeURIComponent(params.get("publickey")):null,address:params.get("address"),mtu:params.get("mtu")?parseInt(params.get("mtu"),10):null}}else{const lines=block.split("\n").map(l=>l.trim()),interfaceSection={},peerSection={};let currentSection="";lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith("[interface]"))currentSection="Interface";else if(lowerLine.startsWith("[peer]"))currentSection="Peer";else if(line.startsWith("#")&&"Peer"===currentSection){const commentText=line.substring(1).trim();peerComment||(peerComment=commentText)}else if(line.includes("=")){const[key,value]=line.split("=",2).map(s=>s.trim());"Interface"===currentSection?interfaceSection[key.toLowerCase()]=value:"Peer"===currentSection&&(peerSection[key.toLowerCase()]=value)}});const[server,port]=(peerSection.endpoint||"").split(":"),amneziaOpts=interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||"").split(",").map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(",").map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts}}return validateAndComplete(rawConfig,block)}catch(e){return{error:!0,reason:"ساختار کانفیگ نامعتبر است",source:block}}})}
-function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
-function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:!0,mtu:wgConfig.mtu,"remote-dns-resolve":!0};return wgConfig.ipv6&&(mihomoProxy.ipv6=wgConfig.ipv6),wgConfig.dns?.length>0&&(mihomoProxy.dns=wgConfig.dns),"use-config-values"===amneziaOption&&wgConfig.amneziaOptionsFromConfig?mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig:"use-ui-values"===amneziaOption&&(mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}),mihomoProxy}
-function processTemplateText(templateText, mihomoProxies) { const proxyBlocks=[],proxyNames=[];return mihomoProxies.forEach(proxy=>{let yamlFrag=jsyaml.dump({proxies:[proxy]},{indent:4,lineWidth:-1,flowLevel:3,noCompatMode:!0});yamlFrag=yamlFrag.replace(/^proxies:\n/,""),yamlFrag=yamlFrag.replace(/^-/,"  -"),proxyBlocks.push(yamlFrag),proxyNames.push(`"${proxy.name}"`)}),templateText.replace(/##_PROXIES_PLACEHOLDER_##/g,proxyBlocks.join("")).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g,proxyNames.map(n=>`      - ${n}`).join("\n"))}
-function downloadFile(filename, content) { const blob=new Blob([content],{type:"application/x-yaml; charset=utf-8;"}),link=document.createElement("a"),url=URL.createObjectURL(blob);link.href=url,link.download=filename,document.body.appendChild(link),link.click(),document.body.removeChild(link),URL.revokeObjectURL(url)}
+// --- CORE LOGIC (Parsing, Generation) ---
+async function fetchSubscriptionContents(urls) {
+    const corsProxy = 'https://api.allorigins.win/raw?url=';
+    const promises = urls.map(url =>
+        fetch(`${corsProxy}${encodeURIComponent(url)}`)
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.text();
+            })
+            .catch(error => ({ error: true, reason: `دانلود لینک اشتراک ناموفق بود (${error.message})`, source: url }))
+    );
+    return Promise.all(promises);
+}
 
-// --- "Process and Add" Handler ---
+function validateAndComplete(config, source) {
+    const essentials = ['privateKey', 'publicKey', 'server', 'port'];
+    for (const key of essentials) {
+        if (!config[key] || (typeof config[key] === 'string' && config[key].trim() === '')) {
+            return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source };
+        }
+    }
+    config.address = config.address || '172.16.0.2/32';
+    config.mtu = config.mtu || 1420;
+    config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0'];
+    if (config.name) {
+        let countryCode = '', identifier = '';
+        const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i);
+        if (nameMatch) {
+            countryCode = nameMatch[1].toUpperCase();
+            identifier = nameMatch[2].trim();
+        } else {
+            identifier = config.name;
+        }
+        const emoji = countryEmojiMap[countryCode] || '🏳️';
+        config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' ');
+    } else {
+        config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
+    }
+    const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : config.address.split(',');
+    config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '172.16.0.2';
+    config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || '';
+    return config;
+}
+
+function parseFromMihomo(configObject) {
+    const proxies = configObject.proxies || [];
+    return proxies
+        .filter(p => p.type && p.type.toLowerCase() === 'wireguard')
+        .map(p => {
+            const mappedConfig = {
+                name: p.name || null, privateKey: p['private-key'] || null, publicKey: p['public-key'] || null,
+                server: p.server || null, port: p.port || null, address: p.ip, ipv6: p.ipv6, mtu: p.mtu,
+                allowedIps: p['allowed-ips'], dns: p.dns, amneziaOptionsFromConfig: p['amnezia-wg-option'] || null
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(p));
+        });
+}
+
+function parseFromSingBox(configObject) {
+    const outbounds = configObject.outbounds || [];
+    return outbounds
+        .filter(o => o.type && o.type.toLowerCase() === 'wireguard')
+        .map(o => {
+            const mappedConfig = {
+                name: o.tag || null, privateKey: o.private_key || null, publicKey: o.peer_public_key || null,
+                server: o.server || null, port: o.server_port || null, address: o.local_address, mtu: o.mtu,
+                amneziaOptionsFromConfig: o.amnezia || null,
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(o));
+        });
+}
+
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    return blocks.map(block => {
+        let rawConfig = {}, peerComment = '';
+        try {
+            if (block.startsWith('wireguard://')) {
+                const url = new URL(block); const params = new URLSearchParams(url.search);
+                rawConfig = {
+                    name: decodeURIComponent(url.hash.substring(1)) || null, privateKey: decodeURIComponent(url.username) || null,
+                    server: url.hostname || null, port: url.port ? parseInt(url.port, 10) : null,
+                    publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
+                    address: params.get('address'), mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
+                };
+            } else {
+                const lines = block.split('\n').map(l => l.trim());
+                const interfaceSection = {}, peerSection = {}; let currentSection = '';
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.startsWith('[interface]')) { currentSection = 'Interface'; }
+                    else if (lowerLine.startsWith('[peer]')) { currentSection = 'Peer'; }
+                    else if (line.startsWith('#') && currentSection === 'Peer') {
+                        const commentText = line.substring(1).trim();
+                        if (!peerComment) { peerComment = commentText; }
+                    }
+                    else if (line.includes('=')) {
+                        const [key, value] = line.split('=', 2).map(s => s.trim());
+                        if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
+                        else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
+                    }
+                });
+                const [server, port] = (peerSection.endpoint || '').split(':');
+                const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
+                    jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
+                } : null;
+                rawConfig = {
+                    name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
+                    server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
+                    mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
+                    dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
+                    allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
+                    amneziaOptionsFromConfig: amneziaOpts,
+                };
+            }
+            return validateAndComplete(rawConfig, block);
+        } catch (e) {
+            return { error: true, reason: 'ساختار کانفیگ نامعتبر است', source: block };
+        }
+    });
+}
+
+function parseAllInputs(textContent) {
+    try {
+        const structuredConfig = jsyaml.load(textContent);
+        if (typeof structuredConfig === 'object' && structuredConfig !== null) {
+            if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
+                return parseFromMihomo(structuredConfig);
+            }
+            if (structuredConfig.outbounds && Array.isArray(structuredConfig.outbounds)) {
+                return parseFromSingBox(structuredConfig);
+            }
+        }
+    } catch (e) {
+        // Not valid YAML/JSON, proceed to text parsing
+    }
+    return parseFromText(textContent);
+}
+
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    const mihomoProxy = {
+        name: wgConfig.name, type: 'wireguard', server: wgConfig.server, port: wgConfig.port, ip: wgConfig.ip,
+        'private-key': wgConfig.privateKey, 'public-key': wgConfig.publicKey, 'allowed-ips': wgConfig.allowedIps,
+        udp: true, mtu: wgConfig.mtu, 'remote-dns-resolve': true,
+    };
+    if (wgConfig.ipv6) {
+        mihomoProxy.ipv6 = wgConfig.ipv6;
+    }
+    if (wgConfig.dns?.length > 0) {
+        mihomoProxy.dns = wgConfig.dns;
+    }
+
+    if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptionsFromConfig) {
+        mihomoProxy['amnezia-wg-option'] = wgConfig.amneziaOptionsFromConfig;
+    } else if (amneziaOption === 'use-ui-values') {
+        mihomoProxy['amnezia-wg-option'] = { jc: jcUI, jmin: jminUI, jmax: jmaxUI, s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4 };
+    }
+    // If amneziaOption is 'no-amnezia', the key is simply not added.
+    return mihomoProxy;
+}
+
+function processTemplateText(templateText, mihomoProxies) {
+    const proxyBlocks = [];
+    const proxyNames = [];
+
+    mihomoProxies.forEach(proxy => {
+        let yamlFrag = jsyaml.dump({proxies: [proxy]}, {
+            indent: 4, lineWidth: -1, flowLevel: 3, noCompatMode: true
+        });
+        
+        yamlFrag = yamlFrag.replace(/^proxies:\n/, '');
+        yamlFrag = yamlFrag.replace(/^-/, '  -');
+        
+        proxyBlocks.push(yamlFrag);
+        proxyNames.push(`"${proxy.name}"`);
+    });
+
+    const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
+    return templateText
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join(''))
+        .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
+}
+
+function downloadFile(filename, content) {
+    const blob = new Blob([content], { type: 'application/x-yaml; charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// --- Action Handlers ---
 processInputBtn.addEventListener('click', async function handleProcessInput() {
     messageDiv.classList.add('hidden');
     displayErrorDetails([]);
     showMessage('در حال پردازش ورودی...', 'info');
     
     let allRawText = [wgConfigInput.value, ...uploadedFilesContent].join('\n').trim();
-    uploadedFilesContent = []; // Clear after use
+    uploadedFilesContent = [];
     const lines = allRawText.split('\n').map(l => l.trim());
     const urls = lines.filter(l => l.startsWith('http'));
     const nonUrlContent = lines.filter(l => !l.startsWith('http')).join('\n');
@@ -244,11 +427,11 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         const fetchedResults = await fetchSubscriptionContents(urls);
         fetchedResults.forEach(result => {
             if (result.error) errorDetails.push(result);
-            else subscriptionContent += result + '\n\n';
+            else subscriptionContent += `\n${result}`;
         });
     }
 
-    const finalContentToParse = [nonUrlContent, subscriptionContent].join('\n\n').trim();
+    const finalContentToParse = [nonUrlContent, subscriptionContent].join('\n').trim();
     if (!finalContentToParse) {
         showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.', 'error');
         displayErrorDetails(errorDetails);
@@ -273,7 +456,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     fileListDiv.innerHTML = '';
 });
 
-// --- "Generate and Download" Handler ---
 generateBtn.addEventListener('click', async function handleGenerateAndDownload() {
     messageDiv.classList.add('hidden');
     displayErrorDetails([]);
@@ -309,10 +491,8 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
     const usedNames = new Set();
     
     selectedConfigs.forEach(baseConfig => {
-        // If not using UI values, just convert the config as is
         if (amneziaOption !== 'use-ui-values') {
             const configCopy = JSON.parse(JSON.stringify(baseConfig));
-            // Ensure unique name
             let newName = configCopy.name;
             let count = 1;
             while(usedNames.has(newName)) { newName = `${configCopy.name}-${count++}`; }
@@ -321,7 +501,6 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
             
             allMihomoProxies.push(convertWgToMihomo(configCopy, 0, 0, 0, amneziaOption));
         } else {
-            // If using UI values, loop through selected profiles
             selectedProfiles.forEach(profile => {
                 const configForThisProfile = JSON.parse(JSON.stringify(baseConfig));
                 let jc, jmin, jmax;
