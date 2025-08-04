@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v8: Fixed Duplicate Parsing Bug & Refined Logic
+// script.js - v10: Final Production-Ready Parser & Formatter
 // ===================================================================
 
 // --- Data Sources ---
@@ -212,14 +212,12 @@ function renderStagedConfigs() {
  */
 function extractConfigsFromText(rawText) {
     if (!rawText) return '';
-
     const configPatterns = [
         /(wireguard:\/\/[^\s]+)/g,
         /(warp:\/\/[^\s]+)/g,
         /(\[Interface\][\s\S]*?\[Peer\][\s\S]*?(?=\n\[|\n\n|$))/g,
         /({"outbounds":\s*\[[\s\S]*?\]})/g
     ];
-    
     let extractedConfigs = [];
     configPatterns.forEach(pattern => {
         const matches = rawText.match(pattern);
@@ -227,7 +225,6 @@ function extractConfigsFromText(rawText) {
             extractedConfigs.push(...matches);
         }
     });
-    
     return [...new Set(extractedConfigs)].join('\n\n');
 }
 
@@ -255,6 +252,12 @@ async function fetchSubscriptionContents(urls) {
     return Promise.all(promises);
 }
 
+/**
+ * ===== REFINED Name Formatting & Validation =====
+ * @param {object} config - The raw config object.
+ * @param {string} source - The original text block for error reporting.
+ * @returns {object} - The validated and formatted config object or an error object.
+ */
 function validateAndComplete(config, source) {
     const essentials = ['privateKey', 'publicKey', 'server', 'port'];
     for (const key of essentials) {
@@ -262,26 +265,38 @@ function validateAndComplete(config, source) {
             return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source };
         }
     }
+    
     config.address = config.address || '172.16.0.2/32';
     config.mtu = config.mtu || 1420;
     config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0'];
+
     if (config.name) {
-        let countryCode = '', identifier = '';
-        const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i);
-        if (nameMatch) {
-            countryCode = nameMatch[1].toUpperCase();
-            identifier = nameMatch[2].trim();
+        let finalName = '';
+        const countryMatch = config.name.match(/^([A-Z]{2})/i);
+        if (countryMatch) {
+            const countryCode = countryMatch[1].toUpperCase();
+            const emoji = countryEmojiMap[countryCode] || '🏳️';
+            const restOfString = config.name.substring(2);
+            
+            const numberMatch = restOfString.match(/\d+/);
+            if (numberMatch) {
+                finalName = `${emoji} ${countryCode}-${numberMatch[0]}`;
+            } else {
+                const cleanedIdentifier = restOfString.replace(/[#\s_-]+/g, ' ').trim();
+                finalName = `${emoji} ${countryCode} ${cleanedIdentifier}`;
+            }
         } else {
-            identifier = config.name;
+            finalName = `🏳️ ${config.name.replace(/[#\s_-]+/g, ' ').trim()}`;
         }
-        const emoji = countryEmojiMap[countryCode] || '🏳️';
-        config.name = `${emoji} ${countryCode} ${identifier}`.trim().replace(/\s+/g, ' ');
+        config.name = finalName.trim().replace(/\s{2,}/g, ' ');
     } else {
         config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
     }
+
     const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : config.address.split(',');
-    config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '172.16.0.2';
-    config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || '';
+    config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0]?.trim() || '172.16.0.2';
+    config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0]?.trim() || '';
+    
     return config;
 }
 
@@ -313,6 +328,10 @@ function parseFromSingBox(configObject) {
         });
 }
 
+/**
+ * ===== REFINED Text Parser =====
+ * Robustly parses INI and URI formats with better cleaning and error handling.
+ */
 function parseFromText(textContent) {
     const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
@@ -324,7 +343,7 @@ function parseFromText(textContent) {
                 rawConfig = {
                     name: decodeURIComponent(url.hash.substring(1)) || null,
                     privateKey: decodeURIComponent(url.username) || null,
-                    server: url.hostname || null,
+                    server: url.hostname.replace(/\[|\]/g, '') || null,
                     port: url.port ? parseInt(url.port, 10) : null,
                     publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
                     address: params.get('address'),
@@ -348,13 +367,19 @@ function parseFromText(textContent) {
                         else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
                     }
                 });
-                const [server, port] = (peerSection.endpoint || '').split(':');
+
+                const endpoint = (peerSection.endpoint || '').trim();
+                const lastColonIndex = endpoint.lastIndexOf(':');
+                const server = endpoint.substring(0, lastColonIndex).replace(/\[|\]/g, '');
+                const port = parseInt(endpoint.substring(lastColonIndex + 1), 10);
+                
                 const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
                     jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
                 } : null;
+
                 rawConfig = {
                     name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
-                    server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
+                    server: server || null, port: port || null, address: interfaceSection.address,
                     mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
                     dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
                     allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
@@ -376,14 +401,15 @@ function parseFromText(textContent) {
  */
 function parseAllInputs(rawText) {
     try {
-        // First, try to parse the whole text as a single YAML/JSON document
         const structuredConfig = jsyaml.load(rawText);
         if (typeof structuredConfig === 'object' && structuredConfig !== null) {
             if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
-                return parseFromMihomo(structuredConfig);
+                const results = parseFromMihomo(structuredConfig);
+                if (results.length > 0) return results; // Success, return immediately
             }
             if (structuredConfig.outbounds && Array.isArray(structuredConfig.outbounds)) {
-                return parseFromSingBox(structuredConfig);
+                const results = parseFromSingBox(structuredConfig);
+                if (results.length > 0) return results; // Success, return immediately
             }
         }
     } catch (e) {
@@ -425,14 +451,24 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     return mihomoProxy;
 }
 
+/**
+ * ===== REFINED YAML FORMATTING FUNCTION =====
+ * Generates properly indented, multi-line YAML with quoted keys.
+ * @param {string} templateText - The base template content.
+ * @param {object[]} mihomoProxies - An array of proxy objects to be inserted.
+ * @returns {string} - The final, formatted YAML string.
+ */
 function processTemplateText(templateText, mihomoProxies) {
-    const proxiesYaml = jsyaml.dump(mihomoProxies, {
+    let proxiesYaml = jsyaml.dump(mihomoProxies, {
         indent: 4,
         lineWidth: -1,
         noRefs: true,
         skipInvalid: true
     });
-    
+
+    // Post-process to add single quotes around keys for maximum compatibility
+    proxiesYaml = proxiesYaml.replace(/^( *- (?:private-key|public-key):\s*)(.*)$/gm, "$1'$2'");
+
     const indentedProxiesYaml = proxiesYaml.split('\n').map(line => '  ' + line).join('\n');
     
     const proxyNames = mihomoProxies.map(p => `"${p.name}"`);
@@ -495,6 +531,13 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     }
     
     const parsedResults = parseAllInputs(combinedInput);
+    
+    if (!parsedResults || parsedResults.length === 0) {
+        showMessage('هیچ کانفیگ معتبری در ورودی یافت نشد.', 'error');
+        displayErrorDetails(errorDetails);
+        return;
+    }
+
     const successfulConfigs = parsedResults.filter(p => !p.error);
     const failedConfigs = parsedResults.filter(p => p.error);
     errorDetails.push(...failedConfigs);
