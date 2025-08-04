@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v12: Unified Input UI & Manual Format Override
+// script.js - v14: Final Stable Version with All Fixes & UI Enhancements
 // ===================================================================
 
 // --- Data Sources ---
@@ -323,7 +323,7 @@ function validateAndComplete(config, source) {
         config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
     }
 
-    const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : config.address.split(',');
+    const addresses = Array.isArray(config.address) ? config.address.join(',').split(',') : String(config.address).split(',');
     config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0]?.trim() || '172.16.0.2';
     config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0]?.trim() || '';
     
@@ -358,8 +358,16 @@ function parseFromSingBox(configObject) {
         });
 }
 
-function parseFromText(textContent) {
-    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+function parseText(textContent, format = 'auto') {
+    let blocks = [];
+    if (format === 'text_uri') {
+        blocks = textContent.split('\n').filter(line => line.trim().startsWith('wireguard://'));
+    } else if (format === 'text_ini') {
+        blocks = textContent.split(/(?=\[Interface\])/g).filter(b => b.trim());
+    } else { // auto
+        blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    }
+
     return blocks.map(block => {
         let rawConfig = {}, peerComment = '';
         try {
@@ -375,7 +383,7 @@ function parseFromText(textContent) {
                     address: params.get('address'),
                     mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
                 };
-            } else {
+            } else { // [Interface]
                 const lines = block.split('\n').map(l => l.trim());
                 const interfaceSection = {}, peerSection = {};
                 let currentSection = '';
@@ -420,10 +428,10 @@ function parseFromText(textContent) {
 }
 
 function parseAllInputs(rawText, inputType = 'auto') {
-    // If user forces a type, use that parser directly
     if (inputType === 'mihomo') return parseFromMihomo(jsyaml.load(rawText));
     if (inputType === 'singbox') return parseFromSingBox(JSON.parse(rawText));
-    if (inputType === 'text') return parseFromText(rawText);
+    if (inputType === 'text_ini') return parseText(rawText, 'text_ini');
+    if (inputType === 'text_uri') return parseText(rawText, 'text_uri');
 
     // Auto-detection logic
     try {
@@ -439,12 +447,39 @@ function parseAllInputs(rawText, inputType = 'auto') {
             }
         }
     } catch (e) {
-        // Not a clean YAML/JSON file, fall through to extraction
+        // Fallback to extraction
     }
     
-    // If full parse fails, assume it's messy text and extract configs
     const extractedText = extractConfigsFromText(rawText);
-    return parseFromText(extractedText);
+    return parseText(extractedText, 'auto');
+}
+
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
+    const mihomoProxy = {
+        name: wgConfig.name,
+        type: 'wireguard',
+        server: wgConfig.server,
+        port: wgConfig.port,
+        ip: wgConfig.ip,
+        'private-key': wgConfig.privateKey,
+        'public-key': wgConfig.publicKey,
+        'allowed-ips': wgConfig.allowedIps,
+        udp: true,
+        mtu: wgConfig.mtu,
+        'remote-dns-resolve': true,
+    };
+    if (wgConfig.ipv6) {
+        mihomoProxy.ipv6 = wgConfig.ipv6;
+    }
+    if (wgConfig.dns?.length > 0) {
+        mihomoProxy.dns = wgConfig.dns;
+    }
+    if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptionsFromConfig) {
+        mihomoProxy['amnezia-wg-option'] = wgConfig.amneziaOptionsFromConfig;
+    } else if (amneziaOption === 'use-ui-values') {
+        mihomoProxy['amnezia-wg-option'] = { jc: jcUI, jmin: jminUI, jmax: jmaxUI, s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4 };
+    }
+    return mihomoProxy;
 }
 
 function processTemplateText(templateText, mihomoProxies) {
@@ -487,7 +522,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let errorDetails = [];
     
-    // 1. Gather all inputs into one string
     let fileContents = [];
     if (wgConfigFile.files.length > 0) {
         try {
@@ -498,9 +532,8 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     }
     
     let allRawText = [wgConfigInput.value, ...fileContents].join('\n\n').trim();
-    
-    // 2. Fetch subscription links
     const urls = allRawText.split('\n').filter(l => l.trim().startsWith('http'));
+    
     let subscriptionContent = '';
     if (urls.length > 0) {
         showMessage(`در حال دانلود محتوای ${urls.length} لینک...`, 'info');
@@ -518,7 +551,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
-    // 3. Parse based on user's choice
     const inputType = inputTypeSelect.value;
     let parsedResults = [];
     try {
@@ -545,7 +577,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     showMessage(`عملیات انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا یافت شد)`, successfulConfigs.length > 0 ? 'success' : 'error');
     displayErrorDetails(errorDetails);
 
-    // Clear inputs
     wgConfigInput.value = '';
     wgConfigFile.value = '';
     document.getElementById('fileList').innerHTML = '';
