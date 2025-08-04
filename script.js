@@ -358,7 +358,7 @@ function parseFromSingBox(configObject) {
         });
 }
 
-function parseText(textContent, format = 'auto') {
+function parseFromText(textContent, format = 'auto') {
     let blocks = [];
     if (format === 'text_uri') {
         blocks = textContent.split('\n').filter(line => line.trim().startsWith('wireguard://'));
@@ -430,8 +430,8 @@ function parseText(textContent, format = 'auto') {
 function parseAllInputs(rawText, inputType = 'auto') {
     if (inputType === 'mihomo') return parseFromMihomo(jsyaml.load(rawText));
     if (inputType === 'singbox') return parseFromSingBox(JSON.parse(rawText));
-    if (inputType === 'text_ini') return parseText(rawText, 'text_ini');
-    if (inputType === 'text_uri') return parseText(rawText, 'text_uri');
+    if (inputType === 'text_ini') return parseFromText(rawText, 'text_ini');
+    if (inputType === 'text_uri') return parseFromText(rawText, 'text_uri');
 
     // Auto-detection logic
     try {
@@ -451,7 +451,7 @@ function parseAllInputs(rawText, inputType = 'auto') {
     }
     
     const extractedText = extractConfigsFromText(rawText);
-    return parseText(extractedText, 'auto');
+    return parseFromText(extractedText, 'auto');
 }
 
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
@@ -482,23 +482,45 @@ function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     return mihomoProxy;
 }
 
+/**
+ * ===== ROBUST MANUAL YAML GENERATOR =====
+ * Creates a properly formatted YAML string with quoted keys, avoiding js-yaml limitations.
+ * @param {string} templateText - The base template content.
+ * @param {object[]} mihomoProxies - An array of proxy objects to be inserted.
+ * @returns {string} - The final, formatted YAML string.
+ */
 function processTemplateText(templateText, mihomoProxies) {
-    let proxiesYaml = jsyaml.dump(mihomoProxies, {
-        indent: 4,
-        lineWidth: -1,
-        noRefs: true,
-        skipInvalid: true
+    const proxyLines = [];
+    mihomoProxies.forEach(proxy => {
+        proxyLines.push(`  - name: "${proxy.name.replace(/"/g, '""')}"`); // Escape quotes in name
+        proxyLines.push(`    type: ${proxy.type}`);
+        proxyLines.push(`    server: ${proxy.server}`);
+        proxyLines.push(`    port: ${proxy.port}`);
+        proxyLines.push(`    ip: ${proxy.ip}`);
+        if(proxy.ipv6) proxyLines.push(`    ipv6: ${proxy.ipv6}`);
+        proxyLines.push(`    private-key: '${proxy['private-key']}'`); // ALWAYS QUOTE
+        proxyLines.push(`    public-key: '${proxy['public-key']}'`);   // ALWAYS QUOTE
+        if(proxy.mtu) proxyLines.push(`    mtu: ${proxy.mtu}`);
+        if(proxy.dns && proxy.dns.length > 0) {
+            proxyLines.push(`    dns:`);
+            proxy.dns.forEach(d => proxyLines.push(`      - ${d}`));
+        }
+        if (proxy['amnezia-wg-option']) {
+            const opts = proxy['amnezia-wg-option'];
+            proxyLines.push(`    amnezia-wg-option:`);
+            proxyLines.push(`        jc: ${opts.jc}`);
+            proxyLines.push(`        jmin: ${opts.jmin}`);
+            proxyLines.push(`        jmax: ${opts.jmax}`);
+        }
+        proxyLines.push(`    udp: true`);
     });
-
-    proxiesYaml = proxiesYaml.replace(/^( *- (?:private-key|public-key):\s*)(.*)$/gm, "$1'$2'");
-
-    const indentedProxiesYaml = proxiesYaml.split('\n').map(line => '  ' + line).join('\n');
     
-    const proxyNames = mihomoProxies.map(p => `"${p.name}"`);
+    const proxiesYaml = proxyLines.join('\n');
+    const proxyNames = mihomoProxies.map(p => `"${p.name.replace(/"/g, '""')}"`);
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
 
     return templateText
-        .replace(/##_PROXIES_PLACEHOLDER_##/g, indentedProxiesYaml)
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxiesYaml)
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
 
