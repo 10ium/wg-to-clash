@@ -31,10 +31,7 @@
     </script>
     
     <style>
-        /* Minimal style block for custom select arrows and body font */
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-        }
+        body { font-family: 'Vazirmatn', sans-serif; }
         .select-arrow {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23334155'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
@@ -44,11 +41,12 @@
         html.dark .select-arrow {
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239ca3af'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
         }
+        /* Custom styling for checkboxes */
+        .form-checkbox { -webkit-appearance: none; -moz-appearance: none; appearance: none; }
     </style>
 </head>
 <body class="bg-sky-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
 
-    <!-- The main container with the CORRECT background image from the provided GitHub link -->
     <div class="min-h-screen w-full flex flex-col items-center justify-start sm:justify-center p-4 bg-cover bg-center bg-fixed" style="background-image: url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');">
         <div class="w-full max-w-3xl space-y-6 my-8">
 
@@ -124,18 +122,11 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="profileSelect" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">پروفایل AmneziaWG</label>
-                                    <select id="profileSelect" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none select-arrow">
-                                        <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
-                                        <option value="4,64,120" data-name="Optimal">حالت بهینه</option>
-                                        <option value="6,64,80" data-name="Weak_Net">اینترنت ضعیف</option>
-                                        <option value="8,64,150" data-name="Aggressive">حداکثر پنهان‌سازی</option>
-                                        <option value="2,64,70" data-name="Fast">حداکثر سرعت</option>
-                                        <option value="4,40,70" data-name="wbnet">پیشنهاد @wbnet</option>
-                                        <option value="4,40,250" data-name="hamedp71">پیشنهاد hamedp71</option>
-                                        <option value="3,10,30" data-name="Rus_Micro">مبدل روسی (میکرو)</option>
-                                        <option value="10,30,60" data-name="Rus_Flood">مبدل روسی (زیاد)</option>
-                                    </select>
+                                    <label for="profileCheckboxContainer" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">پروفایل(های) AmneziaWG</label>
+                                    <!-- Checkbox container will be dynamically populated by script.js -->
+                                    <div id="profileCheckboxContainer" class="max-h-36 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600">
+                                        <!-- Checkboxes will be inserted here -->
+                                    </div>
                                 </div>
                             </div>
 
@@ -187,10 +178,10 @@
             </div>
         </div>
     </div>
-
-    <script type="module" src="script.js"></script>
     
     <script>
+        // This script block is intentionally left minimal. 
+        // All primary logic is now in the external script.js file.
         document.addEventListener('DOMContentLoaded', function () {
             // --- Theme Toggler Logic ---
             const themeToggle = document.getElementById('themeToggle');
@@ -213,54 +204,6 @@
                     localStorage.setItem('theme', 'light');
                 }
             });
-
-            // --- Original UI Logic (UNCHANGED) ---
-            const profileSelect = document.getElementById('profileSelect');
-            const jcInput = document.getElementById('jcInput');
-            const jminInput = document.getElementById('jminInput');
-            const jmaxInput = document.getElementById('jmaxInput');
-            const outputFileNameInput = document.getElementById('outputFileName');
-            const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
-            const templateSelect = document.getElementById('templateSelect');
-            const baseFileName = 'Mihomo_WireGuard';
-
-            function updateValueInputs(isCustom) {
-                jcInput.disabled = !isCustom;
-                jminInput.disabled = !isCustom;
-                jmaxInput.disabled = !isCustom;
-            }
-
-            function updateOutputFilename() {
-                let finalName = baseFileName;
-                const amneziaMode = amneziaOptionSelect.value;
-                if (amneziaMode === 'use-ui-values') {
-                    const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex];
-                    const profileName = selectedProfileOption.dataset.name || 'Custom';
-                    finalName += `_[${profileName}]`;
-                }
-                const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
-                const templateName = selectedTemplateOption.dataset.name || 'Rules';
-                finalName += `_[${templateName}]`;
-                outputFileNameInput.value = finalName;
-            }
-
-            profileSelect.addEventListener('change', function() {
-                const selectedValue = this.value;
-                updateValueInputs(selectedValue === 'custom');
-                if (selectedValue !== 'custom') {
-                    const values = selectedValue.split(',');
-                    jcInput.value = values[0];
-                    jminInput.value = values[1];
-                    jmaxInput.value = values[2];
-                }
-                updateOutputFilename();
-            });
-
-            amneziaOptionSelect.addEventListener('change', updateOutputFilename);
-            templateSelect.addEventListener('change', updateOutputFilename);
-
-            updateValueInputs(profileSelect.value === 'custom');
-            updateOutputFilename();
             
             const wgConfigFile = document.getElementById('wgConfigFile');
             const fileListDiv = document.getElementById('fileList');
@@ -275,5 +218,7 @@
             });
         });
     </script>
+    <script type="module" src="script.js"></script>
+
 </body>
 </html>
