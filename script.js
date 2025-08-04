@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v7: Advanced Extraction Logic & Proper YAML Formatting
+// script.js - v8: Fixed Duplicate Parsing Bug & Refined Logic
 // ===================================================================
 
 // --- Data Sources ---
@@ -206,43 +206,30 @@ function renderStagedConfigs() {
 // --- CORE LOGIC (Parsing, Generation) ---
 
 /**
- * ===== NEW ADVANCED EXTRACTION FUNCTION =====
- * Scans raw text and extracts only valid config strings, ignoring all junk.
+ * Extracts valid config strings from a larger, messy text block.
  * @param {string} rawText - The raw, messy text from the user.
  * @returns {string} - A clean string containing only valid config data separated by newlines.
  */
-function preCleanInput(rawText) {
+function extractConfigsFromText(rawText) {
     if (!rawText) return '';
 
-    // Regex to find all known config formats
     const configPatterns = [
-        /(wireguard:\/\/[^\s]+)/g, // Captures full wireguard URIs
-        /(warp:\/\/[^\s]+)/g,      // Captures full warp URIs
-        /(\[Interface\][\s\S]*?\[Peer\][\s\S]*?(?=\n\[|\n\n|$))/g, // Captures full INI blocks
-        /({"outbounds":\s*\[[\s\S]*?\]})/g // Captures sing-box JSON objects
+        /(wireguard:\/\/[^\s]+)/g,
+        /(warp:\/\/[^\s]+)/g,
+        /(\[Interface\][\s\S]*?\[Peer\][\s\S]*?(?=\n\[|\n\n|$))/g,
+        /({"outbounds":\s*\[[\s\S]*?\]})/g
     ];
     
     let extractedConfigs = [];
-    
     configPatterns.forEach(pattern => {
         const matches = rawText.match(pattern);
         if (matches) {
             extractedConfigs.push(...matches);
         }
     });
-
-    // A fallback for simple YAML/JSON that might not match the more specific regex
-    try {
-        if(jsyaml.load(rawText)) {
-            extractedConfigs.push(rawText);
-        }
-    } catch(e) {
-        // It's not a single valid YAML/JSON document, so we rely on the regex extractions
-    }
-
+    
     return [...new Set(extractedConfigs)].join('\n\n');
 }
-
 
 function readFilesAsText(files) {
     return Promise.all(Array.from(files).map(file =>
@@ -381,9 +368,16 @@ function parseFromText(textContent) {
     });
 }
 
-function parseAllInputs(textContent) {
+/**
+ * ===== REFINED PARSING ORCHESTRATOR =====
+ * Intelligently decides whether to parse as a whole file or extract from messy text.
+ * @param {string} rawText - The user-provided text.
+ * @returns {Array} - An array of parsed config objects.
+ */
+function parseAllInputs(rawText) {
     try {
-        const structuredConfig = jsyaml.load(textContent);
+        // First, try to parse the whole text as a single YAML/JSON document
+        const structuredConfig = jsyaml.load(rawText);
         if (typeof structuredConfig === 'object' && structuredConfig !== null) {
             if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
                 return parseFromMihomo(structuredConfig);
@@ -393,10 +387,15 @@ function parseAllInputs(textContent) {
             }
         }
     } catch (e) {
-        // Fallback to text parsing
+        // This is expected for messy text. We'll fall through to extraction.
     }
-    return parseFromText(textContent);
+    
+    // If the full parse fails or doesn't yield results, it's messy text.
+    // Extract only the valid config parts and parse them.
+    const extractedText = extractConfigsFromText(rawText);
+    return parseFromText(extractedText);
 }
+
 
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
     const mihomoProxy = {
@@ -495,15 +494,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
-    const cleanedContent = preCleanInput(combinedInput);
-
-    if (!cleanedContent.trim()) {
-        showMessage('هیچ کانفیگ معتبری در ورودی یافت نشد.', 'error');
-        displayErrorDetails(errorDetails);
-        return;
-    }
-
-    const parsedResults = parseAllInputs(cleanedContent);
+    const parsedResults = parseAllInputs(combinedInput);
     const successfulConfigs = parsedResults.filter(p => !p.error);
     const failedConfigs = parsedResults.filter(p => p.error);
     errorDetails.push(...failedConfigs);
