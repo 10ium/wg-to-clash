@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v10: Final Production-Ready Parser & Formatter
+// script.js - v12: Unified Input UI & Manual Format Override
 // ===================================================================
 
 // --- Data Sources ---
@@ -15,6 +15,7 @@ const amneziaProfiles = [
     { value: '3,10,30', name: 'مبدل روسی (میکرو)', dataName: 'Rus_Micro', defaultChecked: false },
     { value: '10,30,60', name: 'مبدل روسی (زیاد)', dataName: 'Rus_Flood', defaultChecked: false },
 ];
+const LONG_NAME_THRESHOLD = 70; // Characters
 
 // --- Global State ---
 let stagedConfigs = [];
@@ -22,6 +23,7 @@ let stagedConfigs = [];
 // --- DOM Elements ---
 const wgConfigInput = document.getElementById('wgConfigInput');
 const wgConfigFile = document.getElementById('wgConfigFile');
+const inputTypeSelect = document.getElementById('inputType');
 const jcInput = document.getElementById('jcInput');
 const jminInput = document.getElementById('jminInput');
 const jmaxInput = document.getElementById('jmaxInput');
@@ -134,6 +136,28 @@ function updateOutputFilename() {
 
 // --- Event Listeners Setup ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Inline script from HTML for theme and file list
+    const themeToggle = document.getElementById('themeToggle');
+    const htmlEl = document.documentElement;
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        htmlEl.classList.add('dark');
+        themeToggle.checked = true;
+    }
+    themeToggle.addEventListener('change', () => {
+        htmlEl.classList.toggle('dark');
+        localStorage.setItem('theme', htmlEl.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    const fileListDiv = document.getElementById('fileList');
+    wgConfigFile.addEventListener('change', () => {
+        if (wgConfigFile.files.length > 0) {
+            fileListDiv.textContent = `فایل(های) انتخاب شده: ${Array.from(wgConfigFile.files).map(f => f.name).join(', ')}`;
+        } else {
+            fileListDiv.textContent = '';
+        }
+    });
+
+    // Main script setup
     renderAmneziaProfiles();
     toggleProfileSectionState(); 
     profileCheckboxContainer.addEventListener('change', updateValueInputsAndProfiles);
@@ -175,7 +199,7 @@ function displayErrorDetails(errors) {
     errorDetailsContainer.classList.remove('hidden');
 }
 
-// --- Staged Configs UI Rendering ---
+// --- Staged Configs UI Rendering (with Long Name Warning) ---
 function renderStagedConfigs() {
     stagedConfigsList.innerHTML = '';
     if (stagedConfigs.length === 0) {
@@ -185,31 +209,43 @@ function renderStagedConfigs() {
     configCounter.textContent = `${stagedConfigs.length} کانفیگ در لیست`;
     stagedConfigsContainer.classList.remove('hidden');
     stagedConfigs.forEach((config, index) => {
+        const isLongName = config.name.length > LONG_NAME_THRESHOLD;
+        
         const li = document.createElement('li');
         li.className = 'flex items-center gap-x-3 p-1.5 bg-sky-100/50 dark:bg-slate-700/30 rounded-md';
+        
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
         checkbox.className = 'form-checkbox';
         checkbox.id = `config-checkbox-${index}`;
         checkbox.value = index;
-        checkbox.checked = true;
+        checkbox.checked = !isLongName; // Unchecked if name is too long
+
         const label = document.createElement('label');
         label.htmlFor = `config-checkbox-${index}`;
-        label.textContent = config.name;
-        label.className = "cursor-pointer flex-grow text-sm font-medium text-slate-800 dark:text-slate-200";
+        label.className = "cursor-pointer flex-grow text-sm font-medium text-slate-800 dark:text-slate-200 flex items-center";
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.textContent = config.name;
+        label.appendChild(nameSpan);
+
+        if(isLongName) {
+            const warningSpan = document.createElement('span');
+            warningSpan.textContent = '⚠️';
+            warningSpan.title = 'این نام طولانی و مشکوک است. در صورت تمایل به صورت دستی فعال کنید.';
+            warningSpan.className = 'ml-2 text-yellow-500';
+            label.appendChild(warningSpan);
+        }
+        
         li.appendChild(checkbox);
         li.appendChild(label);
         stagedConfigsList.appendChild(li);
     });
 }
 
+
 // --- CORE LOGIC (Parsing, Generation) ---
 
-/**
- * Extracts valid config strings from a larger, messy text block.
- * @param {string} rawText - The raw, messy text from the user.
- * @returns {string} - A clean string containing only valid config data separated by newlines.
- */
 function extractConfigsFromText(rawText) {
     if (!rawText) return '';
     const configPatterns = [
@@ -252,12 +288,6 @@ async function fetchSubscriptionContents(urls) {
     return Promise.all(promises);
 }
 
-/**
- * ===== REFINED Name Formatting & Validation =====
- * @param {object} config - The raw config object.
- * @param {string} source - The original text block for error reporting.
- * @returns {object} - The validated and formatted config object or an error object.
- */
 function validateAndComplete(config, source) {
     const essentials = ['privateKey', 'publicKey', 'server', 'port'];
     for (const key of essentials) {
@@ -328,10 +358,6 @@ function parseFromSingBox(configObject) {
         });
 }
 
-/**
- * ===== REFINED Text Parser =====
- * Robustly parses INI and URI formats with better cleaning and error handling.
- */
 function parseFromText(textContent) {
     const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
@@ -343,7 +369,7 @@ function parseFromText(textContent) {
                 rawConfig = {
                     name: decodeURIComponent(url.hash.substring(1)) || null,
                     privateKey: decodeURIComponent(url.username) || null,
-                    server: url.hostname.replace(/\[|\]/g, '') || null,
+                    server: url.hostname.replace(/\[|\]/g, '').trim() || null,
                     port: url.port ? parseInt(url.port, 10) : null,
                     publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
                     address: params.get('address'),
@@ -370,8 +396,8 @@ function parseFromText(textContent) {
 
                 const endpoint = (peerSection.endpoint || '').trim();
                 const lastColonIndex = endpoint.lastIndexOf(':');
-                const server = endpoint.substring(0, lastColonIndex).replace(/\[|\]/g, '');
-                const port = parseInt(endpoint.substring(lastColonIndex + 1), 10);
+                const server = (lastColonIndex > -1 ? endpoint.substring(0, lastColonIndex) : endpoint).replace(/\[|\]/g, '').trim();
+                const port = lastColonIndex > -1 ? parseInt(endpoint.substring(lastColonIndex + 1), 10) : null;
                 
                 const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
                     jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
@@ -393,71 +419,34 @@ function parseFromText(textContent) {
     });
 }
 
-/**
- * ===== REFINED PARSING ORCHESTRATOR =====
- * Intelligently decides whether to parse as a whole file or extract from messy text.
- * @param {string} rawText - The user-provided text.
- * @returns {Array} - An array of parsed config objects.
- */
-function parseAllInputs(rawText) {
+function parseAllInputs(rawText, inputType = 'auto') {
+    // If user forces a type, use that parser directly
+    if (inputType === 'mihomo') return parseFromMihomo(jsyaml.load(rawText));
+    if (inputType === 'singbox') return parseFromSingBox(JSON.parse(rawText));
+    if (inputType === 'text') return parseFromText(rawText);
+
+    // Auto-detection logic
     try {
         const structuredConfig = jsyaml.load(rawText);
         if (typeof structuredConfig === 'object' && structuredConfig !== null) {
             if (structuredConfig.proxies && Array.isArray(structuredConfig.proxies)) {
                 const results = parseFromMihomo(structuredConfig);
-                if (results.length > 0) return results; // Success, return immediately
+                if (results.length > 0) return results;
             }
             if (structuredConfig.outbounds && Array.isArray(structuredConfig.outbounds)) {
                 const results = parseFromSingBox(structuredConfig);
-                if (results.length > 0) return results; // Success, return immediately
+                if (results.length > 0) return results;
             }
         }
     } catch (e) {
-        // This is expected for messy text. We'll fall through to extraction.
+        // Not a clean YAML/JSON file, fall through to extraction
     }
     
-    // If the full parse fails or doesn't yield results, it's messy text.
-    // Extract only the valid config parts and parse them.
+    // If full parse fails, assume it's messy text and extract configs
     const extractedText = extractConfigsFromText(rawText);
     return parseFromText(extractedText);
 }
 
-
-function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
-    const mihomoProxy = {
-        name: wgConfig.name,
-        type: 'wireguard',
-        server: wgConfig.server,
-        port: wgConfig.port,
-        ip: wgConfig.ip,
-        'private-key': wgConfig.privateKey,
-        'public-key': wgConfig.publicKey,
-        'allowed-ips': wgConfig.allowedIps,
-        udp: true,
-        mtu: wgConfig.mtu,
-        'remote-dns-resolve': true,
-    };
-    if (wgConfig.ipv6) {
-        mihomoProxy.ipv6 = wgConfig.ipv6;
-    }
-    if (wgConfig.dns?.length > 0) {
-        mihomoProxy.dns = wgConfig.dns;
-    }
-    if (amneziaOption === 'use-config-values' && wgConfig.amneziaOptionsFromConfig) {
-        mihomoProxy['amnezia-wg-option'] = wgConfig.amneziaOptionsFromConfig;
-    } else if (amneziaOption === 'use-ui-values') {
-        mihomoProxy['amnezia-wg-option'] = { jc: jcUI, jmin: jminUI, jmax: jmaxUI, s1: 0, s2: 0, h1: 1, h2: 2, h3: 3, h4: 4 };
-    }
-    return mihomoProxy;
-}
-
-/**
- * ===== REFINED YAML FORMATTING FUNCTION =====
- * Generates properly indented, multi-line YAML with quoted keys.
- * @param {string} templateText - The base template content.
- * @param {object[]} mihomoProxies - An array of proxy objects to be inserted.
- * @returns {string} - The final, formatted YAML string.
- */
 function processTemplateText(templateText, mihomoProxies) {
     let proxiesYaml = jsyaml.dump(mihomoProxies, {
         indent: 4,
@@ -466,7 +455,6 @@ function processTemplateText(templateText, mihomoProxies) {
         skipInvalid: true
     });
 
-    // Post-process to add single quotes around keys for maximum compatibility
     proxiesYaml = proxiesYaml.replace(/^( *- (?:private-key|public-key):\s*)(.*)$/gm, "$1'$2'");
 
     const indentedProxiesYaml = proxiesYaml.split('\n').map(line => '  ' + line).join('\n');
@@ -499,6 +487,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let errorDetails = [];
     
+    // 1. Gather all inputs into one string
     let fileContents = [];
     if (wgConfigFile.files.length > 0) {
         try {
@@ -508,10 +497,10 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         }
     }
     
-    const allRawText = [wgConfigInput.value, ...fileContents].join('\n').trim();
-    const lines = allRawText.split('\n');
-    const urls = lines.filter(l => l.trim().startsWith('http'));
+    let allRawText = [wgConfigInput.value, ...fileContents].join('\n\n').trim();
     
+    // 2. Fetch subscription links
+    const urls = allRawText.split('\n').filter(l => l.trim().startsWith('http'));
     let subscriptionContent = '';
     if (urls.length > 0) {
         showMessage(`در حال دانلود محتوای ${urls.length} لینک...`, 'info');
@@ -522,15 +511,21 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         });
     }
 
-    const combinedInput = [allRawText, subscriptionContent].join('\n').trim();
+    const combinedInput = [allRawText, subscriptionContent].join('\n\n').trim();
     
-    if (!combinedInput) {
+    if (!combinedInput && errorDetails.length === 0) {
         showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.', 'error');
-        displayErrorDetails(errorDetails);
         return;
     }
     
-    const parsedResults = parseAllInputs(combinedInput);
+    // 3. Parse based on user's choice
+    const inputType = inputTypeSelect.value;
+    let parsedResults = [];
+    try {
+        parsedResults = parseAllInputs(combinedInput, inputType);
+    } catch (e) {
+        errorDetails.push({ reason: `خطا در پارس کردن ورودی با فرمت انتخابی: ${e.message}`, source: combinedInput.substring(0, 70) });
+    }
     
     if (!parsedResults || parsedResults.length === 0) {
         showMessage('هیچ کانفیگ معتبری در ورودی یافت نشد.', 'error');
@@ -550,6 +545,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     showMessage(`عملیات انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا یافت شد)`, successfulConfigs.length > 0 ? 'success' : 'error');
     displayErrorDetails(errorDetails);
 
+    // Clear inputs
     wgConfigInput.value = '';
     wgConfigFile.value = '';
     document.getElementById('fileList').innerHTML = '';
