@@ -80,6 +80,17 @@
             background-repeat: no-repeat;
             background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
         }
+        
+        .form-checkbox:disabled {
+            background-color: #e5e7eb; /* gray-200 */
+            border-color: #d1d5db; /* gray-300 */
+            cursor: not-allowed;
+        }
+
+        .dark .form-checkbox:disabled {
+            background-color: #4b5563; /* gray-600 */
+            border-color: #374151; /* gray-700 */
+        }
     </style>
 </head>
 <body class="bg-sky-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 transition-colors duration-300">
@@ -158,8 +169,8 @@
                                         <option value="no-amnezia">غیرفعال کردن AmneziaWG</option>
                                     </select>
                                 </div>
-                                <!-- ===== PROFILE SELECTION GROUP (FOR DISABLING) ===== -->
-                                <div id="profileSelectionGroup">
+                                
+                                <div id="profileSelectionGroup" class="transition-opacity duration-300">
                                     <label for="profileCheckboxContainer" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">پروفایل‌های AmneziaWG</label>
                                     <div id="profileCheckboxContainer" class="max-h-36 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2 p-3 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600">
                                         <!-- Checkboxes will be inserted here by script.js -->
@@ -167,8 +178,7 @@
                                 </div>
                             </div>
 
-                            <!-- ===== CUSTOM VALUES GROUP (FOR DISABLING) ===== -->
-                            <div id="customValuesGroup" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div id="customValuesGroup" class="grid grid-cols-1 sm:grid-cols-3 gap-4 transition-opacity duration-300">
                                 <div>
                                     <label for="jcInput" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">jc</label>
                                     <input type="number" id="jcInput" value="4" min="0" class="w-full p-2.5 rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition disabled:bg-sky-100 dark:disabled:bg-slate-800/60 disabled:cursor-not-allowed">
