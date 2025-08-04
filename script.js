@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v14: Final Stable Version with All Fixes & UI Enhancements
+// script.js - v15: Final Stable Version with Simplified UI & Robust Auto-Detection
 // ===================================================================
 
 // --- Data Sources ---
@@ -22,8 +22,8 @@ let stagedConfigs = [];
 
 // --- DOM Elements ---
 const wgConfigInput = document.getElementById('wgConfigInput');
+const subscriptionLinksInput = document.getElementById('subscriptionLinksInput');
 const wgConfigFile = document.getElementById('wgConfigFile');
-const inputTypeSelect = document.getElementById('inputType');
 const jcInput = document.getElementById('jcInput');
 const jminInput = document.getElementById('jminInput');
 const jmaxInput = document.getElementById('jmaxInput');
@@ -531,27 +531,26 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         }
     }
     
-    let allRawText = [wgConfigInput.value, ...fileContents].join('\n\n').trim();
-    const urls = allRawText.split('\n').filter(l => l.trim().startsWith('http'));
+    const subscriptionLinks = subscriptionLinksInput.value.trim().split('\n').filter(l => l.trim().startsWith('http'));
     
     let subscriptionContent = '';
-    if (urls.length > 0) {
-        showMessage(`در حال دانلود محتوای ${urls.length} لینک...`, 'info');
-        const fetchedResults = await fetchSubscriptionContents(urls);
+    if (subscriptionLinks.length > 0) {
+        showMessage(`در حال دانلود محتوای ${subscriptionLinks.length} لینک...`, 'info');
+        const fetchedResults = await fetchSubscriptionContents(subscriptionLinks);
         fetchedResults.forEach(result => {
             if (result.error) errorDetails.push(result);
             else subscriptionContent += `\n${result}`;
         });
     }
 
-    const combinedInput = [allRawText, subscriptionContent].join('\n\n').trim();
+    const combinedInput = [wgConfigInput.value, ...fileContents, subscriptionContent].join('\n\n').trim();
     
     if (!combinedInput && errorDetails.length === 0) {
         showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.', 'error');
         return;
     }
     
-    const inputType = inputTypeSelect.value;
+    const inputType = document.getElementById('inputType').value;
     let parsedResults = [];
     try {
         parsedResults = parseAllInputs(combinedInput, inputType);
@@ -578,6 +577,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     displayErrorDetails(errorDetails);
 
     wgConfigInput.value = '';
+    subscriptionLinksInput.value = '';
     wgConfigFile.value = '';
     document.getElementById('fileList').innerHTML = '';
 });
