@@ -13,9 +13,6 @@
     <!-- Vazirmatn Font from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- js-yaml for YAML conversion -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-
     <script>
         tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Vazirmatn', 'sans-serif'] } } } };
     </script>
@@ -74,8 +71,8 @@
                                 <label for="inputType" class="block mb-2 text-sm font-semibold text-slate-800 dark:text-slate-300">نوع فرمت ورودی</label>
                                 <select id="inputType" class="w-full p-2.5 h-[50px] rounded-lg border bg-sky-50/50 dark:bg-slate-900/40 border-sky-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500 transition appearance-none select-arrow">
                                     <option value="auto">تشخیص خودکار (هوشمند)</option>
+                                    <option value="text_uri">Xray (لینک - wireguard://)</option>
                                     <option value="text_ini">WireGuard (متنی - [Interface])</option>
-                                    <option value="text_uri">WireGuard (لینک - wireguard://)</option>
                                     <option value="mihomo">Clash / Mihomo (YAML)</option>
                                     <option value="singbox">Sing-Box (JSON)</option>
                                 </select>
