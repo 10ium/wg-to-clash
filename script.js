@@ -358,8 +358,16 @@ function parseFromSingBox(configObject) {
         });
 }
 
-function parseFromText(textContent) {
-    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+function parseFromText(textContent, format = 'auto') {
+    let blocks = [];
+    if (format === 'text_uri') {
+        blocks = textContent.split('\n').filter(line => line.trim().startsWith('wireguard://'));
+    } else if (format === 'text_ini') {
+        blocks = textContent.split(/(?=\[Interface\])/g).filter(b => b.trim());
+    } else { // auto
+        blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    }
+
     return blocks.map(block => {
         let rawConfig = {}, peerComment = '';
         try {
@@ -539,18 +547,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let parsedResults = [];
     try {
-        let textToParse = combinedInput;
-        // Smart override for .conf files
-        if (wgConfigFile.files.length === 1 && wgConfigFile.files[0].name.toLowerCase().endsWith('.conf')) {
-            let preliminaryParse = parseFromText(textToParse, 'text_ini');
-            if (!preliminaryParse.some(p => p.error)) {
-                 parsedResults = preliminaryParse;
-            }
-        }
-        // If not a pure .conf file or if it failed, use the full auto-parser
-        if (parsedResults.length === 0) {
-            parsedResults = parseAllInputs(textToParse);
-        }
+        parsedResults = parseAllInputs(combinedInput);
     } catch (e) {
         errorDetails.push({ reason: `خطا در پارس کردن ورودی: ${e.message}`, source: combinedInput.substring(0, 70) });
     }
