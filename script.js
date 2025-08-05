@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v16: Final Stable Version with Simplified UI & Robust Auto-Detection
+// script.js - v17: Final Stable Version with Simplified UI & Robust Auto-Detection
 // ===================================================================
 
 // --- Data Sources ---
