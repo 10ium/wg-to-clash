@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v16: Final Stable Version with Simplified UI & Robust Auto-Detection
+// script.js - v17: Final Stable Version with Simplified UI & Robust Auto-Detection
 // ===================================================================
 
 // --- Data Sources ---
@@ -547,7 +547,18 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let parsedResults = [];
     try {
-        parsedResults = parseAllInputs(combinedInput);
+        let textToParse = combinedInput;
+        // Smart override for .conf files
+        if (wgConfigFile.files.length === 1 && wgConfigFile.files[0].name.toLowerCase().endsWith('.conf')) {
+            let preliminaryParse = parseFromText(textToParse, 'text_ini');
+            if (!preliminaryParse.some(p => p.error)) {
+                 parsedResults = preliminaryParse;
+            }
+        }
+        // If not a pure .conf file or if it failed, use the full auto-parser
+        if (parsedResults.length === 0) {
+            parsedResults = parseAllInputs(textToParse);
+        }
     } catch (e) {
         errorDetails.push({ reason: `خطا در پارس کردن ورودی: ${e.message}`, source: combinedInput.substring(0, 70) });
     }
