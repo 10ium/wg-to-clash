@@ -10,21 +10,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            --bg-light: #f1f5f9; /* slate-100 */
-            --bg-dark: #0f172a;  /* slate-900 */
-            /* Card background overlays for readability */
-            --card-overlay-light: rgba(255, 255, 255, 0.92);
-            --card-overlay-dark: rgba(30, 41, 59, 0.92); /* slate-800 */
+            /* Light Mode Colors */
+            --bg-light: #e2e8f0; /* slate-200 */
+            --card-overlay-light: rgba(255, 255, 255, 0.95);
+            --text-primary-light: #1e293b; /* slate-800 */
+            --text-secondary-light: #475569; /* slate-600 */
+            --border-light: #cbd5e1; /* slate-300 */
+            --input-bg-light: #ffffff;
             
-            --text-primary-light: #0f172a;
-            --text-primary-dark: #e2e8f0;
-            --text-secondary-light: #475569;
-            --text-secondary-dark: #cbd5e1;
-            --border-light: #e2e8f0;
-            --border-dark: #334155;
+            /* Dark Mode Colors */
+            --bg-dark: #0f172a;  /* slate-900 */
+            --card-overlay-dark: rgba(15, 23, 42, 0.94); /* slate-900 with opacity */
+            --text-primary-dark: #f1f5f9;  /* slate-100 */
+            --text-secondary-dark: #94a3b8; /* slate-400 */
+            --border-dark: #334155; /* slate-700 */
+            --input-bg-dark: #334155; /* slate-700 */
+
+            /* Accent Color */
             --accent-color: #4f46e5;
-            --input-bg-light: #f8fafc;
-            --input-bg-dark: #2d3748; /* A bit lighter for inputs on card */
         }
         html.dark { color-scheme: dark; }
         
@@ -101,7 +104,7 @@
                             <span class="text-sm text-slate-500 dark:text-slate-400">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
                             <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json" class="hidden">
                         </label>
-                        <div id="fileList" class="text-xs text-slate-500 mt-2 space-y-1"></div>
+                        <div id="fileList" class="text-xs text-slate-500 dark:text-slate-400 mt-2 space-y-1"></div>
                     </div>
                 </div>
                 <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">پردازش و افزودن به لیست</button>
