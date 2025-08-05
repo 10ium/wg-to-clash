@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v17: Final Stable Version with Simplified UI & Robust Auto-Detection
+// script.js - v16: Final Stable Version with Simplified UI & Robust Auto-Detection
 // ===================================================================
 
 // --- Data Sources ---
@@ -358,16 +358,8 @@ function parseFromSingBox(configObject) {
         });
 }
 
-function parseFromText(textContent, format = 'auto') {
-    let blocks = [];
-    if (format === 'text_uri') {
-        blocks = textContent.split('\n').filter(line => line.trim().startsWith('wireguard://'));
-    } else if (format === 'text_ini') {
-        blocks = textContent.split(/(?=\[Interface\])/g).filter(b => b.trim());
-    } else { // auto
-        blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
-    }
-
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
         let rawConfig = {}, peerComment = '';
         try {
