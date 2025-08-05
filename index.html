@@ -14,31 +14,35 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            --bg-light: #f1f5f9; /* slate-100 */
-            --bg-dark: #0f172a;  /* slate-900 */
+            --bg-light: #f1f5f9;
+            --bg-dark: #0f172a;
             --card-bg-light: #ffffff;
-            --card-bg-dark: #1e293b; /* slate-800 */
-            --text-primary-light: #0f172a; /* slate-900 */
-            --text-primary-dark: #e2e8f0;  /* slate-200 */
+            --card-bg-dark: #1e293b;
+            --text-primary-light: #0f172a;
+            --text-primary-dark: #e2e8f0;
+            /* FIX: Brighter secondary text for dark mode */
             --text-secondary-light: #475569; /* slate-600 */
-            --text-secondary-dark: #94a3b8;   /* slate-400 */
-            --border-light: #e2e8f0; /* slate-200 */
-            --border-dark: #334155;  /* slate-700 */
-            --accent-color: #4f46e5; /* indigo-600 */
-            --accent-hover: #4338ca; /* indigo-700 */
-            --input-bg-light: #f8fafc; /* slate-50 */
-            --input-bg-dark: #334155; /* slate-700 */
+            --text-secondary-dark: #cbd5e1;   /* slate-300 - Was slate-400 */
+            --border-light: #e2e8f0;
+            --border-dark: #334155;
+            --accent-color: #4f46e5;
+            --input-bg-light: #f8fafc;
+            --input-bg-dark: #334155;
         }
         html.dark { color-scheme: dark; }
         body { font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-light); color: var(--text-primary-light); transition: background-color 0.3s, color 0.3s; }
         html.dark body { background-color: var(--bg-dark); color: var(--text-primary-dark); }
         .card { background-color: var(--card-bg-light); border: 1px solid var(--border-light); transition: background-color 0.3s, border-color 0.3s; }
         html.dark .card { background-color: var(--card-bg-dark); border-color: var(--border-dark); }
+        .form-label { color: var(--text-secondary-light); }
+        html.dark .form-label { color: var(--text-secondary-dark); }
         .form-input, .form-select { background-color: var(--input-bg-light); border: 1px solid var(--border-light); color: var(--text-primary-light); transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; }
         html.dark .form-input, html.dark .form-select { background-color: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-primary-dark); }
-        .form-input::placeholder { color: var(--text-secondary-light); }
-        html.dark .form-input::placeholder { color: var(--text-secondary-dark); }
+        .form-input::placeholder { color: var(--text-secondary-light); opacity: 0.7; }
+        html.dark .form-input::placeholder { color: var(--text-secondary-dark); opacity: 0.5; }
         .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); }
+        .form-input:disabled { background-color: #e2e8f0; cursor: not-allowed; }
+        html.dark .form-input:disabled { background-color: #334155; opacity: 0.6; cursor: not-allowed; }
         .form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: left 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-left: 2.5rem; }
         html.dark .form-select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); }
         .form-checkbox { appearance: none; background-color: var(--input-bg-light); border: 1px solid var(--border-light); width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; display: inline-block; position: relative; cursor: pointer; transition: all 0.2s; }
@@ -50,7 +54,6 @@
 
 <body class="py-10 px-4">
     <div class="max-w-4xl mx-auto">
-        <!-- Header -->
         <header class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">مبدل پیشرفته WireGuard</h1>
             <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
@@ -65,11 +68,11 @@
                 <h2 class="text-xl font-semibold mb-4 border-r-4 border-indigo-500 pr-4">۱. ورود کانفیگ‌ها</h2>
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
-                        <label for="wgConfigInput" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">متن یا لینک اشتراک</label>
+                        <label for="wgConfigInput" class="form-label block text-sm font-medium mb-2">متن یا لینک اشتراک</label>
                         <textarea id="wgConfigInput" rows="8" placeholder="متن کانفیگ، لینک اشتراک یا URI را اینجا وارد کنید..." class="form-input w-full rounded-md text-sm"></textarea>
                     </div>
                     <div>
-                        <label for="wgConfigFile" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">یا آپلود فایل</label>
+                        <label for="wgConfigFile" class="form-label block text-sm font-medium mb-2">یا آپلود فایل</label>
                         <label for="wgConfigFile" class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-md cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
                             <svg class="w-10 h-10 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             <span class="text-sm text-slate-500 dark:text-slate-400">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
@@ -78,9 +81,7 @@
                         <div id="fileList" class="text-xs text-slate-500 mt-2 space-y-1"></div>
                     </div>
                 </div>
-                <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
-                    پردازش و افزودن به لیست
-                </button>
+                <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">پردازش و افزودن به لیست</button>
             </div>
 
             <!-- Step 2: Staged Configs -->
@@ -101,46 +102,52 @@
             <!-- Step 3: Output Settings -->
             <div class="card p-6 rounded-xl shadow-sm">
                  <h2 class="text-xl font-semibold mb-6 border-r-4 border-indigo-500 pr-4">۳. تنظیمات خروجی</h2>
-                 <div class="grid md:grid-cols-2 gap-8">
-                    <!-- Amnezia Profiles (Multi-select) -->
+                 <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
+                    <!-- Amnezia Profiles -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">پروفایل‌های AmneziaWG (انتخاب چندتایی)</label>
-                        <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm">
-                            <!-- Checkboxes will be injected here by JS -->
+                        <label class="form-label block text-sm font-medium mb-3">پروفایل‌های AmneziaWG (انتخاب چندتایی)</label>
+                        <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm"></div>
+                        <div id="customProfileInputs" class="hidden mt-4 space-y-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                             <div class="grid grid-cols-3 gap-2">
+                                <div><label for="jcInput" class="form-label block text-xs mb-1">jc</label><input type="number" id="jcInput" value="4" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                <div><label for="jminInput" class="form-label block text-xs mb-1">jmin</label><input type="number" id="jminInput" value="40" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                <div><label for="jmaxInput" class="form-label block text-xs mb-1">jmax</label><input type="number" id="jmaxInput" value="250" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                             </div>
                         </div>
                     </div>
-                    <!-- Rule Templates (Single-select) -->
-                    <div>
-                        <label for="templateSelect" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">تمپلت قوانین</label>
-                        <select id="templateSelect" class="form-select w-full rounded-md text-sm">
-                            <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
-                            <option value="iran-template" data-name="Iran">قوانین ایران</option>
-                            <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
-                        </select>
-                         <div class="mt-6">
-                             <label for="amneziaOptionSelect" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">مقادیر Amnezia از پیش‌تعیین‌شده</label>
+                    <!-- Rule & Naming -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="templateSelect" class="form-label block text-sm font-medium mb-2">تمپلت قوانین</label>
+                            <select id="templateSelect" class="form-select w-full rounded-md text-sm">
+                                <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
+                                <option value="iran-template" data-name="Iran">قوانین ایران</option>
+                                <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
+                            </select>
+                        </div>
+                        <div>
+                             <label for="amneziaOptionSelect" class="form-label block text-sm font-medium mb-2">مقادیر Amnezia از پیش‌تعیین‌شده</label>
                              <select id="amneziaOptionSelect" class="form-select w-full rounded-md text-sm">
                                 <option value="use-ui-values" selected>استفاده از پروفایل‌های انتخابی UI</option>
-                                <option value="use-config-values">استفاده از مقادیر خود کانفیگ (در صورت وجود)</option>
+                                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
                                 <option value="no-amnezia">غیرفعال کردن Amnezia</option>
                             </select>
-                         </div>
+                        </div>
+                        <div>
+                            <label for="outputFileName" class="form-label block text-sm font-medium mb-2">نام فایل خروجی</label>
+                            <input type="text" id="outputFileName" class="form-input w-full rounded-md text-sm">
+                        </div>
                     </div>
                  </div>
-                 <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base">
-                    تولید و دانلود فایل
-                </button>
+                 <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base">تولید و دانلود فایل</button>
             </div>
             
-            <!-- Messages & Errors -->
-            <div id="message" class="hidden"></div>
             <div id="errorDetailsContainer" class="hidden card p-4 border-red-400/50 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20">
                 <h3 class="font-semibold text-base text-red-800 dark:text-red-300 mb-2">جزئیات خطاها:</h3>
                 <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-red-700 dark:text-red-400"></ul>
             </div>
         </main>
     </div>
-
     <script type="module" src="script.js"></script>
 </body>
 </html>
