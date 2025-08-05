@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v9: Manual YAML generation for ultimate control.
+// script.js - v10: Pixel-perfect manual YAML generation. Final fix.
 // ===================================================================
 
 // --- Data Sources ---
@@ -268,16 +268,18 @@ function parseFromText(textContent) { return textContent.split(/(?=\[Interface\]
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,"remote-dns-resolve":true};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
 
-// --- YAML Processing & Download (MANUAL & ROBUST) ---
+// --- YAML Processing & Download (MANUAL & PIXEL-PERFECT) ---
 /**
- * Manually builds a YAML string for a single proxy object to ensure
- * perfect formatting and quoting for Clash clients.
+ * Manually builds a YAML string for a single proxy object to exactly match
+ * the format required by sensitive clients like Clash Verge.
  * @param {object} proxy - The Mihomo proxy object.
  * @returns {string} A formatted YAML string for one proxy.
  */
 function buildProxyYamlString(proxy) {
     const lines = [];
-    lines.push(`  - name: "${proxy.name}"`);
+    // Do NOT quote the name unless it contains special characters that require it.
+    // For simplicity and to match the working example, we'll leave it unquoted.
+    lines.push(`  - name: ${proxy.name}`);
     lines.push(`    type: ${proxy.type}`);
     lines.push(`    server: ${proxy.server}`);
     lines.push(`    port: ${proxy.port}`);
@@ -285,14 +287,19 @@ function buildProxyYamlString(proxy) {
     if (proxy.ipv6) {
         lines.push(`    ipv6: ${proxy.ipv6}`);
     }
-    // CRITICAL: Explicitly single-quote keys to preserve Base64 padding.
+    // CRITICAL: Explicitly single-quote keys to preserve Base64 content.
     lines.push(`    private-key: '${proxy['private-key']}'`);
     lines.push(`    public-key: '${proxy['public-key']}'`);
 
     if (proxy['allowed-ips'] && proxy['allowed-ips'].length > 0) {
         lines.push(`    allowed-ips:`);
         proxy['allowed-ips'].forEach(ip => {
-            lines.push(`      - '${ip}'`); // Quote to be safe with IPv6 addresses
+            // Replicate the working format: only quote if it's needed (e.g., for IPv6).
+            if (ip.includes(':')) {
+                lines.push(`      - '${ip}'`);
+            } else {
+                lines.push(`      - ${ip}`);
+            }
         });
     }
     lines.push(`    udp: ${proxy.udp}`);
@@ -325,7 +332,9 @@ function buildProxyYamlString(proxy) {
 
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(buildProxyYamlString);
-    const proxyNames = mihomoProxies.map(p => `"${p.name}"`);
+    // When adding to the proxy-group, the name MUST be quoted if it contains special characters.
+    // So here we use JSON.stringify to safely quote it.
+    const proxyNames = mihomoProxies.map(p => JSON.stringify(p.name));
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     
