@@ -419,8 +419,16 @@ function parseFromText(textContent) {
     });
 }
 
-function parseAllInputs(rawText) {
-    // Auto-detection logic
+function parseAllInputs(rawText, inputType = 'auto') {
+    if (inputType === 'mihomo') return parseFromMihomo(jsyaml.load(rawText));
+    if (inputType === 'singbox') return parseFromSingBox(JSON.parse(rawText));
+    
+    // For text types, we always extract first to handle mixed content
+    const extractedText = extractConfigsFromText(rawText);
+    if (inputType === 'text_ini') return parseFromText(extractedText.split(/(?=wireguard:\/\/)/g)[0]); // Only INI part
+    if (inputType === 'text_uri') return parseFromText(extractedText.split(/(?=\[Interface\])/g)[0]); // Only URI part
+    
+    // Auto-detection logic (most powerful)
     try {
         const structuredConfig = jsyaml.load(rawText);
         if (typeof structuredConfig === 'object' && structuredConfig !== null) {
@@ -437,7 +445,6 @@ function parseAllInputs(rawText) {
         // Fallback to extraction
     }
     
-    const extractedText = extractConfigsFromText(rawText);
     return parseFromText(extractedText);
 }
 
@@ -537,9 +544,10 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
+    const inputType = document.getElementById('inputType').value; // Now this exists again
     let parsedResults = [];
     try {
-        parsedResults = parseAllInputs(combinedInput);
+        parsedResults = parseAllInputs(combinedInput, inputType);
     } catch (e) {
         errorDetails.push({ reason: `خطا در پارس کردن ورودی: ${e.message}`, source: combinedInput.substring(0, 70) });
     }
