@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v11: Final version based on official documentation.
+// script.js - v12: The final, working version based on a proven, successful output format.
 // ===================================================================
 
 // --- Data Sources ---
@@ -268,76 +268,79 @@ function parseFromText(textContent) { return textContent.split(/(?=\[Interface\]
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,"remote-dns-resolve":true};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
 
-// --- YAML Processing & Download (Based on Official Spec) ---
+// --- YAML Processing & Download (Final Spec-Compliant Version) ---
 /**
  * Manually builds a YAML string for a single proxy object to exactly match
- * the official "Simplified" WireGuard format for Clash.
+ * the proven working format for sensitive clients.
  * @param {object} proxy - The Mihomo proxy object.
- * @returns {string} A formatted YAML string for one proxy.
+ * @returns {string} A perfectly formatted YAML string for one proxy.
  */
 function buildProxyYamlString(proxy) {
     const lines = [];
-    lines.push(`  - name: ${JSON.stringify(proxy.name)}`); // "name" should be quoted.
-    lines.push(`    type: ${proxy.type}`);
-    lines.push(`    server: ${proxy.server}`);
-    lines.push(`    port: ${proxy.port}`);
-    // Per documentation, keys are NOT quoted.
-    lines.push(`    private-key: ${proxy['private-key']}`);
-    lines.push(`    public-key: ${proxy['public-key']}`);
-    lines.push(`    ip: ${proxy.ip}`);
-
+    // Name is NOT quoted in the definition.
+    lines.push(`- name: ${proxy.name}`); 
+    lines.push(`  type: ${proxy.type}`);
+    lines.push(`  server: ${proxy.server}`);
+    lines.push(`  port: ${proxy.port}`);
+    lines.push(`  ip: ${proxy.ip}`);
     if (proxy.ipv6) {
-        lines.push(`    ipv6: ${proxy.ipv6}`);
+        lines.push(`  ipv6: ${proxy.ipv6}`);
     }
+    // Keys are NOT quoted.
+    lines.push(`  private-key: ${proxy['private-key']}`);
+    lines.push(`  public-key: ${proxy['public-key']}`);
 
-    // Per documentation, arrays are inline.
+    // Arrays are INLINE.
     if (proxy['allowed-ips'] && proxy['allowed-ips'].length > 0) {
+        // Items within the array ARE single-quoted.
         const ips = proxy['allowed-ips'].map(ip => `'${ip}'`).join(', ');
-        lines.push(`    allowed-ips: [${ips}]`);
+        lines.push(`  allowed-ips: [${ips}]`);
     }
 
-    lines.push(`    udp: ${proxy.udp}`);
+    lines.push(`  udp: ${proxy.udp}`);
     if (proxy.mtu) {
-       lines.push(`    mtu: ${proxy.mtu}`);
+       lines.push(`  mtu: ${proxy.mtu}`);
     }
     
-    // remote-dns-resolve is not in the simplified spec, but we keep it for functionality.
     if (proxy['remote-dns-resolve']) {
-        lines.push(`    remote-dns-resolve: ${proxy['remote-dns-resolve']}`);
+        lines.push(`  remote-dns-resolve: ${proxy['remote-dns-resolve']}`);
     }
 
     if (proxy.dns && proxy.dns.length > 0) {
+        // Items are NOT quoted.
         const dnsServers = proxy.dns.join(', ');
-        lines.push(`    dns: [${dnsServers}]`);
+        lines.push(`  dns: [${dnsServers}]`);
     }
 
-    // Amnezia is a custom field, so we format it as a block for readability.
+    // Amnezia is a block map.
     if (proxy['amnezia-wg-option']) {
         const amnezia = proxy['amnezia-wg-option'];
-        lines.push(`    amnezia-wg-option:`);
-        lines.push(`      jc: ${amnezia.jc}`);
-        lines.push(`      jmin: ${amnezia.jmin}`);
-        lines.push(`      jmax: ${amnezia.jmax}`);
-        lines.push(`      s1: ${amnezia.s1}`);
-        lines.push(`      s2: ${amnezia.s2}`);
-        lines.push(`      h1: ${amnezia.h1}`);
-        lines.push(`      h2: ${amnezia.h2}`);
-        lines.push(`      h3: ${amnezia.h3}`);
-        lines.push(`      h4: ${amnezia.h4}`);
+        lines.push(`  amnezia-wg-option:`);
+        lines.push(`    jc: ${amnezia.jc}`);
+        lines.push(`    jmin: ${amnezia.jmin}`);
+        lines.push(`    jmax: ${amnezia.jmax}`);
+        lines.push(`    s1: ${amnezia.s1}`);
+        lines.push(`    s2: ${amnezia.s2}`);
+        lines.push(`    h1: ${amnezia.h1}`);
+        lines.push(`    h2: ${amnezia.h2}`);
+        lines.push(`    h3: ${amnezia.h3}`);
+        lines.push(`    h4: ${amnezia.h4}`);
     }
 
-    return lines.join('\n');
+    // Add an empty line for readability between proxies
+    return lines.join('\n') + '\n';
 }
 
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(buildProxyYamlString);
-    // When adding to the proxy-group, the name MUST be quoted if it contains special characters.
-    const proxyNames = mihomoProxies.map(p => JSON.stringify(p.name));
+    // Names in proxy-groups are also NOT quoted.
+    const proxyNames = mihomoProxies.map(p => p.name);
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     
+    // We join with an empty string because buildProxyYamlString already adds newlines.
     return templateText
-        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join(''))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
 }
 
