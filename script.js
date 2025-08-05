@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v5: File Processing Bug FIXED. Final Robust Version.
+// script.js - v6: YAML Generation FIXED using robust legacy logic.
 // ===================================================================
 
 // --- Data Sources ---
@@ -208,12 +208,7 @@ function renderStagedConfigs() {
 
 // --- CORE LOGIC (Parsing, Generation) ---
 
-// ===== NEW ROBUST FILE READER =====
-/**
- * Reads a list of files as text using Promises to avoid race conditions.
- * @param {FileList} files - The FileList object from a file input.
- * @returns {Promise<string[]>} A promise that resolves to an array of file contents.
- */
+// ===== ROBUST FILE READER =====
 function readFilesAsText(files) {
     return Promise.all(Array.from(files).map(file =>
         new Promise((resolve, reject) => {
@@ -268,13 +263,54 @@ function validateAndComplete(config, source) {
     return config;
 }
 
-function parseFromMihomo(configObject) { /* ... unchanged ... */ return (configObject.proxies || []).filter(p=>p.type&&"wireguard"===p.type.toLowerCase()).map(p=>validateAndComplete({name:p.name||null,privateKey:p["private-key"]||null,publicKey:p["public-key"]||null,server:p.server||null,port:p.port||null,address:p.ip,ipv6:p.ipv6,mtu:p.mtu,allowedIps:p["allowed-ips"],dns:p.dns,amneziaOptionsFromConfig:p["amnezia-wg-option"]||null},JSON.stringify(p)))}
-function parseFromSingBox(configObject) { /* ... unchanged ... */ return (configObject.outbounds || []).filter(o=>o.type&&"wireguard"===o.type.toLowerCase()).map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port||null,address:o.local_address,mtu:o.mtu,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)))}
-function parseFromText(textContent) { /* ... unchanged ... */ return textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim()).map(block=>{let rawConfig={},peerComment="";try{if(block.startsWith("wireguard://")){const url=new URL(block),params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get("publickey")?decodeURIComponent(params.get("publickey")):null,address:params.get("address"),mtu:params.get("mtu")?parseInt(params.get("mtu"),10):null}}else{const lines=block.split("\n").map(l=>l.trim()),interfaceSection={},peerSection={};let currentSection="";lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith("[interface]"))currentSection="Interface";else if(lowerLine.startsWith("[peer]"))currentSection="Peer";else if(line.startsWith("#")&&"Peer"===currentSection){const commentText=line.substring(1).trim();peerComment||(peerComment=commentText)}else if(line.includes("=")){const[key,value]=line.split("=",2).map(s=>s.trim());"Interface"===currentSection?interfaceSection[key.toLowerCase()]=value:"Peer"===currentSection&&(peerSection[key.toLowerCase()]=value)}});const[server,port]=(peerSection.endpoint||"").split(":"),amneziaOpts=interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||"").split(",").map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(",").map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts}}return validateAndComplete(rawConfig,block)}catch(e){return{error:!0,reason:"ساختار کانفیگ نامعتبر است",source:block}}})}
+function parseFromMihomo(configObject) { return (configObject.proxies || []).filter(p=>p.type&&"wireguard"===p.type.toLowerCase()).map(p=>validateAndComplete({name:p.name||null,privateKey:p["private-key"]||null,publicKey:p["public-key"]||null,server:p.server||null,port:p.port?parseInt(p.port,10):null,address:p.ip,ipv6:p.ipv6,mtu:p.mtu?parseInt(p.mtu,10):null,allowedIps:p["allowed-ips"],dns:p.dns,amneziaOptionsFromConfig:p["amnezia-wg-option"]||null},JSON.stringify(p)))}
+function parseFromSingBox(configObject) { return (configObject.outbounds || []).filter(o=>o.type&&"wireguard"===o.type.toLowerCase()).map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port?parseInt(o.server_port,10):null,address:o.local_address,mtu:o.mtu?parseInt(o.mtu,10):null,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)))}
+function parseFromText(textContent) { return textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim()).map(block=>{let rawConfig={},peerComment="";try{if(block.startsWith("wireguard://")){const url=new URL(block),params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get("publickey")?decodeURIComponent(params.get("publickey")):null,address:params.get("address"),mtu:params.get("mtu")?parseInt(params.get("mtu"),10):null}}else{const lines=block.split("\n").map(l=>l.trim()),interfaceSection={},peerSection={};let currentSection="";lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith("[interface]"))currentSection="Interface";else if(lowerLine.startsWith("[peer]"))currentSection="Peer";else if(line.startsWith("#")&&"Peer"===currentSection){const commentText=line.substring(1).trim();peerComment||(peerComment=commentText)}else if(line.includes("=")){const[key,value]=line.split("=",2).map(s=>s.trim());"Interface"===currentSection?interfaceSection[key.toLowerCase()]=value:"Peer"===currentSection&&(peerSection[key.toLowerCase()]=value)}});const[server,port]=(peerSection.endpoint||"").split(":"),amneziaOpts=interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||"").split(",").map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(",").map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts}}return validateAndComplete(rawConfig,block)}catch(e){return{error:!0,reason:"ساختار کانفیگ نامعتبر است",source:block}}})}
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
-function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { /* ... unchanged ... */ const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:!0,mtu:wgConfig.mtu,"remote-dns-resolve":!0};return wgConfig.ipv6&&(mihomoProxy.ipv6=wgConfig.ipv6),wgConfig.dns?.length>0&&(mihomoProxy.dns=wgConfig.dns),"use-config-values"===amneziaOption&&wgConfig.amneziaOptionsFromConfig?mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig:"use-ui-values"===amneziaOption&&(mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}),mihomoProxy}
-function processTemplateText(templateText, mihomoProxies) { /* ... unchanged ... */ const proxyBlocks=[],proxyNames=[];return mihomoProxies.forEach(proxy=>{let yamlFrag=jsyaml.dump({proxies:[proxy]},{indent:4,lineWidth:-1,flowLevel:3,noCompatMode:!0});yamlFrag=yamlFrag.replace(/^proxies:\n/,""),yamlFrag=yamlFrag.replace(/^-/,"  -"),proxyBlocks.push(yamlFrag),proxyNames.push(`"${proxy.name}"`)}),templateText.replace(/##_PROXIES_PLACEHOLDER_##/g,proxyBlocks.join("")).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g,proxyNames.map(n=>`      - ${n}`).join("\n"))}
-function downloadFile(filename, content) { /* ... unchanged ... */ const blob=new Blob([content],{type:"application/x-yaml; charset=utf-8;"}),link=document.createElement("a"),url=URL.createObjectURL(blob);link.href=url,link.download=filename,document.body.appendChild(link),link.click(),document.body.removeChild(link),URL.revokeObjectURL(url)}
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:!0,mtu:wgConfig.mtu,"remote-dns-resolve":!0};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
+
+// --- YAML Processing & Download (FIXED) ---
+function processTemplateText(templateText, mihomoProxies) {
+    const proxyBlocks = [];
+    const proxyNames = [];
+
+    mihomoProxies.forEach(proxy => {
+        // Step 1: Dump the individual proxy object to a string.
+        // Using indent: 2 and flowLevel: -1 to ensure block style for arrays.
+        let yamlFrag = jsyaml.dump(proxy, {
+            indent: 2,
+            lineWidth: -1,
+            flowLevel: -1, 
+            noCompatMode: true
+        });
+
+        // Step 2: Manually format the dumped string to fit into the proxy list.
+        // This logic is inspired by the old, more reliable method.
+        const block = yamlFrag.split('\n')
+            .filter(line => line.trim() !== '') // Remove any potential empty lines
+            .map((line, index) => {
+                if (index === 0) {
+                    // First line gets the list item marker '-'.
+                    return `  - ${line}`;
+                }
+                // Subsequent lines are indented to align under the first property.
+                return `    ${line}`;
+            })
+            .join('\n');
+        
+        proxyBlocks.push(block);
+        proxyNames.push(`"${proxy.name}"`);
+    });
+
+    const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
+    
+    // Step 3: Replace placeholders in the template.
+    return templateText
+        .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
+        .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
+}
+
+function downloadFile(filename, content) { const blob=new Blob([content],{type:"application/x-yaml; charset=utf-8;"}),link=document.createElement("a"),url=URL.createObjectURL(blob);link.href=url,link.download=filename,document.body.appendChild(link),link.click(),document.body.removeChild(link),URL.revokeObjectURL(url)}
 
 // --- Action Handlers ---
 processInputBtn.addEventListener('click', async function handleProcessInput() {
@@ -285,7 +321,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     let errorDetails = [];
     
     // ===== ROBUST INPUT GATHERING =====
-    // 1. Get content from file input
     let fileContents = [];
     if (wgConfigFile.files.length > 0) {
         try {
@@ -295,10 +330,8 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         }
     }
 
-    // 2. Combine with text area content
     let allRawText = [wgConfigInput.value, ...fileContents].join('\n').trim();
 
-    // 3. Get subscription links
     const lines = allRawText.split('\n').map(l => l.trim());
     const urls = lines.filter(l => l.startsWith('http'));
     const nonUrlContent = lines.filter(l => !l.startsWith('http')).join('\n');
@@ -333,14 +366,12 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     showMessage(`عملیات انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا یافت شد)`, successfulConfigs.length > 0 ? 'success' : 'error');
     displayErrorDetails(errorDetails);
 
-    // Clear all inputs after processing
     wgConfigInput.value = '';
-    wgConfigFile.value = ''; // This is crucial for re-uploading the same file
+    wgConfigFile.value = '';
     fileListDiv.innerHTML = '';
 });
 
 generateBtn.addEventListener('click', async function handleGenerateAndDownload() {
-    // This function remains unchanged as it was already correct.
     messageDiv.classList.add('hidden');
     displayErrorDetails([]);
 
