@@ -1,9 +1,9 @@
 // ===================================================================
-// script.js - v2.2 - Restored All Amnezia Profiles
+// script.js - v2.3 - Bug Fixes & Code Readability Improvements
 // ===================================================================
 
 // ===== CONFIGURATION & CONSTANTS =====
-const countryEmojiMap={"US":"🇺🇸","DE":"🇩🇪","NL":"🇳🇱","CA":"🇨🇦","GB":"🇬🇧","FR":"🇫🇷","AU":"🇦🇺","JP":"🇯🇵","SG":"🇸🇬","SE":"🇸🇪","CH":"🇨🇭","FI":"🇫🇮","NO":"🇳🇴","DK":"🇩🇰","BE":"🇧🇪","AT":"🇦🇹","ES":"🇪🇸","IT":"🇮🇹","PL":"🇵🇱","CZ":"🇨🇿","IE":"🇮🇪","NZ":"🇳🇿","KR":"🇰🇷","HK":"🇭🇰","TW":"🇹🇼","IN":"🇮🇳","BR":"🇧🇷","MX":"🇲🇽","ZA":"🇿🇦","AE":"🇦🇪","TR":"🇹🇷","RU":"🇷🇺","CN":"🇨🇳","IR":"🇮🇷","RO":"🇷🇴","AF":"🇦🇫","AL":"🇦🇱","DZ":"🇩🇿","AS":"🇦🇸","AD":"🇦🇩","AO":"🇦🇴","AI":"🇦🇮","AQ":"🇦🇶","AG":"🇦🇬","AR":"🇦🇷","AM":"🇦🇲","AW":"🇦🇼","AZ":"🇦🇿","BS":"🇧🇸","BH":"🇧🇭","BD":"🇧🇩","BB":"🇧🇧","BY":"🇧🇾","BZ":"🇧🇿","BJ":"🇧🇯","BM":"🇧🇲","BT":"🇧🇹","BO":"🇧🇴","BA":"🇧🇦","BW":"🇧🇼","BV":"🇧🇻","IO":"🇮🇴","BN":"🇧🇳","BG":"🇧🇬","BF":"🇧🇫","BI":"🇧🇮","KH":"🇰🇭","CM":"🇨🇲","CV":"🇨🇻","KY":"🇰🇾","CF":"🇨🇫","TD":"🇹🇩","CL":"🇨🇱","CX":"🇨🇽","CC":"🇨🇨","CO":"🇨🇴","KM":"🇰🇲","CG":"🇨🇬","CD":"🇨🇩","CK":"🇨🇰","CR":"🇨🇷","CI":"🇨🇮","HR":"🇭🇷","CU":"🇨🇺","CY":"🇨🇾","DJ":"🇩🇯","DM":"🇩🇲","DO":"🇩🇴","EC":"🇪🇨","EG":"🇪🇬","SV":"🇸🇻","GQ":"🇬🇶","ER":"🇪🇷","EE":"🇪🇪","ET":"🇪🇹","FK":"🇫🇰","FO":"🇫🇴","FJ":"🇫🇯","GF":"🇬🇫","PF":"🇵🇫","TF":"🇹🇫","GA":"🇬🇦","GM":"🇬🇲","GE":"🇬🇪","GH":"🇬🇭","GI":"🇬🇮","GR":"🇬🇷","GL":"🇬🇱","GD":"🇬🇩","GP":"🇬🇵","GU":"🇬🇺","GT":"🇬🇹","GN":"🇬🇳","GW":"🇬🇼","GY":"🇬🇾","HT":"🇭🇹","HM":"🇭🇲","HN":"🇭🇳","HU":"🇭🇺","IS":"🇮🇸","ID":"🇮🇩","IQ":"🇮🇶","IL":"🇮🇱","JM":"🇯🇲","JO":"🇯🇴","KZ":"🇰🇿","KE":"🇰🇪","KI":"🇰🇮","KP":"🇰🇵","KW":"🇰🇼","KG":"🇰🇬","LA":"🇱🇦","LV":"🇱🇻","LB":"🇱🇧","LS":"🇱🇸","LR":"🇱🇷","LY":"🇱🇾","LI":"🇱🇮","LT":"🇱🇹","LU":"🇱🇺","MO":"🇲🇴","MK":"🇲🇰","MG":"🇲🇬","MW":"🇲🇼","MY":"🇲🇾","MV":"🇲🇻","ML":"🇲🇱","MT":"🇲🇹","MH":"🇲🇭","MQ":"🇲🇶","MR":"🇲🇷","MU":"🇲🇺","YT":"🇾🇹","FM":"🇫🇲","MD":"🇲🇩","MC":"🇲🇨","MN":"🇲🇳","MS":"🇲🇸","MA":"🇲🇦","MZ":"🇲🇿","MM":"🇲🇲","NA":"🇳🇦","NR":"🇳🇷","NP":"🇳🇵","NC":"🇨","NI":"🇳🇮","NE":"🇳🇪","NG":"🇳🇬","NU":"🇳🇺","NF":"🇫","MP":"🇲🇵","OM":"🇴🇲","PK":"🇵🇰","PW":"🇵🇼","PS":"🇵🇸","PA":"🇵🇦","PG":"🇵🇬","PY":"🇵🇾","PE":"🇵🇪","PH":"🇵🇭","PN":"🇵🇳","PT":"🇵🇹","PR":"🇵🇷","QA":"🇶🇦","RE":"🇷🇪","RW":"🇷🇼","SH":"🇸🇭","KN":"🇰🇳","LC":"🇱🇨","PM":"🇵🇲","VC":"🇻🇨","WS":"🇼🇸","SM":"🇸🇲","ST":"🇸🇹","SA":"🇸🇦","SN":"🇸🇳","RS":"🇷🇸","SC":"🇸🇨","SL":"🇸🇱","SK":"🇸🇰","SI":"🇸🇮","SB":"🇸🇧","SO":"🇸🇴","GS":"🇬🇸","SS":"🇸🇸","LK":"🇱🇰","SD":"🇸🇩","SR":"🇸🇷","SJ":"🇸🇯","SZ":"🇸🇿","SY":"🇸🇾","TJ":"🇹🇯","TZ":"🇹🇿","TH":"🇹🇭","TL":"🇹🇱","TG":"🇹🇬","TK":"🇹🇰","TO":"🇹🇴","TT":"🇹🇹","TN":"🇹🇳","TM":"🇹🇲","TC":"🇹🇨","TV":"🇹🇻","UG":"🇺🇬","UA":"🇺🇦","UM":"🇺🇲","UY":"🇺🇾","UZ":"🇺🇿","VU":"🇻🇺","VE":"🇻🇪","VN":"🇻🇳","VG":"🇻🇬","VI":"🇻🇮","WF":"🇼🇫","EH":"🇪🇭","YE":"🇾🇪","ZM":"🇿🇲","ZW":"🇿🇼"};
+const countryEmojiMap={"US":"🇺🇸","DE":"🇩🇪","NL":"🇳🇱","CA":"🇨🇦","GB":"🇬🇧","FR":"🇫🇷","AU":"🇦🇺","JP":"🇯🇵","SG":"🇸🇬","SE":"🇸🇪","CH":"🇨🇭","FI":"🇫🇮","NO":"🇳🇴","DK":"🇩🇰","BE":"🇧🇪","AT":"🇦🇹","ES":"🇪🇸","IT":"🇮🇹","PL":"🇵🇱","CZ":"🇨🇿","IE":"🇮🇪","NZ":"🇳🇿","KR":"🇰🇷","HK":"🇭🇰","TW":"🇹🇼","IN":"🇮🇳","BR":"🇧🇷","MX":"🇲🇽","ZA":"🇿🇦","AE":"🇦🇪","TR":"🇹🇷","RU":"🇷🇺","CN":"🇨🇳","IR":"🇮🇷","RO":"🇷🇴","AF":"🇦🇫","AL":"🇦🇱","DZ":"🇩🇿","AS":"🇦🇸","AD":"🇦🇩","AO":"🇦🇴","AI":"🇦🇮","AQ":"🇦🇶","AG":"🇦🇬","AR":"🇦🇷","AM":"🇦🇲","AW":"🇦🇼","AZ":"🇦🇿","BS":"🇧🇸","BH":"🇧🇭","BD":"🇧🇩","BB":"🇧🇧","BY":"🇧🇾","BZ":"🇧🇿","BJ":"🇧🇯","BM":"🇧🇲","BT":"🇧🇹","BO":"🇧🇴","BA":"🇧🇦","BW":"🇧🇼","BV":"🇧🇻","IO":"🇮🇴","BN":"🇧🇳","BG":"🇧🇬","BF":"🇧🇫","BI":"🇧🇮","KH":"🇰🇭","CM":"🇨🇲","CV":"🇨🇻","KY":"🇰🇾","CF":"🇨🇫","TD":"🇹🇩","CL":"🇨🇱","CX":"🇨🇽","CC":"🇨🇨","CO":"🇨🇴","KM":"🇰🇲","CG":"🇨🇬","CD":"🇨🇩","CK":"🇨🇰","CR":"🇨🇷","CI":"🇨🇮","HR":"🇭🇷","CU":"🇨🇺","CY":"🇨🇾","DJ":"🇩🇯","DM":"🇩🇲","DO":"🇩🇴","EC":"🇪🇨","EG":"🇪🇬","SV":"🇸🇻","GQ":"🇬🇶","ER":"🇪🇷","EE":"🇪🇪","ET":"🇪🇹","FK":"🇫🇰","FO":"🇫🇴","FJ":"🇫🇯","GF":"🇬🇫","PF":"🇵🇫","TF":"🇹🇫","GA":"🇬🇦","GM":"🇬🇲","GE":"🇬🇪","GH":"🇬🇭","GI":"🇬🇮","GR":"🇬🇷","GL":"🇬🇱","GD":"🇬🇩","GP":"🇬🇵","GU":"🇬🇺","GT":"🇬🇹","GN":"🇬🇳","GW":"🇬🇼","GY":"🇬🇾","HT":"🇭🇹","HM":"🇭🇲","HN":"🇭🇳","HU":"🇭🇺","IS":"🇮🇸","ID":"🇮🇩","IQ":"🇮🇶","IL":"🇮🇱","JM":"🇯🇲","JO":"🇯🇴","KZ":"🇰🇿","KE":"🇰🇪","KI":"🇰🇮","KP":"🇰🇵","KW":"🇰🇼","KG":"🇰🇬","LA":"🇱🇦","LV":"🇱🇻","LB":"🇱🇧","LS":"🇱🇸","LR":"🇱🇷","LY":"🇱🇾","LI":"🇱🇮","LT":"🇱🇹","LU":"🇱🇺","MO":"🇲🇴","MK":"🇲🇰","MG":"🇲🇬","MW":"🇲🇼","MY":"🇲🇾","MV":"🇲🇻","ML":"🇲🇱","MT":"🇲🇹","MH":"🇲🇭","MQ":"🇲🇶","MR":"🇲🇷","MU":"🇲🇺","YT":"🇾🇹","FM":"🇫🇲","MD":"🇲🇩","MC":"🇲🇨","MN":"🇲🇳","MS":"🇲🇸","MA":"🇲🇦","MZ":"🇲🇿","MM":"🇲🇲","NA":"🇳🇦","NR":"🇳🇷","NP":"🇳🇵","NC":"🇳🇨","NI":"🇳🇮","NE":"🇳🇪","NG":"🇳🇬","NU":"🇳🇺","NF":"🇳🇫","MP":"🇲🇵","OM":"🇴🇲","PK":"🇵🇰","PW":"🇵🇼","PS":"🇵🇸","PA":"🇵🇦","PG":"🇵🇬","PY":"🇵🇾","PE":"🇵🇪","PH":"🇵🇭","PN":"🇵🇳","PT":"🇵🇹","PR":"🇵🇷","QA":"🇶🇦","RE":"🇷🇪","RW":"🇷🇼","SH":"🇸🇭","KN":"🇰🇳","LC":"🇱🇨","PM":"🇵🇲","VC":"🇻🇨","WS":"🇼🇸","SM":"🇸🇲","ST":"🇸🇹","SA":"🇸🇦","SN":"🇸🇳","RS":"🇷🇸","SC":"🇸🇨","SL":"🇸🇱","SK":"🇸🇰","SI":"🇸🇮","SB":"🇸🇧","SO":"🇸🇴","GS":"🇬🇸","SS":"🇸🇸","LK":"🇱🇰","SD":"🇸🇩","SR":"🇸🇷","SJ":"🇸🇯","SZ":"🇸🇿","SY":"🇸🇾","TJ":"🇹🇯","TZ":"🇹🇿","TH":"🇹🇭","TL":"🇹🇱","TG":"🇹🇬","TK":"🇹🇰","TO":"🇹🇴","TT":"🇹🇹","TN":"🇹🇳","TM":"🇹🇲","TC":"🇹🇨","TV":"🇹🇻","UG":"🇺🇬","UA":"🇺🇦","UM":"🇺🇲","UY":"🇺🇾","UZ":"🇺🇿","VU":"🇻🇺","VE":"🇻🇪","VN":"🇻🇳","VG":"🇻🇬","VI":"🇻🇮","WF":"🇼🇫","EH":"🇪🇭","YE":"🇾🇪","ZM":"🇿🇲","ZW":"🇿🇼"};
 
 const AMNEZIA_PROFILES = [
     { id: 'optimal', name: 'Optimal', jc: 4, jmin: 64, jmax: 120, checked: true },
@@ -26,7 +26,6 @@ const wgConfigFile = document.getElementById('wgConfigFile');
 const fileListDiv = document.getElementById('fileList');
 const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
 const templateSelect = document.getElementById('templateSelect');
-const messageDiv = document.getElementById('message');
 const themeToggle = document.getElementById('themeToggle');
 const themeIconDark = document.getElementById('theme-icon-dark');
 const themeIconLight = document.getElementById('theme-icon-light');
@@ -55,11 +54,6 @@ function applyTheme(theme) {
     }
     localStorage.setItem('theme', theme);
 }
-
-themeToggle.addEventListener('click', () => {
-    const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
-});
 
 // --- Dynamic Content & UI Initialization ---
 function createCheckbox(item, groupName) {
@@ -217,10 +211,84 @@ function validateAndComplete(config, source) {
     return config;
 }
 
-// --- Parsers (Mihomo, SingBox, Text) ---
-function parseFromMihomo(configObject) { return (configObject.proxies||[]).filter(p=>p.type&&p.type.toLowerCase()==='wireguard').map(p=>validateAndComplete({name:p.name||null,privateKey:p['private-key']||null,publicKey:p['public-key']||null,server:p.server||null,port:p.port||null,address:p.ip,ipv6:p.ipv6,mtu:p.mtu,allowedIps:p['allowed-ips'],dns:p.dns,amneziaOptionsFromConfig:p['amnezia-wg-option']||null},JSON.stringify(p)));}
-function parseFromSingBox(configObject) { return (configObject.outbounds||[]).filter(o=>o.type&&o.type.toLowerCase()==='wireguard').map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port||null,address:o.local_address,mtu:o.mtu,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)));}
-function parseFromText(textContent) { const blocks=textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim());return blocks.map(block=>{let rawConfig={},peerComment='';try{if(block.startsWith('wireguard://')){const url=new URL(block);const params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get('publickey')?decodeURIComponent(params.get('publickey')):null,address:params.get('address'),mtu:params.get('mtu')?parseInt(params.get('mtu'),10):null,};}else{const lines=block.split('\n').map(l=>l.trim());const interfaceSection={},peerSection={};let currentSection='';lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith('[interface]')){currentSection='Interface';}else if(lowerLine.startsWith('[peer]')){currentSection='Peer';}else if(line.startsWith('#')&¤tSection==='Peer'){const commentText=line.substring(1).trim();if(!peerComment){peerComment=commentText;}}else if(line.includes('=')){const[key,value]=line.split('=',2).map(s=>s.trim());if(currentSection==='Interface')interfaceSection[key.toLowerCase()]=value;else if(currentSection==='Peer')peerSection[key.toLowerCase()]=value;}});const[server,port]=(peerSection.endpoint||'').split(':');const amneziaOpts=(interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax)?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||'').split(',').map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(',').map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts,};}return validateAndComplete(rawConfig,block);}catch(e){return{error:true,reason:'ساختار کانفیگ نامعتبر است',source:block};}}); }
+// --- Format-Specific Parsers ---
+function parseFromMihomo(configObject) {
+    const proxies = configObject.proxies || [];
+    return proxies
+        .filter(p => p.type && p.type.toLowerCase() === 'wireguard')
+        .map(p => {
+            const mappedConfig = {
+                name: p.name || null, privateKey: p['private-key'] || null, publicKey: p['public-key'] || null,
+                server: p.server || null, port: p.port || null, address: p.ip, ipv6: p.ipv6, mtu: p.mtu,
+                allowedIps: p['allowed-ips'], dns: p.dns, amneziaOptionsFromConfig: p['amnezia-wg-option'] || null
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(p));
+        });
+}
+
+function parseFromSingBox(configObject) {
+    const outbounds = configObject.outbounds || [];
+    return outbounds
+        .filter(o => o.type && o.type.toLowerCase() === 'wireguard')
+        .map(o => {
+            const mappedConfig = {
+                name: o.tag || null, privateKey: o.private_key || null, publicKey: o.peer_public_key || null,
+                server: o.server || null, port: o.server_port || null, address: o.local_address, mtu: o.mtu,
+                amneziaOptionsFromConfig: o.amnezia || null,
+            };
+            return validateAndComplete(mappedConfig, JSON.stringify(o));
+        });
+}
+
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
+    return blocks.map(block => {
+        let rawConfig = {}, peerComment = '';
+        try {
+            if (block.startsWith('wireguard://')) {
+                const url = new URL(block); const params = new URLSearchParams(url.search);
+                rawConfig = {
+                    name: decodeURIComponent(url.hash.substring(1)) || null, privateKey: decodeURIComponent(url.username) || null,
+                    server: url.hostname || null, port: url.port ? parseInt(url.port, 10) : null,
+                    publicKey: params.get('publickey') ? decodeURIComponent(params.get('publickey')) : null,
+                    address: params.get('address'), mtu: params.get('mtu') ? parseInt(params.get('mtu'), 10) : null,
+                };
+            } else {
+                const lines = block.split('\n').map(l => l.trim());
+                const interfaceSection = {}, peerSection = {}; let currentSection = '';
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.startsWith('[interface]')) { currentSection = 'Interface'; }
+                    else if (lowerLine.startsWith('[peer]')) { currentSection = 'Peer'; }
+                    else if (line.startsWith('#') && currentSection === 'Peer') {
+                        const commentText = line.substring(1).trim();
+                        if (!peerComment) { peerComment = commentText; }
+                    }
+                    else if (line.includes('=')) {
+                        const [key, value] = line.split('=', 2).map(s => s.trim());
+                        if (currentSection === 'Interface') interfaceSection[key.toLowerCase()] = value;
+                        else if (currentSection === 'Peer') peerSection[key.toLowerCase()] = value;
+                    }
+                });
+                const [server, port] = (peerSection.endpoint || '').split(':');
+                const amneziaOpts = (interfaceSection.jc && interfaceSection.jmin && interfaceSection.jmax) ? {
+                    jc: parseInt(interfaceSection.jc), jmin: parseInt(interfaceSection.jmin), jmax: parseInt(interfaceSection.jmax)
+                } : null;
+                rawConfig = {
+                    name: peerComment || null, privateKey: interfaceSection.privatekey || null, publicKey: peerSection.publickey || null,
+                    server: server || null, port: port ? parseInt(port, 10) : null, address: interfaceSection.address,
+                    mtu: interfaceSection.mtu ? parseInt(interfaceSection.mtu) : null,
+                    dns: (interfaceSection.dns || '').split(',').map(d => d.trim()).filter(Boolean),
+                    allowedIps: peerSection.allowedips ? peerSection.allowedips.split(',').map(ip => ip.trim()).filter(Boolean) : null,
+                    amneziaOptionsFromConfig: amneziaOpts,
+                };
+            }
+            return validateAndComplete(rawConfig, block);
+        } catch (e) {
+            return { error: true, reason: 'ساختار کانفیگ نامعتبر است', source: block };
+        }
+    });
+}
 
 // --- Main Parser Orchestrator ---
 function parseAllInputs(textContent) {
@@ -234,9 +302,56 @@ function parseAllInputs(textContent) {
 }
 
 // --- Mihomo Conversion & Template Processing ---
-function convertWgToMihomo(wgConfig, amneziaSettings) { const mihomoProxy={name:wgConfig.name,type:'wireguard',server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,'private-key':wgConfig.privateKey,'public-key':wgConfig.publicKey,'allowed-ips':wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,'remote-dns-resolve':true,};if(wgConfig.ipv6)mihomoProxy.ipv6=wgConfig.ipv6;if(wgConfig.dns?.length>0)mihomoProxy.dns=wgConfig.dns;if(amneziaSettings){mihomoProxy['amnezia-wg-option']=amneziaSettings;}return mihomoProxy; }
-function processTemplateText(templateText, mihomoProxies) { const proxyBlocks=[],proxyNames=[];mihomoProxies.forEach(proxy=>{let yamlFrag=jsyaml.dump(proxy,{indent:2,lineWidth:-1,flowLevel:3,noCompatMode:true}).trim();yamlFrag=yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm,(match,key,value)=>{if(!value.endsWith('=')){const paddingNeeded=(4-(value.length%4))%4;if(paddingNeeded<3)value+='='.repeat(paddingNeeded);}return`${key}: '${value}'`;});if(proxy.dns&&proxy.dns.length>0){const dnsBlock=proxy.dns.map(d=>`      - ${d}`).join('\n');yamlFrag=yamlFrag.replace(/dns:\s*\[.*\]/,`dns:\n${dnsBlock}`);}if(proxy.allowedIps&&proxy.allowedIps.length>0){const allowedIpsBlock=proxy.allowedIps.map(ip=>`      - '${ip}'`).join('\n');yamlFrag=yamlFrag.replace(/allowed-ips:\s*\[.*\]/,`allowed-ips:\n${allowedIpsBlock}`);}const block=yamlFrag.split('\n').map((l,i)=>(i===0?`  - ${l}`:`    ${l}`)).join('\n');proxyBlocks.push(block);proxyNames.push(`"${proxy.name}"`);});const proxyNameListYaml=proxyNames.map(n=>`      - ${n}`).join('\n');return templateText.replace(/##_PROXIES_PLACEHOLDER_##/g,proxyBlocks.join('\n')).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g,proxyNameListYaml);}
-function downloadFile(filename, content) { const blob=new Blob([content],{type:'application/x-yaml;charset=utf-8;'});const link=document.createElement('a');const url=URL.createObjectURL(blob);link.href=url;link.download=filename;document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);}
+function convertWgToMihomo(wgConfig, amneziaSettings) {
+    const mihomoProxy = {
+        name: wgConfig.name, type: 'wireguard', server: wgConfig.server, port: wgConfig.port, ip: wgConfig.ip,
+        'private-key': wgConfig.privateKey, 'public-key': wgConfig.publicKey, 'allowed-ips': wgConfig.allowedIps,
+        udp: true, mtu: wgConfig.mtu, 'remote-dns-resolve': true,
+    };
+    if (wgConfig.ipv6) mihomoProxy.ipv6 = wgConfig.ipv6;
+    if (wgConfig.dns?.length > 0) mihomoProxy.dns = wgConfig.dns;
+    if (amneziaSettings) {
+        mihomoProxy['amnezia-wg-option'] = amneziaSettings;
+    }
+    return mihomoProxy;
+}
+function processTemplateText(templateText, mihomoProxies) {
+    const proxyBlocks = [], proxyNames = [];
+    mihomoProxies.forEach(proxy => {
+        let yamlFrag = jsyaml.dump(proxy, { indent: 2, lineWidth: -1, flowLevel: 3, noCompatMode: true }).trim();
+        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, (match, key, value) => {
+            if (!value.endsWith('=')) {
+                const paddingNeeded = (4 - (value.length % 4)) % 4;
+                if (paddingNeeded < 3) value += '='.repeat(paddingNeeded);
+            }
+            return `${key}: '${value}'`;
+        });
+        if (proxy.dns && proxy.dns.length > 0) {
+            const dnsBlock = proxy.dns.map(d => `      - ${d}`).join('\n');
+            yamlFrag = yamlFrag.replace(/dns:\s*\[.*\]/, `dns:\n${dnsBlock}`);
+        }
+        if (proxy.allowedIps && proxy.allowedIps.length > 0) {
+            const allowedIpsBlock = proxy.allowedIps.map(ip => `      - '${ip}'`).join('\n');
+            yamlFrag = yamlFrag.replace(/allowed-ips:\s*\[.*\]/, `allowed-ips:\n${allowedIpsBlock}`);
+        }
+        const block = yamlFrag.split('\n').map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`)).join('\n');
+        proxyBlocks.push(block);
+        proxyNames.push(`"${proxy.name}"`);
+    });
+    const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
+    return templateText.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n')).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
+}
+function downloadFile(filename, content) {
+    const blob = new Blob([content], { type: 'application/x-yaml;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
 
 // --- "Process and Add" Handler ---
 processInputBtn.addEventListener('click', async function handleProcessInput() {
@@ -246,7 +361,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     const urls = lines.filter(l => l.startsWith('http'));
     const nonUrlContent = lines.filter(l => !l.startsWith('http')).join('\n');
     let errorDetails = [];
-    
+
     if (urls.length > 0) {
         showMessage(`در حال دانلود محتوای ${urls.length} لینک...`, 'success');
         const fetchedResults = await fetchSubscriptionContents(urls);
@@ -268,7 +383,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     const successfulConfigs = parsedResults.filter(p => !p.error);
     const failedConfigs = parsedResults.filter(p => p.error);
     errorDetails.push(...failedConfigs);
-    
+
     if (successfulConfigs.length > 0) {
         stagedConfigs.push(...successfulConfigs);
         renderStagedConfigs();
@@ -285,7 +400,7 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
 // --- "Generate and Download" Handler ---
 generateBtn.addEventListener('click', async function handleGenerateAndDownload() {
     displayErrorDetails([]);
-    
+
     const selectedWgConfigs = [];
     document.querySelectorAll('#stagedConfigsList input[type="checkbox"]:checked').forEach(cb => {
         selectedWgConfigs.push(stagedConfigs[parseInt(cb.value, 10)]);
@@ -296,7 +411,7 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
 
     const selectedAmneziaProfileIds = Array.from(document.querySelectorAll('[name="amneziaProfile"]:checked')).map(cb => cb.value);
     const selectedAmneziaProfiles = AMNEZIA_PROFILES.filter(p => selectedAmneziaProfileIds.includes(p.id));
-    
+
     const templateId = templateSelect.value;
     const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
     const templateName = selectedTemplateOption.dataset.name;
@@ -307,17 +422,17 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
         const response = await fetch(`./config-templates/${templateId}.yaml`);
         if (!response.ok) throw new Error(`خطای HTTP ${response.status}`);
         const baseTemplateContent = await response.text();
-        
+
         const mihomoProxies = [];
         const usedNames = new Set();
-        
+
         selectedWgConfigs.forEach(wgConfig => {
             if (amneziaMode === 'use-ui-values' && selectedAmneziaProfiles.length > 0) {
                 selectedAmneziaProfiles.forEach(profile => {
                     const newWgConfig = JSON.parse(JSON.stringify(wgConfig));
                     let finalName = `${newWgConfig.name} [${profile.name}]`;
                     let count = 1;
-                    while(usedNames.has(finalName)) finalName = `${newWgConfig.name} [${profile.name}]-${count++}`;
+                    while (usedNames.has(finalName)) finalName = `${newWgConfig.name} [${profile.name}]-${count++}`;
                     newWgConfig.name = finalName;
                     usedNames.add(finalName);
 
@@ -328,10 +443,10 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
                 const newWgConfig = JSON.parse(JSON.stringify(wgConfig));
                 let finalName = newWgConfig.name;
                 let count = 1;
-                while(usedNames.has(finalName)) finalName = `${newWgConfig.name}-${count++}`;
+                while (usedNames.has(finalName)) finalName = `${newWgConfig.name}-${count++}`;
                 newWgConfig.name = finalName;
                 usedNames.add(finalName);
-                
+
                 let amneziaSettings = null;
                 if (amneziaMode === 'use-config-values' && newWgConfig.amneziaOptionsFromConfig) {
                     amneziaSettings = newWgConfig.amneziaOptionsFromConfig;
@@ -353,6 +468,10 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
 
 
 // --- Bulk Action & Startup Event Listeners ---
+themeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+    applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
+});
 selectAllBtn.addEventListener('click', () => document.querySelectorAll('#stagedConfigsList input[type="checkbox"]').forEach(cb => cb.checked = true));
 deselectAllBtn.addEventListener('click', () => document.querySelectorAll('#stagedConfigsList input[type="checkbox"]').forEach(cb => cb.checked = false));
 clearListBtn.addEventListener('click', () => {
