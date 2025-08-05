@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v2.5 - Smart UI Disabling & UX Fixes
+// script.js - v2.6 - Final Version with all Features & Fixes
 // ===================================================================
 
 // ===== CONFIGURATION & CONSTANTS =====
@@ -169,10 +169,9 @@ function convertWgToMihomo(wgConfig, amneziaSettings) { const mihomoProxy = { na
 function processTemplateText(templateText, mihomoProxies) { const proxyBlocks = [], proxyNames = []; mihomoProxies.forEach(proxy => { let yamlFrag = jsyaml.dump(proxy, { indent: 2, lineWidth: -1, flowLevel: 3, noCompatMode: true }).trim(); yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, (match, key, value) => { if (!value.endsWith('=')) { const paddingNeeded = (4 - (value.length % 4)) % 4; if (paddingNeeded < 3) value += '='.repeat(paddingNeeded); } return `${key}: '${value}'`; }); if (proxy.dns && proxy.dns.length > 0) { const dnsBlock = proxy.dns.map(d => `      - ${d}`).join('\n'); yamlFrag = yamlFrag.replace(/dns:\s*\[.*\]/, `dns:\n${dnsBlock}`); } if (proxy.allowedIps && proxy.allowedIps.length > 0) { const allowedIpsBlock = proxy.allowedIps.map(ip => `      - '${ip}'`).join('\n'); yamlFrag = yamlFrag.replace(/allowed-ips:\s*\[.*\]/, `allowed-ips:\n${allowedIpsBlock}`); } const block = yamlFrag.split('\n').map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`)).join('\n'); proxyBlocks.push(block); proxyNames.push(`"${proxy.name}"`); }); const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n'); return templateText.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n')).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml); }
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'application/x-yaml;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); }
 
-// --- "Process and Add" Handler (Unchanged) ---
+// --- Event Handlers ---
 processInputBtn.addEventListener('click', async function handleProcessInput() { displayErrorDetails([]); let allRawText=[wgConfigInput.value,...uploadedFilesContent].join('\n').trim(); const lines=allRawText.split('\n').map(l=>l.trim()); const urls=lines.filter(l=>l.startsWith('http')); const nonUrlContent=lines.filter(l=>!l.startsWith('http')).join('\n'); let errorDetails=[]; if(urls.length>0){showMessage(`در حال دانلود محتوای ${urls.length} لینک...`,'success'); const fetchedResults=await fetchSubscriptionContents(urls); let subscriptionContent=''; fetchedResults.forEach(result=>{if(result.error)errorDetails.push(result); else subscriptionContent+=result+'\n\n';}); allRawText=[nonUrlContent,subscriptionContent].join('\n\n').trim();} if(!allRawText){showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.','error'); displayErrorDetails(errorDetails); return;} const parsedResults=parseAllInputs(allRawText); const successfulConfigs=parsedResults.filter(p=>!p.error); const failedConfigs=parsedResults.filter(p=>p.error); errorDetails.push(...failedConfigs); if(successfulConfigs.length>0){stagedConfigs.push(...successfulConfigs); renderStagedConfigs();} showMessage(`انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا)`,'success'); displayErrorDetails(errorDetails); wgConfigInput.value=''; wgConfigFile.value=''; uploadedFilesContent=[]; fileListDiv.innerHTML=''; });
 
-// --- "Generate and Download" Handler (Updated Logic) ---
 generateBtn.addEventListener('click', async function handleGenerateAndDownload() {
     displayErrorDetails([]);
 
@@ -253,7 +252,6 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
     }
 });
 
-// --- Event Listeners ---
 themeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
