@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v7: YAML Key Quoting FIXED for max compatibility.
+// script.js - v8: Final YAML generation fix using quotingType.
 // ===================================================================
 
 // --- Data Sources ---
@@ -268,28 +268,25 @@ function parseFromText(textContent) { return textContent.split(/(?=\[Interface\]
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:!0,mtu:wgConfig.mtu,"remote-dns-resolve":!0};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
 
-// --- YAML Processing & Download (FIXED) ---
+// --- YAML Processing & Download (ROBUST FINAL VERSION) ---
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = [];
     const proxyNames = [];
 
     mihomoProxies.forEach(proxy => {
         // Step 1: Dump the individual proxy object to a string.
+        // The key fix is here: `quotingType: "'"` tells js-yaml to use single quotes
+        // for any string that requires it, which safely handles Base64 keys and other
+        // special characters without altering them.
         let yamlFrag = jsyaml.dump(proxy, {
             indent: 2,
             lineWidth: -1,
             flowLevel: -1, 
+            quotingType: "'",
             noCompatMode: true
         });
 
-        // Step 2: NEW! Force quoting for keys to prevent Base64 parsing errors in clients.
-        // This regex finds 'private-key' or 'public-key' at the start of a line,
-        // captures their value, and replaces the line with a properly single-quoted version.
-        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*(.+)$/gm, (match, key, value) => {
-            return `${key}: '${value.trim()}'`;
-        });
-
-        // Step 3: Manually format the dumped string to fit into the proxy list.
+        // Step 2: Manually format the dumped string to fit into the proxy list.
         const block = yamlFrag.split('\n')
             .filter(line => line.trim() !== '')
             .map((line, index) => {
@@ -306,7 +303,7 @@ function processTemplateText(templateText, mihomoProxies) {
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     
-    // Step 4: Replace placeholders in the template.
+    // Step 3: Replace placeholders in the template.
     return templateText
         .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
