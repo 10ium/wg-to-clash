@@ -4,31 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مبدل پیشرفته کانفیگ WireGuard</title>
-    <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vazirmatn Font -->
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- js-yaml for YAML conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
-        :root {
-            --bg-light: #f1f5f9;
-            --bg-dark: #0f172a;
-            --card-bg-light: #ffffff;
-            --card-bg-dark: #1e293b;
-            --text-primary-light: #0f172a;
-            --text-primary-dark: #e2e8f0;
-            /* FIX: Brighter secondary text for dark mode */
-            --text-secondary-light: #475569; /* slate-600 */
-            --text-secondary-dark: #cbd5e1;   /* slate-300 - Was slate-400 */
-            --border-light: #e2e8f0;
-            --border-dark: #334155;
-            --accent-color: #4f46e5;
-            --input-bg-light: #f8fafc;
-            --input-bg-dark: #334155;
-        }
+        :root { --bg-light: #f1f5f9; --bg-dark: #0f172a; --card-bg-light: #ffffff; --card-bg-dark: #1e293b; --text-primary-light: #0f172a; --text-primary-dark: #e2e8f0; --text-secondary-light: #475569; --text-secondary-dark: #cbd5e1; --border-light: #e2e8f0; --border-dark: #334155; --accent-color: #4f46e5; --input-bg-light: #f8fafc; --input-bg-dark: #334155; }
         html.dark { color-scheme: dark; }
         body { font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-light); color: var(--text-primary-light); transition: background-color 0.3s, color 0.3s; }
         html.dark body { background-color: var(--bg-dark); color: var(--text-primary-dark); }
@@ -103,39 +84,45 @@
             <div class="card p-6 rounded-xl shadow-sm">
                  <h2 class="text-xl font-semibold mb-6 border-r-4 border-indigo-500 pr-4">۳. تنظیمات خروجی</h2>
                  <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
-                    <!-- Amnezia Profiles -->
                     <div>
-                        <label class="form-label block text-sm font-medium mb-3">پروفایل‌های AmneziaWG (انتخاب چندتایی)</label>
-                        <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm"></div>
-                        <div id="customProfileInputs" class="hidden mt-4 space-y-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                             <div class="grid grid-cols-3 gap-2">
-                                <div><label for="jcInput" class="form-label block text-xs mb-1">jc</label><input type="number" id="jcInput" value="4" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                                <div><label for="jminInput" class="form-label block text-xs mb-1">jmin</label><input type="number" id="jminInput" value="40" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                                <div><label for="jmaxInput" class="form-label block text-xs mb-1">jmax</label><input type="number" id="jmaxInput" value="250" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                             </div>
-                        </div>
+                         <label for="amneziaOptionSelect" class="form-label block text-sm font-medium mb-2">تنظیمات AmneziaWG</label>
+                         <select id="amneziaOptionSelect" class="form-select w-full rounded-md text-sm">
+                            <option value="use-ui-values" selected>استفاده از پروفایل‌های انتخابی UI</option>
+                            <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
+                            <option value="no-amnezia">غیرفعال کردن Amnezia</option>
+                        </select>
                     </div>
-                    <!-- Rule & Naming -->
-                    <div class="space-y-6">
-                        <div>
-                            <label for="templateSelect" class="form-label block text-sm font-medium mb-2">تمپلت قوانین</label>
-                            <select id="templateSelect" class="form-select w-full rounded-md text-sm">
-                                <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
-                                <option value="iran-template" data-name="Iran">قوانین ایران</option>
-                                <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
-                            </select>
+                     <!-- NEW: Wrapper for intelligent disabling -->
+                    <div id="amneziaProfilesWrapper" class="transition-opacity duration-300 md:col-span-2 grid md:grid-cols-2 gap-x-8 gap-y-6">
+                        <!-- Amnezia Profiles -->
+                        <div class="md:row-span-2">
+                             <!-- FIX: Brighter label in dark mode -->
+                            <label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200">
+                                پروفایل‌های AmneziaWG (انتخاب چندتایی)
+                            </label>
+                            <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm"></div>
+                            <div id="customProfileInputs" class="hidden mt-4 space-y-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div><label for="jcInput" class="form-label block text-xs mb-1">jc</label><input type="number" id="jcInput" value="4" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                    <div><label for="jminInput" class="form-label block text-xs mb-1">jmin</label><input type="number" id="jminInput" value="40" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                    <div><label for="jmaxInput" class="form-label block text-xs mb-1">jmax</label><input type="number" id="jmaxInput" value="250" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                             <label for="amneziaOptionSelect" class="form-label block text-sm font-medium mb-2">مقادیر Amnezia از پیش‌تعیین‌شده</label>
-                             <select id="amneziaOptionSelect" class="form-select w-full rounded-md text-sm">
-                                <option value="use-ui-values" selected>استفاده از پروفایل‌های انتخابی UI</option>
-                                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
-                                <option value="no-amnezia">غیرفعال کردن Amnezia</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label for="outputFileName" class="form-label block text-sm font-medium mb-2">نام فایل خروجی</label>
-                            <input type="text" id="outputFileName" class="form-input w-full rounded-md text-sm">
+                        <!-- Rule & Naming -->
+                        <div class="space-y-6">
+                            <div>
+                                <label for="templateSelect" class="form-label block text-sm font-medium mb-2">تمپلت قوانین</label>
+                                <select id="templateSelect" class="form-select w-full rounded-md text-sm">
+                                    <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
+                                    <option value="iran-template" data-name="Iran">قوانین ایران</option>
+                                    <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="outputFileName" class="form-label block text-sm font-medium mb-2">نام فایل خروجی</label>
+                                <input type="text" id="outputFileName" class="form-input w-full rounded-md text-sm">
+                            </div>
                         </div>
                     </div>
                  </div>
