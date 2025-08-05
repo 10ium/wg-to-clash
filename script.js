@@ -156,7 +156,7 @@ function validateAndComplete(config, source) {
     } else {
         config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`;
     }
-    const addresses = Array.isArray(config.address) ? config.address : config.address.split(',');
+    const addresses = Array.isArray(config.address) ? config.address : config.address.split(',').map(addr => addr.trim());
     config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || '';
     config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || '';
     return config;
