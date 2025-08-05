@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v2.4 - Feature Restoration & UX Improvements
+// script.js - v2.5 - Smart UI Disabling & UX Fixes
 // ===================================================================
 
 // ===== CONFIGURATION & CONSTANTS =====
@@ -41,6 +41,7 @@ const selectAllBtn = document.getElementById('selectAllBtn');
 const deselectAllBtn = document.getElementById('deselectAllBtn');
 const clearListBtn = document.getElementById('clearListBtn');
 const configCounter = document.getElementById('configCounter');
+const amneziaProfilesWrapper = document.getElementById('amneziaProfilesWrapper');
 const amneziaProfilesContainer = document.getElementById('amneziaProfilesContainer');
 const customProfileInputs = document.getElementById('customProfileInputs');
 const jcInput = document.getElementById('jcInput');
@@ -61,6 +62,17 @@ function applyTheme(theme) {
     localStorage.setItem('theme', theme);
 }
 
+// --- Smart UI Disabling ---
+function setAmneziaProfilesEnabled(enabled) {
+    amneziaProfilesWrapper.classList.toggle('opacity-50', !enabled);
+    amneziaProfilesWrapper.classList.toggle('pointer-events-none', !enabled);
+
+    const inputs = amneziaProfilesWrapper.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.disabled = !enabled;
+    });
+}
+
 // --- Dynamic Content & UI Initialization ---
 function createCheckbox(item, groupName) {
     const wrapper = document.createElement('div');
@@ -72,14 +84,15 @@ function createCheckbox(item, groupName) {
     checkbox.value = item.id;
     checkbox.checked = item.checked;
     checkbox.className = 'form-checkbox';
-    if(item.isCustom) {
-        checkbox.addEventListener('change', (e) => {
+    
+    const changeHandler = (e) => {
+        if(item.isCustom) {
             customProfileInputs.classList.toggle('hidden', !e.target.checked);
-            updateOutputFilename();
-        });
-    } else {
-        checkbox.addEventListener('change', updateOutputFilename);
-    }
+        }
+        updateOutputFilename();
+    };
+    checkbox.addEventListener('change', changeHandler);
+    
     const label = document.createElement('label');
     label.htmlFor = `${groupName}-${item.id}`;
     label.textContent = item.name;
@@ -98,24 +111,38 @@ function initializeUI() {
         amneziaProfilesContainer.appendChild(createCheckbox(profile, 'amneziaProfile'));
     });
     
+    amneziaOptionSelect.addEventListener('change', (e) => {
+        const isUiMode = e.target.value === 'use-ui-values';
+        setAmneziaProfilesEnabled(isUiMode);
+        updateOutputFilename();
+    });
+    
     templateSelect.addEventListener('change', updateOutputFilename);
+
+    // Set initial state
+    setAmneziaProfilesEnabled(amneziaOptionSelect.value === 'use-ui-values');
     updateOutputFilename();
 }
 
 // --- Smart Filename Generation ---
 function updateOutputFilename() {
     let baseName = 'Mihomo_WG';
+    const amneziaMode = amneziaOptionSelect.value;
     
-    const selectedProfileElements = Array.from(document.querySelectorAll('[name="amneziaProfile"]:checked'));
-    const selectedProfileNames = selectedProfileElements.map(cb => {
-        const profile = AMNEZIA_PROFILES.find(p => p.id === cb.value);
-        return profile.isCustom ? 'Custom' : profile.name;
-    });
+    if (amneziaMode === 'use-ui-values') {
+        const selectedProfileElements = Array.from(document.querySelectorAll('[name="amneziaProfile"]:checked'));
+        const selectedProfileNames = selectedProfileElements.map(cb => {
+            const profile = AMNEZIA_PROFILES.find(p => p.id === cb.value);
+            return profile.isCustom ? 'Custom' : profile.name;
+        });
 
-    if (selectedProfileNames.length === 1) {
-        baseName += `_[${selectedProfileNames[0]}]`;
-    } else if (selectedProfileNames.length > 1) {
-        baseName += `_[Multi]`;
+        if (selectedProfileNames.length === 1) {
+            baseName += `_[${selectedProfileNames[0]}]`;
+        } else if (selectedProfileNames.length > 1) {
+            baseName += `_[Multi-Profile]`;
+        }
+    } else if (amneziaMode === 'use-config-values') {
+        baseName += `_[Config-Values]`;
     }
 
     const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex];
@@ -125,101 +152,14 @@ function updateOutputFilename() {
     outputFileNameInput.value = baseName;
 }
 
-// --- File Input Handling ---
-wgConfigFile.addEventListener('change', (event) => {
-    uploadedFilesContent = [];
-    const files = event.target.files;
-    fileListDiv.innerHTML = '';
-    if (files.length > 0) {
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                uploadedFilesContent.push(e.target.result);
-                const fileChip = document.createElement('div');
-                fileChip.className = 'inline-block bg-slate-200 dark:bg-slate-700 rounded-full px-3 py-1 text-xs font-medium';
-                fileChip.textContent = file.name;
-                fileListDiv.appendChild(fileChip);
-            };
-            reader.readAsText(file);
-        });
-    }
-});
+// --- File Input Handling & UI Messaging (Unchanged) ---
+wgConfigFile.addEventListener('change', (event) => { uploadedFilesContent = []; const files = event.target.files; fileListDiv.innerHTML = ''; if (files.length > 0) { Array.from(files).forEach(file => { const reader = new FileReader(); reader.onload = (e) => { uploadedFilesContent.push(e.target.result); const fileChip = document.createElement('div'); fileChip.className = 'inline-block bg-slate-200 dark:bg-slate-700 rounded-full px-3 py-1 text-xs font-medium'; fileChip.textContent = file.name; fileListDiv.appendChild(fileChip); }; reader.readAsText(file); }); } });
+function showMessage(msg, type, duration = 4000) { const bgColor = type === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50'; const textColor = type === 'success' ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-800 dark:text-red-300'; const container = document.createElement('div'); container.className = `fixed bottom-5 right-5 z-50 p-4 rounded-lg shadow-md ${bgColor} ${textColor}`; container.textContent = msg; document.body.appendChild(container); setTimeout(() => container.remove(), duration); }
+function displayErrorDetails(errors) { errorList.innerHTML = ''; if (errors.length === 0) { errorDetailsContainer.classList.add('hidden'); return; } errors.forEach(err => { const li = document.createElement('li'); li.textContent = err.reason; const sourceNode = document.createElement('code'); sourceNode.textContent = ` (منبع: ${err.source.substring(0, 70)}...)`; sourceNode.className = "text-yellow-600 dark:text-yellow-400 opacity-80 ml-2 text-xs"; li.appendChild(sourceNode); errorList.appendChild(li); }); errorDetailsContainer.classList.remove('hidden'); }
+function renderStagedConfigs() { stagedConfigsList.innerHTML = ''; if (stagedConfigs.length === 0) { stagedConfigsContainer.classList.add('hidden'); return; } configCounter.textContent = `${stagedConfigs.length} کانفیگ`; stagedConfigsContainer.classList.remove('hidden'); stagedConfigs.forEach((config, index) => { const wrapper = document.createElement('div'); wrapper.className = 'flex items-center p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors'; const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = `config-checkbox-${index}`; checkbox.value = index; checkbox.checked = true; checkbox.className = 'form-checkbox ml-3'; const label = document.createElement('label'); label.htmlFor = `config-checkbox-${index}`; label.textContent = config.name; label.className = "cursor-pointer flex-grow text-sm"; wrapper.appendChild(label); wrapper.appendChild(checkbox); stagedConfigsList.appendChild(wrapper); }); }
 
-// --- UI Messaging ---
-function showMessage(msg, type, duration = 4000) {
-    const bgColor = type === 'success' ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-red-100 dark:bg-red-900/50';
-    const textColor = type === 'success' ? 'text-emerald-800 dark:text-emerald-300' : 'text-red-800 dark:text-red-300';
-    const container = document.createElement('div');
-    container.className = `fixed bottom-5 right-5 z-50 p-4 rounded-lg shadow-md ${bgColor} ${textColor}`;
-    container.textContent = msg;
-    document.body.appendChild(container);
-    setTimeout(() => container.remove(), duration);
-}
-
-function displayErrorDetails(errors) {
-    errorList.innerHTML = '';
-    if (errors.length === 0) {
-        errorDetailsContainer.classList.add('hidden');
-        return;
-    }
-    errors.forEach(err => {
-        const li = document.createElement('li');
-        li.textContent = err.reason;
-        const sourceNode = document.createElement('code');
-        sourceNode.textContent = ` (منبع: ${err.source.substring(0, 70)}...)`;
-        sourceNode.className = "text-yellow-600 dark:text-yellow-400 opacity-80 ml-2 text-xs";
-        li.appendChild(sourceNode);
-        errorList.appendChild(li);
-    });
-    errorDetailsContainer.classList.remove('hidden');
-}
-
-// --- Staged Configs UI Rendering ---
-function renderStagedConfigs() {
-    stagedConfigsList.innerHTML = '';
-    if (stagedConfigs.length === 0) {
-        stagedConfigsContainer.classList.add('hidden');
-        return;
-    }
-    configCounter.textContent = `${stagedConfigs.length} کانفیگ`;
-    stagedConfigsContainer.classList.remove('hidden');
-
-    stagedConfigs.forEach((config, index) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'flex items-center p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors';
-        const checkbox = document.createElement('input');
-        checkbox.type = 'checkbox';
-        checkbox.id = `config-checkbox-${index}`;
-        checkbox.value = index;
-        checkbox.checked = true;
-        checkbox.className = 'form-checkbox ml-3';
-
-        const label = document.createElement('label');
-        label.htmlFor = `config-checkbox-${index}`;
-        label.textContent = config.name;
-        label.className = "cursor-pointer flex-grow text-sm";
-        
-        wrapper.appendChild(label);
-        wrapper.appendChild(checkbox);
-        stagedConfigsList.appendChild(wrapper);
-    });
-}
-
-// --- Subscription Link Fetcher ---
-async function fetchSubscriptionContents(urls) {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const promises = urls.map(url =>
-        fetch(`${proxyUrl}${encodeURIComponent(url)}`)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.text();
-            })
-            .catch(error => ({ error: true, reason: `دانلود لینک اشتراک ناموفق بود (${error.message})`, source: url }))
-    );
-    return Promise.all(promises);
-}
-
-// --- Parsers and Validator (Unchanged) ---
+// --- Core Logic: Fetch, Parse, Convert, Download (Unchanged) ---
+async function fetchSubscriptionContents(urls) { const proxyUrl = 'https://api.allorigins.win/raw?url='; const promises = urls.map(url => fetch(`${proxyUrl}${encodeURIComponent(url)}`).then(response => { if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); return response.text(); }).catch(error => ({ error: true, reason: `دانلود لینک اشتراک ناموفق بود (${error.message})`, source: url }))); return Promise.all(promises); }
 function validateAndComplete(config, source) {const essentials = ['privateKey', 'publicKey', 'server', 'port']; for (const key of essentials) { if (!config[key] || (typeof config[key] === 'string' && config[key].trim() === '')) { return { error: true, reason: `مقدار ضروری "${key}" یافت نشد.`, source: source }; } } config.address = config.address || '172.16.0.2/32'; config.mtu = config.mtu || 1420; config.allowedIps = config.allowedIps || ['0.0.0.0/0', '::/0']; if (config.name) { let countryCode = '', identifier = ''; const nameMatch = config.name.match(/^([A-Z]{2})[#\s-](.*)$/i); if (nameMatch) { countryCode = nameMatch[1].toUpperCase(); identifier = nameMatch[2].trim(); } else { identifier = config.name; } const emoji = countryEmojiMap[countryCode] || '🏳️'; config.name = `${emoji} ${identifier}`.trim().replace(/\s+/g, ' '); } else { config.name = `WG-${config.server.replace(/[.:\[\]]/g, '-')}`; } const addresses = Array.isArray(config.address) ? config.address : config.address.split(',').map(addr => addr.trim()); config.ip = addresses.find(addr => addr.includes('.'))?.split('/')[0] || ''; config.ipv6 = addresses.find(addr => addr.includes(':'))?.split('/')[0] || ''; return config; }
 function parseFromMihomo(configObject) { const proxies = configObject.proxies || []; return proxies.filter(p => p.type && p.type.toLowerCase() === 'wireguard').map(p => { const mappedConfig = { name: p.name || null, privateKey: p['private-key'] || null, publicKey: p['public-key'] || null, server: p.server || null, port: p.port || null, address: p.ip, ipv6: p.ipv6, mtu: p.mtu, allowedIps: p['allowed-ips'], dns: p.dns, amneziaOptionsFromConfig: p['amnezia-wg-option'] || null }; return validateAndComplete(mappedConfig, JSON.stringify(p)); }); }
 function parseFromSingBox(configObject) { const outbounds = configObject.outbounds || []; return outbounds.filter(o => o.type && o.type.toLowerCase() === 'wireguard').map(o => { const mappedConfig = { name: o.tag || null, privateKey: o.private_key || null, publicKey: o.peer_public_key || null, server: o.server || null, port: o.server_port || null, address: o.local_address, mtu: o.mtu, amneziaOptionsFromConfig: o.amnezia || null }; return validateAndComplete(mappedConfig, JSON.stringify(o)); }); }
@@ -229,8 +169,8 @@ function convertWgToMihomo(wgConfig, amneziaSettings) { const mihomoProxy = { na
 function processTemplateText(templateText, mihomoProxies) { const proxyBlocks = [], proxyNames = []; mihomoProxies.forEach(proxy => { let yamlFrag = jsyaml.dump(proxy, { indent: 2, lineWidth: -1, flowLevel: 3, noCompatMode: true }).trim(); yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*([A-Za-z0-9+/=]+)$/gm, (match, key, value) => { if (!value.endsWith('=')) { const paddingNeeded = (4 - (value.length % 4)) % 4; if (paddingNeeded < 3) value += '='.repeat(paddingNeeded); } return `${key}: '${value}'`; }); if (proxy.dns && proxy.dns.length > 0) { const dnsBlock = proxy.dns.map(d => `      - ${d}`).join('\n'); yamlFrag = yamlFrag.replace(/dns:\s*\[.*\]/, `dns:\n${dnsBlock}`); } if (proxy.allowedIps && proxy.allowedIps.length > 0) { const allowedIpsBlock = proxy.allowedIps.map(ip => `      - '${ip}'`).join('\n'); yamlFrag = yamlFrag.replace(/allowed-ips:\s*\[.*\]/, `allowed-ips:\n${allowedIpsBlock}`); } const block = yamlFrag.split('\n').map((l, i) => (i === 0 ? `  - ${l}` : `    ${l}`)).join('\n'); proxyBlocks.push(block); proxyNames.push(`"${proxy.name}"`); }); const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n'); return templateText.replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n')).replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml); }
 function downloadFile(filename, content) { const blob = new Blob([content], { type: 'application/x-yaml;charset=utf-8;' }); const link = document.createElement('a'); const url = URL.createObjectURL(blob); link.href = url; link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); }
 
-// --- "Process and Add" Handler ---
-processInputBtn.addEventListener('click', async function handleProcessInput() { /* ... Unchanged ... */ displayErrorDetails([]); let allRawText=[wgConfigInput.value,...uploadedFilesContent].join('\n').trim(); const lines=allRawText.split('\n').map(l=>l.trim()); const urls=lines.filter(l=>l.startsWith('http')); const nonUrlContent=lines.filter(l=>!l.startsWith('http')).join('\n'); let errorDetails=[]; if(urls.length>0){showMessage(`در حال دانلود محتوای ${urls.length} لینک...`,'success'); const fetchedResults=await fetchSubscriptionContents(urls); let subscriptionContent=''; fetchedResults.forEach(result=>{if(result.error)errorDetails.push(result); else subscriptionContent+=result+'\n\n';}); allRawText=[nonUrlContent,subscriptionContent].join('\n\n').trim();} if(!allRawText){showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.','error'); displayErrorDetails(errorDetails); return;} const parsedResults=parseAllInputs(allRawText); const successfulConfigs=parsedResults.filter(p=>!p.error); const failedConfigs=parsedResults.filter(p=>p.error); errorDetails.push(...failedConfigs); if(successfulConfigs.length>0){stagedConfigs.push(...successfulConfigs); renderStagedConfigs();} showMessage(`انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا)`,'success'); displayErrorDetails(errorDetails); wgConfigInput.value=''; wgConfigFile.value=''; uploadedFilesContent=[]; fileListDiv.innerHTML=''; });
+// --- "Process and Add" Handler (Unchanged) ---
+processInputBtn.addEventListener('click', async function handleProcessInput() { displayErrorDetails([]); let allRawText=[wgConfigInput.value,...uploadedFilesContent].join('\n').trim(); const lines=allRawText.split('\n').map(l=>l.trim()); const urls=lines.filter(l=>l.startsWith('http')); const nonUrlContent=lines.filter(l=>!l.startsWith('http')).join('\n'); let errorDetails=[]; if(urls.length>0){showMessage(`در حال دانلود محتوای ${urls.length} لینک...`,'success'); const fetchedResults=await fetchSubscriptionContents(urls); let subscriptionContent=''; fetchedResults.forEach(result=>{if(result.error)errorDetails.push(result); else subscriptionContent+=result+'\n\n';}); allRawText=[nonUrlContent,subscriptionContent].join('\n\n').trim();} if(!allRawText){showMessage('هیچ ورودی جدیدی برای پردازش یافت نشد.','error'); displayErrorDetails(errorDetails); return;} const parsedResults=parseAllInputs(allRawText); const successfulConfigs=parsedResults.filter(p=>!p.error); const failedConfigs=parsedResults.filter(p=>p.error); errorDetails.push(...failedConfigs); if(successfulConfigs.length>0){stagedConfigs.push(...successfulConfigs); renderStagedConfigs();} showMessage(`انجام شد! (${successfulConfigs.length} کانفیگ اضافه شد، ${errorDetails.length} خطا)`,'success'); displayErrorDetails(errorDetails); wgConfigInput.value=''; wgConfigFile.value=''; uploadedFilesContent=[]; fileListDiv.innerHTML=''; });
 
 // --- "Generate and Download" Handler (Updated Logic) ---
 generateBtn.addEventListener('click', async function handleGenerateAndDownload() {
@@ -244,27 +184,26 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
         return showMessage('هیچ کانفیگی برای تولید خروجی انتخاب نشده است!', 'error');
     }
 
-    const selectedAmneziaProfileElements = Array.from(document.querySelectorAll('[name="amneziaProfile"]:checked'));
-    const selectedAmneziaProfileIds = selectedAmneziaProfileElements.map(cb => cb.value);
-    let selectedAmneziaProfiles = AMNEZIA_PROFILES.filter(p => selectedAmneziaProfileIds.includes(p.id));
-
-    if (selectedAmneziaProfileIds.includes('custom')) {
-        const customProfile = {
-            id: 'custom', name: 'Custom', isCustom: true,
-            jc: parseInt(jcInput.value, 10),
-            jmin: parseInt(jminInput.value, 10),
-            jmax: parseInt(jmaxInput.value, 10)
-        };
-        // Replace the placeholder custom profile with the one with actual values
-        selectedAmneziaProfiles = selectedAmneziaProfiles.map(p => p.id === 'custom' ? customProfile : p);
-    }
-    
     const templateId = templateSelect.value;
     const amneziaMode = amneziaOptionSelect.value;
     const outputFileName = outputFileNameInput.value.trim() + '.yaml';
 
     if (!outputFileName || outputFileName === '.yaml') {
         return showMessage('نام فایل خروجی نمی‌تواند خالی باشد!', 'error');
+    }
+    
+    let selectedAmneziaProfiles = [];
+    if(amneziaMode === 'use-ui-values') {
+        const selectedAmneziaProfileIds = Array.from(document.querySelectorAll('[name="amneziaProfile"]:checked')).map(cb => cb.value);
+        selectedAmneziaProfiles = AMNEZIA_PROFILES.filter(p => selectedAmneziaProfileIds.includes(p.id));
+
+        if (selectedAmneziaProfileIds.includes('custom')) {
+            const customProfile = {
+                id: 'custom', name: 'Custom', isCustom: true,
+                jc: parseInt(jcInput.value, 10), jmin: parseInt(jminInput.value, 10), jmax: parseInt(jmaxInput.value, 10)
+            };
+            selectedAmneziaProfiles = selectedAmneziaProfiles.map(p => p.id === 'custom' ? customProfile : p);
+        }
     }
 
     try {
@@ -314,8 +253,7 @@ generateBtn.addEventListener('click', async function handleGenerateAndDownload()
     }
 });
 
-
-// --- Bulk Action & Startup Event Listeners ---
+// --- Event Listeners ---
 themeToggle.addEventListener('click', () => {
     const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
     applyTheme(currentTheme === 'dark' ? 'light' : 'dark');
