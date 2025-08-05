@@ -12,17 +12,19 @@
         :root {
             /* Light Mode Colors */
             --bg-light: #e2e8f0; /* slate-200 */
-            --card-overlay-light: rgba(248, 250, 252, 0.75); /* slate-50 with ~25% transparency */
-            --text-primary-light: #1e293b; /* slate-800 */
-            --text-secondary-light: #475569; /* slate-600 */
+            --card-overlay-light: rgba(248, 250, 252, 0.75);
+            --text-primary-light: #000000; /* Pure Black for max contrast */
+            --text-secondary-light: #3a3a3a; /* Dark Gray */
+            --text-bg-light: rgba(255, 255, 255, 0.7); /* White bg for text shadow */
             --border-light: #cbd5e1; /* slate-300 */
             --input-bg-light: #ffffff;
             
             /* Dark Mode Colors */
             --bg-dark: #0f172a;  /* slate-900 */
-            --card-overlay-dark: rgba(15, 23, 42, 0.66); /* slate-900 with ~34% transparency */
-            --text-primary-dark: #f8fafc;  /* slate-50 */
-            --text-secondary-dark: #cbd5e1; /* slate-300 */
+            --card-overlay-dark: rgba(15, 23, 42, 0.66);
+            --text-primary-dark: #ffffff; /* Pure White for max contrast */
+            --text-secondary-dark: #e0e0e0; /* Light Gray */
+            --text-bg-dark: rgba(0, 0, 0, 0.6); /* Black bg for text shadow */
             --border-dark: #334155; /* slate-700 */
             --input-bg-dark: #334155; /* slate-700 */
 
@@ -31,19 +33,21 @@
         }
         html.dark { color-scheme: dark; }
         
-        /* FIX: Simple background for body */
         body {
             font-family: 'Vazirmatn', sans-serif;
             background-color: var(--bg-light);
             color: var(--text-primary-light);
-            transition: background-color 0.3s, color 0.3s;
+            transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
+            /* Simulates the "white box" with a subtle glow */
+            text-shadow: 0 1px 2px var(--text-bg-light);
         }
         html.dark body {
             background-color: var(--bg-dark);
             color: var(--text-primary-dark);
+            /* Simulates the "black box" with a subtle shadow */
+            text-shadow: 0 1px 3px var(--text-bg-dark);
         }
 
-        /* FIX: Background image and overlay applied to cards */
         .card {
             border: 1px solid var(--border-light);
             background-image:
@@ -61,12 +65,15 @@
                 url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');
         }
 
+        /* Utility to disable text-shadow for specific elements like gradient text */
+        .no-text-shadow { text-shadow: none !important; }
+
         .form-label { color: var(--text-secondary-light); }
         html.dark .form-label { color: var(--text-secondary-dark); }
         .form-input, .form-select { background-color: var(--input-bg-light); border: 1px solid var(--border-light); color: var(--text-primary-light); transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; }
         html.dark .form-input, html.dark .form-select { background-color: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-primary-dark); }
         .form-input::placeholder { color: var(--text-secondary-light); opacity: 0.7; }
-        html.dark .form-input::placeholder { color: var(--text-secondary-dark); opacity: 0.5; }
+        html.dark .form-input::placeholder { color: var(--text-secondary-dark); opacity: 0.6; }
         .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); }
         .form-input:disabled { background-color: #e2e8f0; cursor: not-allowed; }
         html.dark .form-input:disabled { background-color: #334155; opacity: 0.6; cursor: not-allowed; }
@@ -82,10 +89,10 @@
 <body class="py-10 px-4">
     <div class="max-w-4xl mx-auto">
         <header class="flex justify-between items-center mb-8 px-2">
-            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">مبدل پیشرفته WireGuard</h1>
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500 no-text-shadow">مبدل پیشرفته WireGuard</h1>
             <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
-                <svg id="theme-icon-dark" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
-                <svg id="theme-icon-light" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.909-2.636l1.591-1.591M5.25 12H3m4.227-4.227l-1.591-1.591M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg>
+                <svg id="theme-icon-dark" class="h-6 w-6 hidden no-text-shadow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+                <svg id="theme-icon-light" class="h-6 w-6 hidden no-text-shadow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.909-2.636l1.591-1.591M5.25 12H3m4.227-4.227l-1.591-1.591M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg>
             </button>
         </header>
 
@@ -100,14 +107,14 @@
                     <div>
                         <label for="wgConfigFile" class="form-label block text-sm font-medium mb-2">یا آپلود فایل</label>
                         <label for="wgConfigFile" class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-md cursor-pointer hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
-                            <svg class="w-10 h-10 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <svg class="w-10 h-10 mb-3 text-slate-400 no-text-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             <span class="text-sm text-slate-500 dark:text-slate-400">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
                             <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json" class="hidden">
                         </label>
                         <div id="fileList" class="text-xs text-slate-500 dark:text-slate-400 mt-2 space-y-1"></div>
                     </div>
                 </div>
-                <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">پردازش و افزودن به لیست</button>
+                <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900 no-text-shadow">پردازش و افزودن به لیست</button>
             </div>
 
             <div id="stagedConfigsContainer" class="card p-6 rounded-xl shadow-lg hidden">
@@ -161,7 +168,7 @@
                         </div>
                     </div>
                  </div>
-                 <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base">تولید و دانلود فایل</button>
+                 <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base no-text-shadow">تولید و دانلود فایل</button>
             </div>
             
             <div id="errorDetailsContainer" class="hidden card p-4 border-red-400/50 bg-red-50 dark:bg-red-900/50">
