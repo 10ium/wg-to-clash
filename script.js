@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v10: Pixel-perfect manual YAML generation. Final fix.
+// script.js - v11: Final version based on official documentation.
 // ===================================================================
 
 // --- Data Sources ---
@@ -268,51 +268,50 @@ function parseFromText(textContent) { return textContent.split(/(?=\[Interface\]
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,"remote-dns-resolve":true};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
 
-// --- YAML Processing & Download (MANUAL & PIXEL-PERFECT) ---
+// --- YAML Processing & Download (Based on Official Spec) ---
 /**
  * Manually builds a YAML string for a single proxy object to exactly match
- * the format required by sensitive clients like Clash Verge.
+ * the official "Simplified" WireGuard format for Clash.
  * @param {object} proxy - The Mihomo proxy object.
  * @returns {string} A formatted YAML string for one proxy.
  */
 function buildProxyYamlString(proxy) {
     const lines = [];
-    // Do NOT quote the name unless it contains special characters that require it.
-    // For simplicity and to match the working example, we'll leave it unquoted.
-    lines.push(`  - name: ${proxy.name}`);
+    lines.push(`  - name: ${JSON.stringify(proxy.name)}`); // "name" should be quoted.
     lines.push(`    type: ${proxy.type}`);
     lines.push(`    server: ${proxy.server}`);
     lines.push(`    port: ${proxy.port}`);
+    // Per documentation, keys are NOT quoted.
+    lines.push(`    private-key: ${proxy['private-key']}`);
+    lines.push(`    public-key: ${proxy['public-key']}`);
     lines.push(`    ip: ${proxy.ip}`);
+
     if (proxy.ipv6) {
         lines.push(`    ipv6: ${proxy.ipv6}`);
     }
-    // CRITICAL: Explicitly single-quote keys to preserve Base64 content.
-    lines.push(`    private-key: '${proxy['private-key']}'`);
-    lines.push(`    public-key: '${proxy['public-key']}'`);
 
+    // Per documentation, arrays are inline.
     if (proxy['allowed-ips'] && proxy['allowed-ips'].length > 0) {
-        lines.push(`    allowed-ips:`);
-        proxy['allowed-ips'].forEach(ip => {
-            // Replicate the working format: only quote if it's needed (e.g., for IPv6).
-            if (ip.includes(':')) {
-                lines.push(`      - '${ip}'`);
-            } else {
-                lines.push(`      - ${ip}`);
-            }
-        });
-    }
-    lines.push(`    udp: ${proxy.udp}`);
-    lines.push(`    mtu: ${proxy.mtu}`);
-    lines.push(`    remote-dns-resolve: ${proxy['remote-dns-resolve']}`);
-    
-    if (proxy.dns && proxy.dns.length > 0) {
-        lines.push(`    dns:`);
-        proxy.dns.forEach(d => {
-            lines.push(`      - ${d}`);
-        });
+        const ips = proxy['allowed-ips'].map(ip => `'${ip}'`).join(', ');
+        lines.push(`    allowed-ips: [${ips}]`);
     }
 
+    lines.push(`    udp: ${proxy.udp}`);
+    if (proxy.mtu) {
+       lines.push(`    mtu: ${proxy.mtu}`);
+    }
+    
+    // remote-dns-resolve is not in the simplified spec, but we keep it for functionality.
+    if (proxy['remote-dns-resolve']) {
+        lines.push(`    remote-dns-resolve: ${proxy['remote-dns-resolve']}`);
+    }
+
+    if (proxy.dns && proxy.dns.length > 0) {
+        const dnsServers = proxy.dns.join(', ');
+        lines.push(`    dns: [${dnsServers}]`);
+    }
+
+    // Amnezia is a custom field, so we format it as a block for readability.
     if (proxy['amnezia-wg-option']) {
         const amnezia = proxy['amnezia-wg-option'];
         lines.push(`    amnezia-wg-option:`);
@@ -333,7 +332,6 @@ function buildProxyYamlString(proxy) {
 function processTemplateText(templateText, mihomoProxies) {
     const proxyBlocks = mihomoProxies.map(buildProxyYamlString);
     // When adding to the proxy-group, the name MUST be quoted if it contains special characters.
-    // So here we use JSON.stringify to safely quote it.
     const proxyNames = mihomoProxies.map(p => JSON.stringify(p.name));
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
