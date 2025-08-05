@@ -12,7 +12,7 @@
         :root {
             /* Light Mode Colors */
             --bg-light: #e2e8f0; /* slate-200 */
-            --card-overlay-light: rgba(248, 250, 252, 0.92); /* slate-50 with opacity */
+            --card-overlay-light: rgba(248, 250, 252, 0.75); /* slate-50 with ~25% transparency */
             --text-primary-light: #1e293b; /* slate-800 */
             --text-secondary-light: #475569; /* slate-600 */
             --border-light: #cbd5e1; /* slate-300 */
@@ -20,7 +20,7 @@
             
             /* Dark Mode Colors */
             --bg-dark: #0f172a;  /* slate-900 */
-            --card-overlay-dark: rgba(15, 23, 42, 0.94); /* slate-900 with opacity */
+            --card-overlay-dark: rgba(15, 23, 42, 0.66); /* slate-900 with ~34% transparency */
             --text-primary-dark: #f8fafc;  /* slate-50 */
             --text-secondary-dark: #cbd5e1; /* slate-300 */
             --border-dark: #334155; /* slate-700 */
@@ -169,6 +169,24 @@
                 <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-red-700 dark:text-red-400"></ul>
             </div>
         </main>
+
+        <footer class="mt-12 pt-8 border-t border-slate-300 dark:border-slate-700">
+            <div class="flex items-center justify-center gap-x-5 sm:gap-x-8">
+                <a href="https://t.me/vpnclashfa" target="_blank" rel="noopener noreferrer" class="block rounded-full transition-transform duration-200 hover:scale-110" title="Telegram">
+                    <img src="https://cdn.dribbble.com/users/4507400/screenshots/15420681/media/c00f77bc443cbc4ac96d138f9ac854c5.gif" alt="Telegram" class="w-16 h-16 rounded-full object-cover">
+                </a>
+                <a href="https://twitter.com/coldwater_10" target="_blank" rel="noopener noreferrer" class="block rounded-full transition-transform duration-200 hover:scale-110" title="Twitter">
+                    <img src="https://cdn.dribbble.com/users/2652449/screenshots/14764078/media/2b620382444946ce84aac0a132c40063.gif" alt="Twitter" class="w-16 h-16 rounded-full object-cover">
+                </a>
+                <a href="https://www.tvtime.com/en/user/43351079/profile" target="_blank" rel="noopener noreferrer" class="block rounded-xl transition-transform duration-200 hover:scale-110" title="TvTime">
+                    <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExOTFhMDk5NzJlYzdmZTJjMDM2Y2MzMjBkOTVkODAxM2FjMTdjZGMwNSZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/lj1ghwUoflkw2F3o0T/giphy.gif" alt="TvTime" class="w-16 h-16 rounded-xl object-cover">
+                </a>
+                <a href="https://linktr.ee/coldwater_10" target="_blank" rel="noopener noreferrer" class="block rounded-xl transition-transform duration-200 hover:scale-110" title="Linktree">
+                    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExdGZrdHVxaGkycXV5M2g2emdvdHkwOWVvOHI5YWR3cTVtODJtbGQwcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/U3ig2IVcuNn6VgU3oO/giphy.gif" alt="linktr" class="w-16 h-16 rounded-xl object-cover">
+                </a>
+            </div>
+        </footer>
+
     </div>
     <script type="module" src="script.js"></script>
 </body>
