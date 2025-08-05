@@ -3,209 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مبدل کانفیگ WireGuard به Mihomo</title>
+    <title>مبدل پیشرفته کانفیگ WireGuard</title>
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
-    <!-- Tailwind CSS CDN -->
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'%3E%3C/path%3E%3C/svg%3E" type="image/svg+xml">
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vazirmatn Font from Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Vazirmatn Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- js-yaml for YAML conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            --body-bg-start: #ADD8E6;
-            --body-bg-end: #E0F2FE;
-            --body-bg-dark-start: #1a202c;
-            --body-bg-dark-end: #2d3748;
-            --container-bg-image: url('background.jpg');
-            --container-overlay-start-light: rgba(59, 130, 246, 0.7);
-            --container-overlay-end-light: rgba(96, 165, 250, 0.7);
-            --container-overlay-start-dark: rgba(30, 64, 175, 0.8);
-            --container-overlay-end-dark: rgba(59, 130, 246, 0.8);
-            --text-color: #f8fafc;
-            --label-color: #e2e8f0;
-            --input-bg: rgba(255, 255, 255, 0.3);
-            --input-text: #ffffff;
-            --input-placeholder: #a3b1c2;
-            --input-focus-bg: rgba(255, 255, 255, 0.4);
-            --input-disabled-bg: rgba(100, 116, 139, 0.3);
-            --file-button-bg: #1e40af;
-            --file-button-hover-bg: #2563eb;
-            --main-button-start: #2563eb;
-            --main-button-end: #3b82f6;
-            --secondary-button-bg: rgba(71, 85, 105, 0.6);
-            --secondary-button-hover-bg: rgba(100, 116, 139, 0.6);
-            --message-success-bg: rgba(134, 239, 172, 0.2);
-            --message-success-text: #d1fae5;
-            --message-error-bg: rgba(252, 165, 165, 0.2);
-            --message-error-text: #fee2e2;
-            --select-option-bg: #1a202c;
-            --select-option-text: #ffffff;
+            --bg-light: #f1f5f9; /* slate-100 */
+            --bg-dark: #0f172a;  /* slate-900 */
+            --card-bg-light: #ffffff;
+            --card-bg-dark: #1e293b; /* slate-800 */
+            --text-primary-light: #0f172a; /* slate-900 */
+            --text-primary-dark: #e2e8f0;  /* slate-200 */
+            --text-secondary-light: #475569; /* slate-600 */
+            --text-secondary-dark: #94a3b8;   /* slate-400 */
+            --border-light: #e2e8f0; /* slate-200 */
+            --border-dark: #334155;  /* slate-700 */
+            --accent-color: #4f46e5; /* indigo-600 */
+            --accent-hover: #4338ca; /* indigo-700 */
+            --input-bg-light: #f8fafc; /* slate-50 */
+            --input-bg-dark: #334155; /* slate-700 */
         }
-        body[data-theme='dark'] {
-            --text-color: #e2e8f0;
-            --label-color: #cbd5e1;
-            --input-bg: rgba(0, 0, 0, 0.4);
-            --input-text: #e2e8f0;
-            --input-placeholder: #a0aec0;
-            --input-focus-bg: rgba(0, 0, 0, 0.5);
-            --input-disabled-bg: rgba(71, 85, 105, 0.4);
-            --file-button-bg: #4a5568;
-            --file-button-hover-bg: #2d3748;
-            --main-button-start: #4a5568;
-            --main-button-end: #2d3748;
-            --secondary-button-bg: rgba(30, 41, 59, 0.8);
-            --secondary-button-hover-bg: rgba(51, 65, 85, 0.8);
-            --select-option-bg: #2d3748;
-            --select-option-text: #e2e8f0;
-        }
-        body { background: linear-gradient(to right top, var(--body-bg-start), var(--body-bg-end)); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed; font-family: 'Vazirmatn', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); transition: background 0.5s ease-in-out, color 0.5s ease-in-out; }
-        body[data-theme='dark'] { background: linear-gradient(to right top, var(--body-bg-dark-start), var(--body-bg-dark-end)); }
-        .container { background-size: cover; background-position: center; background-repeat: no-repeat; border-radius: 20px; padding: 30px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); width: 100%; max-width: 800px; border: 1px solid rgba(255, 255, 255, 0.3); transition: background 0.5s ease-in-out; }
-        body[data-theme='light'] .container { background: linear-gradient(to right, var(--container-overlay-start-light), var(--container-overlay-end-light)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
-        body[data-theme='dark'] .container { background: linear-gradient(to right, var(--container-overlay-start-dark), var(--container-overlay-end-dark)), var(--container-bg-image); background-size: cover; background-position: center; background-repeat: no-repeat; background-blend-mode: multiply; }
-        h1 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 30px; color: #fff; text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-        label { display: block; margin-bottom: 8px; font-weight: 500; color: var(--label-color); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); }
-        textarea, input[type="text"], input[type="number"], select { width: 100%; padding: 12px 15px; margin-bottom: 20px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.4); background-color: var(--input-bg); color: var(--input-text); outline: none; transition: all 0.3s ease; appearance: none; -webkit-appearance: none; -moz-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='white'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: left 1rem center; background-size: 1.5em; padding-left: 3rem; }
-        textarea::placeholder, input::placeholder { color: var(--input-placeholder); }
-        textarea:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); background-color: var(--input-focus-bg); }
-        input:disabled { background-color: var(--input-disabled-bg); cursor: not-allowed; }
-        select option { background-color: var(--select-option-bg); color: var(--select-option-text); }
-        .file-input-wrapper { position: relative; overflow: hidden; display: inline-block; width: 100%; margin-bottom: 20px; }
-        .file-input-wrapper input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-        .file-input-wrapper .button { display: block; width: 100%; padding: 12px 15px; border-radius: 10px; background-color: var(--file-button-bg); color: white; text-align: center; cursor: pointer; transition: background-color 0.3s ease; }
-        .button-primary { width: 100%; padding: 15px 20px; border-radius: 12px; background: linear-gradient(to right, var(--main-button-start), var(--main-button-end)); color: white; font-size: 1.125rem; font-weight: 700; border: none; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4); }
-        .button-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6); }
-        .button-secondary { background-color: var(--secondary-button-bg); color: var(--label-color); padding: 6px 12px; font-size: 0.875rem; border-radius: 8px; transition: background-color 0.2s ease; }
-        .button-secondary:hover { background-color: var(--secondary-button-hover-bg); }
-        .message { margin-top: 20px; padding: 15px; border-radius: 10px; text-align: center; font-weight: 500; }
-        .message.success { background-color: var(--message-success-bg); color: var(--message-success-text); }
-        .message.error { background-color: var(--message-error-bg); color: var(--message-error-text); }
-        .grid-cols-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-        .mb-4 { margin-bottom: 1rem; } .mt-4 { margin-top: 1rem; } .mt-6 { margin-top: 1.5rem; }
-        .theme-switch-wrapper { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 20px; gap: 10px; color: var(--label-color); }
-        .theme-switch { display: inline-block; height: 24px; position: relative; width: 48px; }
-        .theme-switch input { display: none; }
-        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 24px; }
-        .slider:before { background-color: #fff; bottom: 2px; content: ""; height: 20px; left: 2px; position: absolute; width: 20px; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #2196f3; }
-        input:checked + .slider:before { transform: translateX(24px); }
-        #stagedConfigsList li { display: flex; align-items: center; padding: 8px; border-radius: 8px; transition: background-color 0.2s ease; }
-        #stagedConfigsList li:hover { background-color: rgba(255,255,255,0.1); }
-        #stagedConfigsList input[type="checkbox"] { margin-left: 12px; transform: scale(1.1); }
+        html.dark { color-scheme: dark; }
+        body { font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-light); color: var(--text-primary-light); transition: background-color 0.3s, color 0.3s; }
+        html.dark body { background-color: var(--bg-dark); color: var(--text-primary-dark); }
+        .card { background-color: var(--card-bg-light); border: 1px solid var(--border-light); transition: background-color 0.3s, border-color 0.3s; }
+        html.dark .card { background-color: var(--card-bg-dark); border-color: var(--border-dark); }
+        .form-input, .form-select { background-color: var(--input-bg-light); border: 1px solid var(--border-light); color: var(--text-primary-light); transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; }
+        html.dark .form-input, html.dark .form-select { background-color: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-primary-dark); }
+        .form-input::placeholder { color: var(--text-secondary-light); }
+        html.dark .form-input::placeholder { color: var(--text-secondary-dark); }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); }
+        .form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: left 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-left: 2.5rem; }
+        html.dark .form-select { background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); }
+        .form-checkbox { appearance: none; background-color: var(--input-bg-light); border: 1px solid var(--border-light); width: 1.25rem; height: 1.25rem; border-radius: 0.25rem; display: inline-block; position: relative; cursor: pointer; transition: all 0.2s; }
+        html.dark .form-checkbox { background-color: var(--input-bg-dark); border-color: var(--border-dark); }
+        .form-checkbox:checked { background-color: var(--accent-color); border-color: var(--accent-color); }
+        .form-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 0.8rem; top: 50%; left: 50%; transform: translate(-50%, -50%); }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="theme-switch-wrapper">
-            <span>حالت شب</span>
-            <label class="theme-switch" for="themeToggle"><input type="checkbox" id="themeToggle"><div class="slider"></div></label>
-            <span>حالت روز</span>
-        </div>
-        <h1>مبدل کانفیگ WireGuard به Mihomo</h1>
 
-        <div class="mb-4">
-            <label for="wgConfigInput">ورودی کانفیگ (متن کامل یا لینک)</label>
-            <textarea id="wgConfigInput" rows="8" placeholder="متن کامل کانفیگ یا لینک(ها) را اینجا وارد کنید..."></textarea>
-            <p class="text-sm text-gray-400 -mt-3 mb-3">پشتیبانی از فرمت‌های: Clash/Mihomo (YAML)، Sing-Box (JSON)، بلاک WireGuard و URI</p>
-        </div>
-        <div class="mb-4">
-            <label for="wgConfigFile">یا فایل‌های کانفیگ را آپلود کنید</label>
-            <div class="file-input-wrapper">
-                <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json">
-                <div class="button">انتخاب فایل‌ها</div>
+<body class="py-10 px-4">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">مبدل پیشرفته WireGuard</h1>
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                <svg id="theme-icon-dark" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
+                <svg id="theme-icon-light" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.909-2.636l1.591-1.591M5.25 12H3m4.227-4.227l-1.591-1.591M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg>
+            </button>
+        </header>
+
+        <main class="space-y-6">
+            <!-- Step 1: Input Section -->
+            <div class="card p-6 rounded-xl shadow-sm">
+                <h2 class="text-xl font-semibold mb-4 border-r-4 border-indigo-500 pr-4">۱. ورود کانفیگ‌ها</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="wgConfigInput" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">متن یا لینک اشتراک</label>
+                        <textarea id="wgConfigInput" rows="8" placeholder="متن کانفیگ، لینک اشتراک یا URI را اینجا وارد کنید..." class="form-input w-full rounded-md text-sm"></textarea>
+                    </div>
+                    <div>
+                        <label for="wgConfigFile" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">یا آپلود فایل</label>
+                        <label for="wgConfigFile" class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-md cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <svg class="w-10 h-10 mb-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            <span class="text-sm text-slate-500 dark:text-slate-400">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
+                            <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json" class="hidden">
+                        </label>
+                        <div id="fileList" class="text-xs text-slate-500 mt-2 space-y-1"></div>
+                    </div>
+                </div>
+                <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+                    پردازش و افزودن به لیست
+                </button>
             </div>
-            <div id="fileList" class="text-sm text-gray-300 mt-2"></div>
-        </div>
 
-        <button id="processInputBtn" class="button-primary mb-6">پردازش و افزودن کانفیگ‌ها</button>
-        
-        <div id="stagedConfigsContainer" class="hidden">
-            <hr class="border-gray-600 my-4">
-            <h2 class="text-2xl font-bold mb-3">لیست کانفیگ‌های آماده</h2>
-            <div class="flex justify-between items-center mb-3">
-                <span id="configCounter" class="text-sm text-gray-300"></span>
-                <div class="flex gap-2">
-                    <button id="selectAllBtn" class="button-secondary">انتخاب همه</button>
-                    <button id="deselectAllBtn" class="button-secondary">لغو انتخاب همه</button>
-                    <button id="clearListBtn" class="button-secondary bg-red-800 hover:bg-red-700 text-white">پاک کردن لیست</button>
+            <!-- Step 2: Staged Configs -->
+            <div id="stagedConfigsContainer" class="card p-6 rounded-xl shadow-sm hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold border-r-4 border-indigo-500 pr-4">۲. کانفیگ‌های آماده</h2>
+                    <span id="configCounter" class="text-sm font-medium text-slate-500 dark:text-slate-400"></span>
+                </div>
+                <div id="stagedConfigsList" class="max-h-60 overflow-y-auto pr-2 -mr-2 mb-4"></div>
+                <div class="flex items-center gap-4 text-sm">
+                    <button id="selectAllBtn" class="font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">انتخاب همه</button>
+                    <button id="deselectAllBtn" class="font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300">لغو انتخاب همه</button>
+                    <div class="flex-grow"></div>
+                    <button id="clearListBtn" class="font-medium text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">پاک کردن لیست</button>
                 </div>
             </div>
-            <div id="stagedConfigsList" class="max-h-60 overflow-y-auto bg-black bg-opacity-20 p-2 rounded-lg">
+
+            <!-- Step 3: Output Settings -->
+            <div class="card p-6 rounded-xl shadow-sm">
+                 <h2 class="text-xl font-semibold mb-6 border-r-4 border-indigo-500 pr-4">۳. تنظیمات خروجی</h2>
+                 <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Amnezia Profiles (Multi-select) -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">پروفایل‌های AmneziaWG (انتخاب چندتایی)</label>
+                        <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm">
+                            <!-- Checkboxes will be injected here by JS -->
+                        </div>
+                    </div>
+                    <!-- Rule Templates (Single-select) -->
+                    <div>
+                        <label for="templateSelect" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">تمپلت قوانین</label>
+                        <select id="templateSelect" class="form-select w-full rounded-md text-sm">
+                            <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
+                            <option value="iran-template" data-name="Iran">قوانین ایران</option>
+                            <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
+                        </select>
+                         <div class="mt-6">
+                             <label for="amneziaOptionSelect" class="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">مقادیر Amnezia از پیش‌تعیین‌شده</label>
+                             <select id="amneziaOptionSelect" class="form-select w-full rounded-md text-sm">
+                                <option value="use-ui-values" selected>استفاده از پروفایل‌های انتخابی UI</option>
+                                <option value="use-config-values">استفاده از مقادیر خود کانفیگ (در صورت وجود)</option>
+                                <option value="no-amnezia">غیرفعال کردن Amnezia</option>
+                            </select>
+                         </div>
+                    </div>
+                 </div>
+                 <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base">
+                    تولید و دانلود فایل
+                </button>
             </div>
-            <hr class="border-gray-600 my-4">
-        </div>
-        
-        <div class="mb-4">
-            <label for="profileSelect">انتخاب پروفایل AmneziaWG (برای تولید نهایی)</label>
-            <select id="profileSelect">
-                <option value="custom" data-name="Custom" selected>مقادیر دستی (سفارشی)</option>
-                <option value="4,64,120" data-name="Optimal">حالت بهینه</option>
-                <option value="6,64,80" data-name="Weak_Net">اینترنت ضعیف</option>
-                <option value="8,64,150" data-name="Aggressive">حداکثر پنهان‌سازی</option>
-                <option value="2,64,70" data-name="Fast">حداکثر سرعت</option>
-                <option value="4,40,70" data-name="wbnet">پیشنهاد @wbnet</option>
-                <option value="4,40,250" data-name="hamedp71">پیشنهاد hamedp71</option>
-                <option value="3,10,30" data-name="Rus_Micro">مبدل روسی (میکرو)</option>
-                <option value="10,30,60" data-name="Rus_Flood">مبدل روسی (زیاد)</option>
-            </select>
-        </div>
-        <div class="grid-cols-3 mb-4">
-            <div><label for="jcInput">jc</label><input type="number" id="jcInput" value="4" min="0"></div>
-            <div><label for="jminInput">jmin</label><input type="number" id="jminInput" value="40" min="0"></div>
-            <div><label for="jmaxInput">jmax</label><input type="number" id="jmaxInput" value="250" min="0"></div>
-        </div>
-        <div class="mb-4">
-            <label for="amneziaOptionSelect">تنظیمات AmneziaWG</label>
-            <select id="amneziaOptionSelect">
-                <option value="use-ui-values">استفاده از مقادیر UI (پیش‌فرض)</option>
-                <option value="use-config-values">استفاده از مقادیر خود کانفیگ</option>
-                <option value="no-amnezia">غیرفعال</option>
-            </select>
-        </div>
-        <div class="mb-4">
-            <label for="templateSelect">انتخاب تمپلت قوانین</label>
-            <select id="templateSelect">
-                <option value="full-rule-template" data-name="Full">قوانین کامل</option>
-                <option value="iran-template" data-name="Iran">قوانین ایران</option>
-                <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
-            </select>
-        </div>
-        <div class="mb-6">
-            <label for="outputFileName">نام فایل خروجی</label>
-            <input type="text" id="outputFileName" value="Mihomo_WireGuard">
-        </div>
-
-        <button id="generateBtn" class="button-primary">تولید و دانلود فایل نهایی</button>
-
-        <div id="message" class="message hidden"></div>
-        <div id="errorDetailsContainer" class="hidden mt-4 p-4 border border-red-400 bg-red-900 bg-opacity-30 rounded-lg">
-            <h3 class="font-bold text-lg mb-2 text-red-300">جزئیات خطاها:</h3>
-            <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-gray-300"></ul>
-        </div>
+            
+            <!-- Messages & Errors -->
+            <div id="message" class="hidden"></div>
+            <div id="errorDetailsContainer" class="hidden card p-4 border-red-400/50 dark:border-red-500/50 bg-red-50 dark:bg-red-900/20">
+                <h3 class="font-semibold text-base text-red-800 dark:text-red-300 mb-2">جزئیات خطاها:</h3>
+                <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-red-700 dark:text-red-400"></ul>
+            </div>
+        </main>
     </div>
 
     <script type="module" src="script.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const profileSelect = document.getElementById('profileSelect');
-            const jcInput = document.getElementById('jcInput');
-            const jminInput = document.getElementById('jminInput');
-            const jmaxInput = document.getElementById('jmaxInput');
-            const outputFileNameInput = document.getElementById('outputFileName');
-            const amneziaOptionSelect = document.getElementById('amneziaOptionSelect');
-            const templateSelect = document.getElementById('templateSelect');
-            const baseFileName = 'Mihomo_WireGuard';
-            function updateValueInputs(isCustom) { jcInput.disabled = !isCustom; jminInput.disabled = !isCustom; jmaxInput.disabled = !isCustom; }
-            function updateOutputFilename() { let finalName = baseFileName; const amneziaMode = amneziaOptionSelect.value; if (amneziaMode === 'use-ui-values') { const selectedProfileOption = profileSelect.options[profileSelect.selectedIndex]; finalName += `_[${selectedProfileOption.dataset.name}]`; } const selectedTemplateOption = templateSelect.options[templateSelect.selectedIndex]; finalName += `_[${selectedTemplateOption.dataset.name}]`; outputFileNameInput.value = finalName; }
-            profileSelect.addEventListener('change', function() { const selectedValue = this.value; updateValueInputs(selectedValue === 'custom'); if (selectedValue !== 'custom') { const values = selectedValue.split(','); jcInput.value = values[0]; jminInput.value = values[1]; jmaxInput.value = values[2]; } updateOutputFilename(); });
-            amneziaOptionSelect.addEventListener('change', updateOutputFilename);
-            templateSelect.addEventListener('change', updateOutputFilename);
-            updateValueInputs(profileSelect.value === 'custom');
-            updateOutputFilename();
-        });
-    </script>
 </body>
 </html>
