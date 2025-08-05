@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v6: YAML Generation FIXED using robust legacy logic.
+// script.js - v7: YAML Key Quoting FIXED for max compatibility.
 // ===================================================================
 
 // --- Data Sources ---
@@ -208,7 +208,6 @@ function renderStagedConfigs() {
 
 // --- CORE LOGIC (Parsing, Generation) ---
 
-// ===== ROBUST FILE READER =====
 function readFilesAsText(files) {
     return Promise.all(Array.from(files).map(file =>
         new Promise((resolve, reject) => {
@@ -276,7 +275,6 @@ function processTemplateText(templateText, mihomoProxies) {
 
     mihomoProxies.forEach(proxy => {
         // Step 1: Dump the individual proxy object to a string.
-        // Using indent: 2 and flowLevel: -1 to ensure block style for arrays.
         let yamlFrag = jsyaml.dump(proxy, {
             indent: 2,
             lineWidth: -1,
@@ -284,16 +282,20 @@ function processTemplateText(templateText, mihomoProxies) {
             noCompatMode: true
         });
 
-        // Step 2: Manually format the dumped string to fit into the proxy list.
-        // This logic is inspired by the old, more reliable method.
+        // Step 2: NEW! Force quoting for keys to prevent Base64 parsing errors in clients.
+        // This regex finds 'private-key' or 'public-key' at the start of a line,
+        // captures their value, and replaces the line with a properly single-quoted version.
+        yamlFrag = yamlFrag.replace(/^(private-key|public-key):\s*(.+)$/gm, (match, key, value) => {
+            return `${key}: '${value.trim()}'`;
+        });
+
+        // Step 3: Manually format the dumped string to fit into the proxy list.
         const block = yamlFrag.split('\n')
-            .filter(line => line.trim() !== '') // Remove any potential empty lines
+            .filter(line => line.trim() !== '')
             .map((line, index) => {
                 if (index === 0) {
-                    // First line gets the list item marker '-'.
                     return `  - ${line}`;
                 }
-                // Subsequent lines are indented to align under the first property.
                 return `    ${line}`;
             })
             .join('\n');
@@ -304,7 +306,7 @@ function processTemplateText(templateText, mihomoProxies) {
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     
-    // Step 3: Replace placeholders in the template.
+    // Step 4: Replace placeholders in the template.
     return templateText
         .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
@@ -320,7 +322,6 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
     
     let errorDetails = [];
     
-    // ===== ROBUST INPUT GATHERING =====
     let fileContents = [];
     if (wgConfigFile.files.length > 0) {
         try {
