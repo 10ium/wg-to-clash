@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v8: Final YAML generation fix using quotingType.
+// script.js - v9: Manual YAML generation for ultimate control.
 // ===================================================================
 
 // --- Data Sources ---
@@ -266,44 +266,69 @@ function parseFromMihomo(configObject) { return (configObject.proxies || []).fil
 function parseFromSingBox(configObject) { return (configObject.outbounds || []).filter(o=>o.type&&"wireguard"===o.type.toLowerCase()).map(o=>validateAndComplete({name:o.tag||null,privateKey:o.private_key||null,publicKey:o.peer_public_key||null,server:o.server||null,port:o.server_port?parseInt(o.server_port,10):null,address:o.local_address,mtu:o.mtu?parseInt(o.mtu,10):null,amneziaOptionsFromConfig:o.amnezia||null},JSON.stringify(o)))}
 function parseFromText(textContent) { return textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b=>b.trim()).map(block=>{let rawConfig={},peerComment="";try{if(block.startsWith("wireguard://")){const url=new URL(block),params=new URLSearchParams(url.search);rawConfig={name:decodeURIComponent(url.hash.substring(1))||null,privateKey:decodeURIComponent(url.username)||null,server:url.hostname||null,port:url.port?parseInt(url.port,10):null,publicKey:params.get("publickey")?decodeURIComponent(params.get("publickey")):null,address:params.get("address"),mtu:params.get("mtu")?parseInt(params.get("mtu"),10):null}}else{const lines=block.split("\n").map(l=>l.trim()),interfaceSection={},peerSection={};let currentSection="";lines.forEach(line=>{const lowerLine=line.toLowerCase();if(lowerLine.startsWith("[interface]"))currentSection="Interface";else if(lowerLine.startsWith("[peer]"))currentSection="Peer";else if(line.startsWith("#")&&"Peer"===currentSection){const commentText=line.substring(1).trim();peerComment||(peerComment=commentText)}else if(line.includes("=")){const[key,value]=line.split("=",2).map(s=>s.trim());"Interface"===currentSection?interfaceSection[key.toLowerCase()]=value:"Peer"===currentSection&&(peerSection[key.toLowerCase()]=value)}});const[server,port]=(peerSection.endpoint||"").split(":"),amneziaOpts=interfaceSection.jc&&interfaceSection.jmin&&interfaceSection.jmax?{jc:parseInt(interfaceSection.jc),jmin:parseInt(interfaceSection.jmin),jmax:parseInt(interfaceSection.jmax)}:null;rawConfig={name:peerComment||null,privateKey:interfaceSection.privatekey||null,publicKey:peerSection.publickey||null,server:server||null,port:port?parseInt(port,10):null,address:interfaceSection.address,mtu:interfaceSection.mtu?parseInt(interfaceSection.mtu):null,dns:(interfaceSection.dns||"").split(",").map(d=>d.trim()).filter(Boolean),allowedIps:peerSection.allowedips?peerSection.allowedips.split(",").map(ip=>ip.trim()).filter(Boolean):null,amneziaOptionsFromConfig:amneziaOpts}}return validateAndComplete(rawConfig,block)}catch(e){return{error:!0,reason:"ساختار کانفیگ نامعتبر است",source:block}}})}
 function parseAllInputs(textContent) { try { const structuredConfig=jsyaml.load(textContent);if("object"==typeof structuredConfig&&null!==structuredConfig){if(structuredConfig.proxies&&Array.isArray(structuredConfig.proxies))return parseFromMihomo(structuredConfig);if(structuredConfig.outbounds&&Array.isArray(structuredConfig.outbounds))return parseFromSingBox(structuredConfig)}}catch(e){}return parseFromText(textContent)}
-function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:!0,mtu:wgConfig.mtu,"remote-dns-resolve":!0};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
+function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) { const mihomoProxy={name:wgConfig.name,type:"wireguard",server:wgConfig.server,port:wgConfig.port,ip:wgConfig.ip,"private-key":wgConfig.privateKey,"public-key":wgConfig.publicKey,"allowed-ips":wgConfig.allowedIps,udp:true,mtu:wgConfig.mtu,"remote-dns-resolve":true};if(wgConfig.ipv6){mihomoProxy.ipv6=wgConfig.ipv6}if(wgConfig.dns?.length>0){mihomoProxy.dns=wgConfig.dns}if(amneziaOption==="use-config-values"&&wgConfig.amneziaOptionsFromConfig){mihomoProxy["amnezia-wg-option"]=wgConfig.amneziaOptionsFromConfig}else if(amneziaOption==="use-ui-values"){mihomoProxy["amnezia-wg-option"]={jc:jcUI,jmin:jminUI,jmax:jmaxUI,s1:0,s2:0,h1:1,h2:2,h3:3,h4:4}}return mihomoProxy}
 
-// --- YAML Processing & Download (ROBUST FINAL VERSION) ---
-function processTemplateText(templateText, mihomoProxies) {
-    const proxyBlocks = [];
-    const proxyNames = [];
+// --- YAML Processing & Download (MANUAL & ROBUST) ---
+/**
+ * Manually builds a YAML string for a single proxy object to ensure
+ * perfect formatting and quoting for Clash clients.
+ * @param {object} proxy - The Mihomo proxy object.
+ * @returns {string} A formatted YAML string for one proxy.
+ */
+function buildProxyYamlString(proxy) {
+    const lines = [];
+    lines.push(`  - name: "${proxy.name}"`);
+    lines.push(`    type: ${proxy.type}`);
+    lines.push(`    server: ${proxy.server}`);
+    lines.push(`    port: ${proxy.port}`);
+    lines.push(`    ip: ${proxy.ip}`);
+    if (proxy.ipv6) {
+        lines.push(`    ipv6: ${proxy.ipv6}`);
+    }
+    // CRITICAL: Explicitly single-quote keys to preserve Base64 padding.
+    lines.push(`    private-key: '${proxy['private-key']}'`);
+    lines.push(`    public-key: '${proxy['public-key']}'`);
 
-    mihomoProxies.forEach(proxy => {
-        // Step 1: Dump the individual proxy object to a string.
-        // The key fix is here: `quotingType: "'"` tells js-yaml to use single quotes
-        // for any string that requires it, which safely handles Base64 keys and other
-        // special characters without altering them.
-        let yamlFrag = jsyaml.dump(proxy, {
-            indent: 2,
-            lineWidth: -1,
-            flowLevel: -1, 
-            quotingType: "'",
-            noCompatMode: true
+    if (proxy['allowed-ips'] && proxy['allowed-ips'].length > 0) {
+        lines.push(`    allowed-ips:`);
+        proxy['allowed-ips'].forEach(ip => {
+            lines.push(`      - '${ip}'`); // Quote to be safe with IPv6 addresses
         });
+    }
+    lines.push(`    udp: ${proxy.udp}`);
+    lines.push(`    mtu: ${proxy.mtu}`);
+    lines.push(`    remote-dns-resolve: ${proxy['remote-dns-resolve']}`);
+    
+    if (proxy.dns && proxy.dns.length > 0) {
+        lines.push(`    dns:`);
+        proxy.dns.forEach(d => {
+            lines.push(`      - ${d}`);
+        });
+    }
 
-        // Step 2: Manually format the dumped string to fit into the proxy list.
-        const block = yamlFrag.split('\n')
-            .filter(line => line.trim() !== '')
-            .map((line, index) => {
-                if (index === 0) {
-                    return `  - ${line}`;
-                }
-                return `    ${line}`;
-            })
-            .join('\n');
-        
-        proxyBlocks.push(block);
-        proxyNames.push(`"${proxy.name}"`);
-    });
+    if (proxy['amnezia-wg-option']) {
+        const amnezia = proxy['amnezia-wg-option'];
+        lines.push(`    amnezia-wg-option:`);
+        lines.push(`      jc: ${amnezia.jc}`);
+        lines.push(`      jmin: ${amnezia.jmin}`);
+        lines.push(`      jmax: ${amnezia.jmax}`);
+        lines.push(`      s1: ${amnezia.s1}`);
+        lines.push(`      s2: ${amnezia.s2}`);
+        lines.push(`      h1: ${amnezia.h1}`);
+        lines.push(`      h2: ${amnezia.h2}`);
+        lines.push(`      h3: ${amnezia.h3}`);
+        lines.push(`      h4: ${amnezia.h4}`);
+    }
+
+    return lines.join('\n');
+}
+
+function processTemplateText(templateText, mihomoProxies) {
+    const proxyBlocks = mihomoProxies.map(buildProxyYamlString);
+    const proxyNames = mihomoProxies.map(p => `"${p.name}"`);
 
     const proxyNameListYaml = proxyNames.map(n => `      - ${n}`).join('\n');
     
-    // Step 3: Replace placeholders in the template.
     return templateText
         .replace(/##_PROXIES_PLACEHOLDER_##/g, proxyBlocks.join('\n'))
         .replace(/##_PROXY_NAMES_LIST_PLACEHOLDER_##/g, proxyNameListYaml);
