@@ -1,5 +1,5 @@
 // ===================================================================
-// script.js - v15: Final Stable Version with Simplified UI & Robust Auto-Detection
+// script.js - v16: Final Stable Version with Simplified UI & Robust Auto-Detection
 // ===================================================================
 
 // --- Data Sources ---
@@ -358,16 +358,8 @@ function parseFromSingBox(configObject) {
         });
 }
 
-function parseFromText(textContent, format = 'auto') {
-    let blocks = [];
-    if (format === 'text_uri') {
-        blocks = textContent.split('\n').filter(line => line.trim().startsWith('wireguard://'));
-    } else if (format === 'text_ini') {
-        blocks = textContent.split(/(?=\[Interface\])/g).filter(b => b.trim());
-    } else { // auto
-        blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
-    }
-
+function parseFromText(textContent) {
+    const blocks = textContent.split(/(?=\[Interface\])|(?=wireguard:\/\/)/g).filter(b => b.trim());
     return blocks.map(block => {
         let rawConfig = {}, peerComment = '';
         try {
@@ -427,12 +419,7 @@ function parseFromText(textContent, format = 'auto') {
     });
 }
 
-function parseAllInputs(rawText, inputType = 'auto') {
-    if (inputType === 'mihomo') return parseFromMihomo(jsyaml.load(rawText));
-    if (inputType === 'singbox') return parseFromSingBox(JSON.parse(rawText));
-    if (inputType === 'text_ini') return parseFromText(rawText, 'text_ini');
-    if (inputType === 'text_uri') return parseFromText(rawText, 'text_uri');
-
+function parseAllInputs(rawText) {
     // Auto-detection logic
     try {
         const structuredConfig = jsyaml.load(rawText);
@@ -451,7 +438,7 @@ function parseAllInputs(rawText, inputType = 'auto') {
     }
     
     const extractedText = extractConfigsFromText(rawText);
-    return parseFromText(extractedText, 'auto');
+    return parseFromText(extractedText);
 }
 
 function convertWgToMihomo(wgConfig, jcUI, jminUI, jmaxUI, amneziaOption) {
@@ -550,21 +537,9 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
-    let inputType = document.getElementById('inputType').value;
-
-    // Smart override for .conf files
-    if (wgConfigFile.files.length === 1 && wgConfigFile.files[0].name.toLowerCase().endsWith('.conf')) {
-        let preliminaryParse = parseAllInputs(combinedInput, 'text_ini');
-        if (preliminaryParse.some(p => !p.error)) {
-            inputType = 'text_ini';
-        } else {
-            inputType = 'auto'; // Fallback to auto if INI parsing fails
-        }
-    }
-
     let parsedResults = [];
     try {
-        parsedResults = parseAllInputs(combinedInput, inputType);
+        parsedResults = parseAllInputs(combinedInput);
     } catch (e) {
         errorDetails.push({ reason: `خطا در پارس کردن ورودی: ${e.message}`, source: combinedInput.substring(0, 70) });
     }
