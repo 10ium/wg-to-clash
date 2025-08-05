@@ -550,12 +550,23 @@ processInputBtn.addEventListener('click', async function handleProcessInput() {
         return;
     }
     
-    const inputType = document.getElementById('inputType').value;
+    let inputType = document.getElementById('inputType').value;
+
+    // Smart override for .conf files
+    if (wgConfigFile.files.length === 1 && wgConfigFile.files[0].name.toLowerCase().endsWith('.conf')) {
+        let preliminaryParse = parseAllInputs(combinedInput, 'text_ini');
+        if (preliminaryParse.some(p => !p.error)) {
+            inputType = 'text_ini';
+        } else {
+            inputType = 'auto'; // Fallback to auto if INI parsing fails
+        }
+    }
+
     let parsedResults = [];
     try {
         parsedResults = parseAllInputs(combinedInput, inputType);
     } catch (e) {
-        errorDetails.push({ reason: `خطا در پارس کردن ورودی با فرمت انتخابی: ${e.message}`, source: combinedInput.substring(0, 70) });
+        errorDetails.push({ reason: `خطا در پارس کردن ورودی: ${e.message}`, source: combinedInput.substring(0, 70) });
     }
     
     if (!parsedResults || parsedResults.length === 0) {
