@@ -11,8 +11,31 @@
     <style>
         :root { --bg-light: #f1f5f9; --bg-dark: #0f172a; --card-bg-light: #ffffff; --card-bg-dark: #1e293b; --text-primary-light: #0f172a; --text-primary-dark: #e2e8f0; --text-secondary-light: #475569; --text-secondary-dark: #cbd5e1; --border-light: #e2e8f0; --border-dark: #334155; --accent-color: #4f46e5; --input-bg-light: #f8fafc; --input-bg-dark: #334155; }
         html.dark { color-scheme: dark; }
-        body { font-family: 'Vazirmatn', sans-serif; background-color: var(--bg-light); color: var(--text-primary-light); transition: background-color 0.3s, color 0.3s; }
-        html.dark body { background-color: var(--bg-dark); color: var(--text-primary-dark); }
+        
+        /* FIX: Background Image & Overlay */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            color: var(--text-primary-light);
+            background-image: url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transition: color 0.3s;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background-color: rgba(241, 245, 249, 0.85); /* Light mode overlay */
+            backdrop-filter: blur(8px);
+            z-index: -1;
+            transition: background-color 0.3s;
+        }
+        html.dark body { color: var(--text-primary-dark); }
+        html.dark body::before {
+            background-color: rgba(15, 23, 42, 0.9); /* Dark mode overlay */
+        }
+
         .card { background-color: var(--card-bg-light); border: 1px solid var(--border-light); transition: background-color 0.3s, border-color 0.3s; }
         html.dark .card { background-color: var(--card-bg-dark); border-color: var(--border-dark); }
         .form-label { color: var(--text-secondary-light); }
@@ -37,15 +60,14 @@
     <div class="max-w-4xl mx-auto">
         <header class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">مبدل پیشرفته WireGuard</h1>
-            <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
                 <svg id="theme-icon-dark" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
                 <svg id="theme-icon-light" class="h-6 w-6 hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.909-2.636l1.591-1.591M5.25 12H3m4.227-4.227l-1.591-1.591M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg>
             </button>
         </header>
 
         <main class="space-y-6">
-            <!-- Step 1: Input Section -->
-            <div class="card p-6 rounded-xl shadow-sm">
+            <div class="card p-6 rounded-xl shadow-sm bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
                 <h2 class="text-xl font-semibold mb-4 border-r-4 border-indigo-500 pr-4">۱. ورود کانفیگ‌ها</h2>
                 <div class="grid md:grid-cols-2 gap-6">
                     <div>
@@ -65,8 +87,7 @@
                 <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">پردازش و افزودن به لیست</button>
             </div>
 
-            <!-- Step 2: Staged Configs -->
-            <div id="stagedConfigsContainer" class="card p-6 rounded-xl shadow-sm hidden">
+            <div id="stagedConfigsContainer" class="card p-6 rounded-xl shadow-sm bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold border-r-4 border-indigo-500 pr-4">۲. کانفیگ‌های آماده</h2>
                     <span id="configCounter" class="text-sm font-medium text-slate-500 dark:text-slate-400"></span>
@@ -80,8 +101,7 @@
                 </div>
             </div>
 
-            <!-- Step 3: Output Settings -->
-            <div class="card p-6 rounded-xl shadow-sm">
+            <div class="card p-6 rounded-xl shadow-sm bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm">
                  <h2 class="text-xl font-semibold mb-6 border-r-4 border-indigo-500 pr-4">۳. تنظیمات خروجی</h2>
                  <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
                     <div>
@@ -92,36 +112,29 @@
                             <option value="no-amnezia">غیرفعال کردن Amnezia</option>
                         </select>
                     </div>
-                     <!-- NEW: Wrapper for intelligent disabling -->
-                    <div id="amneziaProfilesWrapper" class="transition-opacity duration-300 md:col-span-2 grid md:grid-cols-2 gap-x-8 gap-y-6">
-                        <!-- Amnezia Profiles -->
-                        <div class="md:row-span-2">
-                             <!-- FIX: Brighter label in dark mode -->
-                            <label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200">
-                                پروفایل‌های AmneziaWG (انتخاب چندتایی)
-                            </label>
-                            <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm"></div>
-                            <div id="customProfileInputs" class="hidden mt-4 space-y-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                                <div class="grid grid-cols-3 gap-2">
-                                    <div><label for="jcInput" class="form-label block text-xs mb-1">jc</label><input type="number" id="jcInput" value="4" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                                    <div><label for="jminInput" class="form-label block text-xs mb-1">jmin</label><input type="number" id="jminInput" value="40" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                                    <div><label for="jmaxInput" class="form-label block text-xs mb-1">jmax</label><input type="number" id="jmaxInput" value="250" min="0" class="form-input w-full rounded text-sm p-2"></div>
-                                </div>
-                            </div>
+                    <!-- FIX: These two are moved outside the wrapper to prevent being disabled -->
+                    <div class="space-y-6">
+                        <div>
+                            <label for="templateSelect" class="form-label block text-sm font-medium mb-2">تمپلت قوانین</label>
+                            <select id="templateSelect" class="form-select w-full rounded-md text-sm">
+                                <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
+                                <option value="iran-template" data-name="Iran">قوانین ایران</option>
+                                <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
+                            </select>
                         </div>
-                        <!-- Rule & Naming -->
-                        <div class="space-y-6">
-                            <div>
-                                <label for="templateSelect" class="form-label block text-sm font-medium mb-2">تمپلت قوانین</label>
-                                <select id="templateSelect" class="form-select w-full rounded-md text-sm">
-                                    <option value="full-rule-template" data-name="Full" selected>قوانین کامل</option>
-                                    <option value="iran-template" data-name="Iran">قوانین ایران</option>
-                                    <option value="no-rule-template" data-name="NoRules">بدون قوانین</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="outputFileName" class="form-label block text-sm font-medium mb-2">نام فایل خروجی</label>
-                                <input type="text" id="outputFileName" class="form-input w-full rounded-md text-sm">
+                        <div>
+                            <label for="outputFileName" class="form-label block text-sm font-medium mb-2">نام فایل خروجی</label>
+                            <input type="text" id="outputFileName" class="form-input w-full rounded-md text-sm">
+                        </div>
+                    </div>
+                    <div id="amneziaProfilesWrapper" class="transition-opacity duration-300 md:col-span-2">
+                        <label class="block text-sm font-semibold mb-3 text-slate-700 dark:text-slate-200">پروفایل‌های AmneziaWG (انتخاب چندتایی)</label>
+                        <div id="amneziaProfilesContainer" class="space-y-2.5 text-sm"></div>
+                        <div id="customProfileInputs" class="hidden mt-4 space-y-2 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                            <div class="grid grid-cols-3 gap-2">
+                                <div><label for="jcInput" class="form-label block text-xs mb-1">jc</label><input type="number" id="jcInput" value="4" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                <div><label for="jminInput" class="form-label block text-xs mb-1">jmin</label><input type="number" id="jminInput" value="40" min="0" class="form-input w-full rounded text-sm p-2"></div>
+                                <div><label for="jmaxInput" class="form-label block text-xs mb-1">jmax</label><input type="number" id="jmaxInput" value="250" min="0" class="form-input w-full rounded text-sm p-2"></div>
                             </div>
                         </div>
                     </div>
