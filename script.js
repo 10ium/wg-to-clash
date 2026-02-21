@@ -8,10 +8,11 @@ const countryEmojiMap={"US":"🇺🇸","DE":"🇩🇪","NL":"🇳🇱","CA":"�
 const AMNEZIA_PROFILES = [
     { id: 'custom', name: 'سفارشی (مقادیر دستی)', isCustom: true, checked: false },
     { id: 'optimal', name: 'Optimal', jc: 4, jmin: 64, jmax: 120, checked: true },
-    { id: 'weak_net', name: 'Weak_Net', jc: 6, jmin: 64, jmax: 80, checked: false },
-    { id: 'aggressive', name: 'Aggressive', jc: 8, jmin: 64, jmax: 150, checked: false },
+    { id: 'weak_net', name: 'Weak_Net', jc: 6, jmin: 64, jmax: 80, checked: true },
+    { id: 'aggressive', name: 'Aggressive', jc: 8, jmin: 64, jmax: 150, checked: true },
     { id: 'fast', name: 'Fast', jc: 2, jmin: 64, jmax: 70, checked: false },
     { id: 'wbnet', name: 'wbnet', jc: 4, jmin: 40, jmax: 70, checked: false },
+    { id: 'bpb', name: 'wbnet', jc: 5, jmin: 50, jmax: 100, checked: false },
     { id: 'hamedp71', name: 'hamedp71', jc: 4, jmin: 40, jmax: 250, checked: false },
     { id: 'rus_micro', name: 'Rus_Micro', jc: 3, jmin: 10, jmax: 30, checked: false },
     { id: 'rus_flood', name: 'Rus_Flood', jc: 10, jmin: 30, jmax: 60, checked: false },
