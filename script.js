@@ -7,15 +7,21 @@ const countryEmojiMap={"US":"🇺🇸","DE":"🇩🇪","NL":"🇳🇱","CA":"�
 
 const AMNEZIA_PROFILES = [
     { id: 'custom', name: 'سفارشی (مقادیر دستی)', isCustom: true, checked: false },
-    { id: 'optimal', name: 'Optimal', jc: 4, jmin: 64, jmax: 120, checked: true },
-    { id: 'weak_net', name: 'Weak_Net', jc: 6, jmin: 64, jmax: 80, checked: true },
-    { id: 'aggressive', name: 'Aggressive', jc: 8, jmin: 64, jmax: 150, checked: true },
-    { id: 'fast', name: 'Fast', jc: 2, jmin: 64, jmax: 70, checked: false },
-    { id: 'wbnet', name: 'wbnet', jc: 4, jmin: 40, jmax: 70, checked: false },
-    { id: 'bpb', name: 'bpb', jc: 5, jmin: 50, jmax: 100, checked: false },
-    { id: 'hamedp71', name: 'hamedp71', jc: 4, jmin: 40, jmax: 250, checked: false },
-    { id: 'rus_micro', name: 'Rus_Micro', jc: 3, jmin: 10, jmax: 30, checked: false },
-    { id: 'rus_flood', name: 'Rus_Flood', jc: 10, jmin: 30, jmax: 60, checked: false },
+    { id: 'Optimal Balanced (Daily Use)',    name: 'Optimal',                jc: 4,  jmin: 64,  jmax: 120,   checked: false  },
+    { id: 'Weak_Net (low-bandwidth / legacy)',   name: 'Weak_Net',           jc: 6,  jmin: 64,  jmax: 80,    checked: true  },
+    { id: 'Aggressive Pattern (Deep Inspection Shield)', name: 'Aggressive', jc: 8,  jmin: 64,  jmax: 150,   checked: true  },
+    { id: 'Fast (low-handshake-overhead)',       name: 'Fast',              jc: 2,  jmin: 64,  jmax: 70,    checked: false },
+    { id: 'Proton (minimal compatibility)',      name: 'Proton',      jc: 4,  jmin: 40,  jmax: 70,    checked: false },
+    { id: 'bpb (legacy / balanced)',        name: 'bpb',                   jc: 5,  jmin: 50,  jmax: 100,   checked: false },
+    { id: 'hamedp71 (compatibility / high-range)',   name: 'hamedp71',      jc: 4,  jmin: 40,  jmax: 250,   checked: false },
+    { id: 'Rus_Micro (Micro-Noise / low-latency)',  name: 'Rus_Micro',      jc: 3,  jmin: 10,  jmax: 30,    checked: false },
+    { id: 'Rus_Flood (Heavy Flood / DPI whitelist)',  name: 'Rus_Flood',    jc: 10, jmin: 30,  jmax: 60,    checked: false },
+    { id: 'Stalinium Strategy (Maximum / Extreme Stealth)',         name: 'Stalinium', jc: 31, jmin: 20,  jmax: 40,   checked: true },
+    { id: 'High-Entropy Obfuscation (Anti-Throttling)',      name: 'High Entropy',     jc: 33, jmin: 132, jmax: 1200, checked: false },
+    { id: 'Heavy Traffic Simulation (DPI Whitelisting)',     name: 'Heavy Traffic',    jc: 50, jmin: 5,   jmax: 1500, checked: false },
+    { id: 'MetaCubeX Fixed Window (Pattern Bypass)',         name: 'MetaCubeX',        jc: 5,  jmin: 500, jmax: 501,  checked: false },
+    { id: 'Amnezia Official Default (Balanced Stealth)',  name: 'Amnezia Default',     jc: 8,  jmin: 50,  jmax: 1000, checked: false },
+    { id: 'Gaming / Ultra-Low Overhead (Latency Focused)',      name: 'Gaming',   jc: 3,  jmin: 64,  jmax: 80,    checked: false }
 ];
 
 // --- Global State ---
