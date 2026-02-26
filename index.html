@@ -10,25 +10,21 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            /* Light Mode Colors */
-            --bg-light: #e2e8f0; /* slate-200 */
-            --card-overlay-light: rgba(248, 250, 252, 0.75);
-            --text-primary-light: #000000; /* Pure Black for max contrast */
-            --text-secondary-light: #3a3a3a; /* Dark Gray */
-            --text-bg-light: rgba(255, 255, 255, 0.7); /* White bg for text shadow */
-            --border-light: #cbd5e1; /* slate-300 */
-            --input-bg-light: #ffffff;
-            
-            /* Dark Mode Colors */
-            --bg-dark: #0f172a;  /* slate-900 */
-            --card-overlay-dark: rgba(15, 23, 42, 0.66);
-            --text-primary-dark: #ffffff; /* Pure White for max contrast */
-            --text-secondary-dark: #e0e0e0; /* Light Gray */
-            --text-bg-dark: rgba(0, 0, 0, 0.6); /* Black bg for text shadow */
-            --border-dark: #334155; /* slate-700 */
-            --input-bg-dark: #334155; /* slate-700 */
+            --bg-light: #eef4ff;
+            --bg-light-gradient: radial-gradient(circle at 12% 18%, #dbeafe 0%, #eef4ff 35%, #f8fafc 100%);
+            --card-overlay-light: rgba(255, 255, 255, 0.8);
+            --text-primary-light: #0f172a;
+            --text-secondary-light: #475569;
+            --border-light: #cbd5e1;
+            --input-bg-light: #f8fafc;
 
-            /* Accent Color */
+            --bg-dark: #0b1120;
+            --card-overlay-dark: rgba(15, 23, 42, 0.72);
+            --text-primary-dark: #f8fafc;
+            --text-secondary-dark: #cbd5e1;
+            --border-dark: #334155;
+            --input-bg-dark: #1e293b;
+
             --accent-color: #4f46e5;
         }
         html.dark { color-scheme: dark; }
@@ -36,16 +32,14 @@
         body {
             font-family: 'Vazirmatn', sans-serif;
             background-color: var(--bg-light);
+            background-image: var(--bg-light-gradient);
             color: var(--text-primary-light);
-            transition: background-color 0.3s, color 0.3s, text-shadow 0.3s;
-            /* Simulates the "white box" with a subtle glow */
-            text-shadow: 0 1px 2px var(--text-bg-light);
+            transition: background-color 0.3s, color 0.3s;
         }
         html.dark body {
             background-color: var(--bg-dark);
+            background-image: radial-gradient(circle at 20% 20%, #1e293b 0%, #0f172a 38%, #020617 100%);
             color: var(--text-primary-dark);
-            /* Simulates the "black box" with a subtle shadow */
-            text-shadow: 0 1px 3px var(--text-bg-dark);
         }
 
         .card {
@@ -55,14 +49,16 @@
                 url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');
             background-size: cover;
             background-position: center;
-            backdrop-filter: blur(2px);
-            transition: background-color 0.3s, border-color 0.3s;
+            backdrop-filter: blur(6px) saturate(140%);
+            box-shadow: 0 20px 35px -25px rgba(15, 23, 42, 0.45);
+            transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
         html.dark .card {
             border-color: var(--border-dark);
             background-image:
                 linear-gradient(var(--card-overlay-dark), var(--card-overlay-dark)),
                 url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');
+            box-shadow: 0 20px 35px -20px rgba(0, 0, 0, 0.6);
         }
 
         /* Utility to disable text-shadow for specific elements like gradient text */
@@ -74,7 +70,7 @@
         html.dark .form-input, html.dark .form-select { background-color: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-primary-dark); }
         .form-input::placeholder { color: var(--text-secondary-light); opacity: 0.7; }
         html.dark .form-input::placeholder { color: var(--text-secondary-dark); opacity: 0.6; }
-        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px var(--accent-color); }
+        .form-input:focus, .form-select:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.25); }
         .form-input:disabled { background-color: #e2e8f0; cursor: not-allowed; }
         html.dark .form-input:disabled { background-color: #334155; opacity: 0.6; cursor: not-allowed; }
         .form-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); background-position: left 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-left: 2.5rem; }
@@ -92,9 +88,9 @@
     </style>
 </head>
 
-<body class="py-10 px-4">
-    <div class="max-w-4xl mx-auto">
-        <header class="flex justify-between items-center mb-8 px-2">
+<body class="py-10 px-4 min-h-screen">
+    <div class="max-w-5xl mx-auto">
+        <header class="flex justify-between items-center mb-8 px-2 rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white/65 dark:bg-slate-900/40 backdrop-blur-md shadow-sm p-4">
             <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500 no-text-shadow">مبدل پیشرفته WireGuard</h1>
             <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
                 <svg id="theme-icon-dark" class="h-6 w-6 hidden no-text-shadow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
@@ -103,7 +99,7 @@
         </header>
 
         <main class="space-y-6">
-            <div class="card p-6 rounded-xl shadow-lg">
+            <div class="card p-7 rounded-2xl shadow-lg">
                 <h2 class="text-xl font-semibold mb-4 border-r-4 border-indigo-500 pr-4">۱. ورود کانفیگ‌ها</h2>
                 <div class="space-y-6">
                     <div>
@@ -123,7 +119,7 @@
                 <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900 no-text-shadow">پردازش و افزودن به لیست</button>
             </div>
 
-            <div id="stagedConfigsContainer" class="card p-6 rounded-xl shadow-lg hidden">
+            <div id="stagedConfigsContainer" class="card p-7 rounded-2xl shadow-lg hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold border-r-4 border-indigo-500 pr-4">۲. کانفیگ‌های آماده</h2>
                     <span id="configCounter" class="text-sm font-medium text-slate-500 dark:text-slate-400"></span>
@@ -137,7 +133,7 @@
                 </div>
             </div>
 
-            <div class="card p-6 rounded-xl shadow-lg">
+            <div class="card p-7 rounded-2xl shadow-lg">
                  <h2 class="text-xl font-semibold mb-6 border-r-4 border-indigo-500 pr-4">۳. تنظیمات خروجی</h2>
                  <div class="grid md:grid-cols-2 gap-x-8 gap-y-6">
                     <div>
@@ -177,13 +173,13 @@
                  <button id="generateBtn" class="mt-8 w-full bg-emerald-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-emerald-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 dark:focus:ring-offset-slate-900 text-base no-text-shadow">تولید و دانلود فایل</button>
             </div>
             
-            <div id="errorDetailsContainer" class="hidden card p-4 border-red-400/50 bg-red-50 dark:bg-red-900/50">
+            <div id="errorDetailsContainer" class="hidden card p-4 border-red-400/50 bg-red-50/90 dark:bg-red-900/50 rounded-xl">
                 <h3 class="font-semibold text-base text-red-800 dark:text-red-300 mb-2">جزئیات خطاها:</h3>
                 <ul id="errorList" class="list-disc list-inside text-sm space-y-1 text-red-700 dark:text-red-400"></ul>
             </div>
         </main>
 
-        <footer class="mt-12 pt-8 border-t border-slate-300 dark:border-slate-700">
+        <footer class="mt-12 pt-8 border-t border-slate-300/80 dark:border-slate-700">
             <div class="flex items-center justify-center gap-x-5 sm:gap-x-8">
                 <a href="https://t.me/vpnclashfa" target="_blank" rel="noopener noreferrer" class="block rounded-full transition-transform duration-200 hover:scale-110" title="Telegram">
                     <img src="https://cdn.dribbble.com/users/4507400/screenshots/15420681/media/c00f77bc443cbc4ac96d138f9ac854c5.gif" alt="Telegram" class="w-16 h-16 rounded-full object-cover">
