@@ -10,16 +10,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
     <style>
         :root {
-            --bg-light: #eef4ff;
-            --bg-light-gradient: radial-gradient(circle at 12% 18%, #dbeafe 0%, #eef4ff 35%, #f8fafc 100%);
-            --card-overlay-light: rgba(255, 255, 255, 0.8);
+            --bg-light: #dbe4f0;
+            --bg-light-gradient: linear-gradient(180deg, #dbe4f0 0%, #e2e8f0 45%, #e9eef5 100%);
+            --card-overlay-light: rgba(248, 250, 252, 0.96);
             --text-primary-light: #0f172a;
-            --text-secondary-light: #475569;
+            --text-secondary-light: #334155;
             --border-light: #cbd5e1;
-            --input-bg-light: #f8fafc;
+            --input-bg-light: #ffffff;
 
             --bg-dark: #0b1120;
-            --card-overlay-dark: rgba(15, 23, 42, 0.72);
+            --card-overlay-dark: rgba(15, 23, 42, 0.8);
             --text-primary-dark: #f8fafc;
             --text-secondary-dark: #cbd5e1;
             --border-dark: #334155;
@@ -38,19 +38,17 @@
         }
         html.dark body {
             background-color: var(--bg-dark);
-            background-image: radial-gradient(circle at 20% 20%, #1e293b 0%, #0f172a 38%, #020617 100%);
+            background-image: radial-gradient(circle at 20% 20%, #1e293b 0%, #0f172a 40%, #020617 100%);
             color: var(--text-primary-dark);
         }
 
         .card {
             border: 1px solid var(--border-light);
-            background-image:
-                linear-gradient(var(--card-overlay-light), var(--card-overlay-light)),
-                url('https://github.com/10ium/wg-to-clash/blob/main/background.jpg?raw=true');
+            background-image: linear-gradient(var(--card-overlay-light), var(--card-overlay-light));
             background-size: cover;
             background-position: center;
-            backdrop-filter: blur(6px) saturate(140%);
-            box-shadow: 0 20px 35px -25px rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(8px) saturate(120%);
+            box-shadow: 0 12px 24px -16px rgba(15, 23, 42, 0.35);
             transition: background-color 0.3s, border-color 0.3s, box-shadow 0.3s;
         }
         html.dark .card {
@@ -64,7 +62,7 @@
         /* Utility to disable text-shadow for specific elements like gradient text */
         .no-text-shadow { text-shadow: none !important; }
 
-        .form-label { color: var(--text-secondary-light); }
+        .form-label { color: var(--text-secondary-light); font-weight: 600; }
         html.dark .form-label { color: var(--text-secondary-dark); }
         .form-input, .form-select { background-color: var(--input-bg-light); border: 1px solid var(--border-light); color: var(--text-primary-light); transition: background-color 0.3s, border-color 0.3s, box-shadow 0.2s; }
         html.dark .form-input, html.dark .form-select { background-color: var(--input-bg-dark); border-color: var(--border-dark); color: var(--text-primary-dark); }
@@ -80,6 +78,12 @@
         .form-checkbox:checked { background-color: var(--accent-color); border-color: var(--accent-color); }
         .form-checkbox:checked::after { content: '✔'; position: absolute; color: white; font-size: 0.8rem; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 
+        /* Force color for dynamically generated Amnezia profile labels */
+        #amneziaProfilesContainer label,
+        #amneziaProfilesContainer span {
+            color: var(--text-primary-light) !important;
+        }
+
         /* Force color for dynamically generated Amnezia profile labels in dark mode */
         html.dark #amneziaProfilesContainer label,
         html.dark #amneziaProfilesContainer span {
@@ -90,7 +94,7 @@
 
 <body class="py-10 px-4 min-h-screen">
     <div class="max-w-5xl mx-auto">
-        <header class="flex justify-between items-center mb-8 px-2 rounded-2xl border border-slate-200/70 dark:border-slate-700/70 bg-white/65 dark:bg-slate-900/40 backdrop-blur-md shadow-sm p-4">
+        <header class="flex justify-between items-center mb-8 px-2 rounded-2xl border border-slate-300/90 dark:border-slate-700/70 bg-slate-50/95 dark:bg-slate-900/55 backdrop-blur-md shadow-sm p-4">
             <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500 no-text-shadow">مبدل پیشرفته WireGuard</h1>
             <button id="themeToggle" class="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition-colors">
                 <svg id="theme-icon-dark" class="h-6 w-6 hidden no-text-shadow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
@@ -108,12 +112,12 @@
                     </div>
                     <div>
                         <label for="wgConfigFile" class="form-label block text-sm font-medium mb-2">یا آپلود فایل</label>
-                        <label for="wgConfigFile" class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-md cursor-pointer bg-slate-100/70 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-800/90 transition-colors">
+                        <label for="wgConfigFile" class="w-full flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-400/70 dark:border-slate-600 rounded-md cursor-pointer bg-slate-100/95 dark:bg-slate-800/80 hover:bg-slate-200/90 dark:hover:bg-slate-800/90 transition-colors">
                             <svg class="w-10 h-10 mb-3 text-slate-400 no-text-shadow" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                            <span class="text-sm text-slate-500 dark:text-slate-400">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
+                            <span class="text-sm text-slate-700 dark:text-slate-300">فایل‌ها را بکشید یا برای انتخاب کلیک کنید</span>
                             <input type="file" id="wgConfigFile" multiple accept=".conf,.txt,.yaml,.yml,.json" class="hidden">
                         </label>
-                        <div id="fileList" class="text-xs text-slate-500 dark:text-slate-400 mt-2 space-y-1"></div>
+                        <div id="fileList" class="text-xs text-slate-700 dark:text-slate-300 mt-2 space-y-1"></div>
                     </div>
                 </div>
                 <button id="processInputBtn" class="mt-6 w-full bg-indigo-600 text-white font-semibold py-2.5 px-4 rounded-lg hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900 no-text-shadow">پردازش و افزودن به لیست</button>
@@ -122,7 +126,7 @@
             <div id="stagedConfigsContainer" class="card p-7 rounded-2xl shadow-lg hidden">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold border-r-4 border-indigo-500 pr-4">۲. کانفیگ‌های آماده</h2>
-                    <span id="configCounter" class="text-sm font-medium text-slate-500 dark:text-slate-400"></span>
+                    <span id="configCounter" class="text-sm font-medium text-slate-700 dark:text-slate-300"></span>
                 </div>
                 <div id="stagedConfigsList" class="max-h-60 overflow-y-auto pr-2 -mr-2 mb-4"></div>
                 <div class="flex items-center gap-4 text-sm">
